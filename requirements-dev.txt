@@ -1,0 +1,13 @@
+flask
+flask_restplus
+pylint
+requests
+flask-cors
+flask_script
+minio
+Flask-Script
+apscheduler
+flask_jwt_extended
+paho-mqtt
+redis
+redis-py-cluster

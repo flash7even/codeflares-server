@@ -1,0 +1,44 @@
+{
+  "cp_training_users": {
+    "mappings": {
+      "_doc": {
+        "dynamic": "strict",
+        "properties": {
+          "username": {
+            "type": "text"
+          },
+          "email": {
+            "type": "text"
+          },
+          "mobile": {
+            "type": "text"
+          },
+          "password": {
+            "type": "keyword"
+          },
+          "first_name": {
+            "type": "text"
+          },
+          "last_name": {
+            "type": "text"
+          },
+          "full_name": {
+            "type": "text"
+          },
+          "created_at": {
+            "type": "long"
+          },
+          "created_by": {
+            "type": "keyword"
+          },
+          "updated_at": {
+            "type": "long"
+          },
+          "updated_by": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}

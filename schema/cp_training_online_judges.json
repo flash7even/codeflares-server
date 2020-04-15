@@ -1,0 +1,32 @@
+{
+  "cp_training_online_judges": {
+    "mappings": {
+      "_doc": {
+        "dynamic": "strict",
+        "properties": {
+          "oj_name": {
+            "type": "text"
+          },
+          "oj_website_link": {
+            "type": "keyword"
+          },
+          "oj_description": {
+            "type": "text"
+          },
+          "created_at": {
+            "type": "long"
+          },
+          "created_by": {
+            "type": "keyword"
+          },
+          "updated_at": {
+            "type": "long"
+          },
+          "updated_by": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}

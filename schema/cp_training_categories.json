@@ -1,0 +1,41 @@
+{
+  "cp_training_categories": {
+    "mappings": {
+      "_doc": {
+        "dynamic": "strict",
+        "properties": {
+          "category_name": {
+            "type": "text"
+          },
+          "category_title": {
+            "type": "keyword"
+          },
+          "category_description": {
+            "type": "text"
+          },
+          "category_difficulty": {
+            "type": "long"
+          },
+          "category_importance": {
+            "type": "long"
+          },
+          "category_rareness": {
+            "type": "long"
+          },
+          "created_at": {
+            "type": "long"
+          },
+          "created_by": {
+            "type": "keyword"
+          },
+          "updated_at": {
+            "type": "long"
+          },
+          "updated_by": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}

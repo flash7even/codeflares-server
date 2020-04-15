@@ -1,0 +1,32 @@
+{
+  "cp_training_category_dependencies": {
+    "mappings": {
+      "_doc": {
+        "dynamic": "strict",
+        "properties": {
+          "category_id_1": {
+            "type": "text"
+          },
+          "category_id_2": {
+            "type": "text"
+          },
+          "dependency_factor": {
+            "type": "long"
+          },
+          "created_at": {
+            "type": "long"
+          },
+          "created_by": {
+            "type": "keyword"
+          },
+          "updated_at": {
+            "type": "long"
+          },
+          "updated_by": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}
