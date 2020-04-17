@@ -7,7 +7,6 @@ from flask_jwt_extended import JWTManager
 from flask_restplus import Api
 
 from config import Config, instances
-from externel.flask_redis import redis_store
 from .auth_controller import api as auth_ns
 from .category_controller import api as cat_ns
 
@@ -27,23 +26,17 @@ def create_app(instance_name):
     app.config['PROPAGATE_EXCEPTIONS'] = True
     print('ENVIRONMENT NAME: ', instance_name)
     app.config.from_object(instances[instance_name])
-    app.config.from_pyfile(f'{Config.BASEDIR}/redis-{instance_name}.cfg', silent=True)
     app.config.from_pyfile(f'{Config.BASEDIR}/jwt-{instance_name}.cfg', silent=True)
     app.config.from_pyfile(f'{Config.BASEDIR}/elastic-{instance_name}.cfg', silent=True)
-    redis_store.init_app(app)
     CORS(app)
 
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=app.config['JWT_ACCESS_TOKEN_EXPIRES_MINUTES'])
-    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(minutes=app.config['JWT_REFRESH_TOKEN_EXPIRES_MINUTES'])
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 100
+    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = 100
 
     jwt = JWTManager()
 
     @jwt.token_in_blacklist_loader
     def check_if_token_is_revoked(decrypted_token):
-        jti = decrypted_token['jti']
-        jti = redis_store.redis_prefix_jwt_token + jti
-        if redis_store.connection.exists(jti):
-            return True
         return False
 
     jwt.init_app(app)

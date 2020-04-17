@@ -10,8 +10,6 @@ from flask_jwt_extended.exceptions import *
 from flask_restplus import Resource, Namespace
 from jwt.exceptions import *
 
-from externel.flask_redis import redis_store
-
 api = Namespace('auth', description='auth related services')
 _http_headers = {'Content-Type': 'application/json'}
 

@@ -77,13 +77,14 @@ def handle_failed_user_claims_verification(e):
 @api.route('/<string:category_id>')
 class CategoryByID(Resource):
 
-    @jwt_required
+    #@jwt_required
     @api.doc('get category details by id')
     def get(self, category_id):
         app.logger.info('Get category_details method called')
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, category_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
+        print(response)
         if 'found' in response:
             if response['found']:
                 data = response['_source']
@@ -95,7 +96,7 @@ class CategoryByID(Resource):
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
-    @jwt_required
+    #@jwt_required
     @api.doc('update category by id')
     def put(self, category_id):
         app.logger.info('Update category_details method called')
@@ -104,6 +105,7 @@ class CategoryByID(Resource):
 
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, category_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
+        print(response)
         if 'found' in response:
             if response['found']:
                 data = response['_source']
@@ -122,16 +124,20 @@ class CategoryByID(Resource):
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
-    @jwt_required
+    #@jwt_required
     @api.doc('delete category by id')
     def delete(self, category_id):
         app.logger.info('Delete category_details method called')
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, category_id)
         response = rs.delete(url=search_url, headers=_http_headers).json()
-        if 'found' in response:
-            app.logger.info('Delete category_details method completed')
-            return response['result'], 200
+        print(response)
+        if 'result' in response:
+            if response['result'] == 'deleted':
+                app.logger.info('Delete category_details method completed')
+                return response['result'], 200
+            else:
+                return response['result'], 400
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
@@ -139,7 +145,7 @@ class CategoryByID(Resource):
 @api.route('/')
 class CreateCategory(Resource):
 
-    @jwt_required
+    #@jwt_required
     @api.doc('create category')
     def post(self):
         app.logger.info('Create category method called')
@@ -151,11 +157,11 @@ class CreateCategory(Resource):
 
         post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
+        print(response)
 
-        if 'created' in response:
-            if response['created']:
-                app.logger.info('Create category method completed')
-                return response['_id'], 201
+        if 'result' in response and response['result'] == 'created':
+            app.logger.info('Create category method completed')
+            return response['_id'], 201
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
@@ -164,7 +170,7 @@ class CreateCategory(Resource):
 @api.route('/search/<int:page>')
 class SearchCategory(Resource):
 
-    @jwt_required
+    #@jwt_required
     @api.doc('search category based on post parameters')
     def post(self, page=0):
         app.logger.info('Category search method called')
@@ -172,9 +178,13 @@ class SearchCategory(Resource):
         query_json = {'query': {'match_all': {}}}
 
         must = []
+        keyword_fields = ['category_title', 'category_root']
 
-        for fields in param:
-            must.append({'match': {fields: param[fields]}})
+        for f in param:
+            if f in keyword_fields:
+                must.append({'term': {f: param[f]}})
+            else:
+                must.append({'match': {f: param[f]}})
 
         if len(must) > 0:
             query_json = {'query': {'bool': {'must': must}}}
@@ -183,13 +193,14 @@ class SearchCategory(Resource):
         query_json['size'] = _es_size
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
         response = requests.session().post(url=search_url, json=query_json, headers=_http_headers).json()
+        print(response)
         if 'hits' in response:
-            data = []
+            item_list = []
             for hit in response['hits']['hits']:
                 category = hit['_source']
                 category['id'] = hit['_id']
-                data.append(category)
+                item_list.append(category)
             app.logger.info('Category search method completed')
-            return data, 200
+            return item_list, 200
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return {'message': 'internal server error'}, 500
