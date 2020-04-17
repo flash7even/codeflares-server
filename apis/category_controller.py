@@ -174,6 +174,7 @@ class SearchCategory(Resource):
     @api.doc('search category based on post parameters')
     def post(self, page=0):
         app.logger.info('Category search method called')
+        rs = requests.session()
         param = request.get_json()
         query_json = {'query': {'match_all': {}}}
 
@@ -192,7 +193,7 @@ class SearchCategory(Resource):
         query_json['from'] = page*_es_size
         query_json['size'] = _es_size
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
-        response = requests.session().post(url=search_url, json=query_json, headers=_http_headers).json()
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
         print(response)
         if 'hits' in response:
             item_list = []
