@@ -13,6 +13,9 @@
     "password": {
       "type": "keyword"
     },
+    "user_role": {
+      "type": "keyword"
+    },
     "first_name": {
       "type": "text"
     },
