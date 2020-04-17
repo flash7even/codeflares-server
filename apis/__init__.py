@@ -9,6 +9,8 @@ from flask_restplus import Api
 from config import Config, instances
 from .auth_controller import api as auth_ns
 from .category_controller import api as cat_ns
+from .problem_controller import api as prob_ns
+from .onlinejudge_controller import api as oj_ns
 
 blueprint = Blueprint('api', Config.APPNAME, url_prefix='/training')
 
@@ -18,7 +20,9 @@ api = Api(blueprint,
           description='RESTful API for Minio Applications')
 
 api.add_namespace(auth_ns, path='/auth')
+api.add_namespace(prob_ns, path='/problem')
 api.add_namespace(cat_ns, path='/category')
+api.add_namespace(oj_ns, path='/oj')
 
 
 def create_app(instance_name):
