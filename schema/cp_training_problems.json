@@ -1,52 +1,49 @@
 {
-  "cp_training_problems": {
-    "mappings": {
-      "_doc": {
-        "dynamic": "strict",
-        "properties": {
-          "problem_name": {
-            "type": "text"
-          },
-          "problem_title": {
-            "type": "keyword"
-          },
-          "problem_description": {
-            "type": "text"
-          },
-          "problem_difficulty": {
-            "type": "long"
-          },
-          "oj_name": {
-            "type": "keyword"
-          },
-          "source_link": {
-            "type": "text"
-          },
-          "problem_category": {
-            "type": "nested",
-            "properties": {
-              "category_id": {
-                "type": "keyword"
-              },
-              "connection_factor": {
-                "type": "long"
-              }
-            }
-          },
-          "created_at": {
-            "type": "long"
-          },
-          "created_by": {
-            "type": "keyword"
-          },
-          "updated_at": {
-            "type": "long"
-          },
-          "updated_by": {
-            "type": "keyword"
-          }
+  "dynamic": "strict",
+  "properties": {
+    "problem_name": {
+      "type": "text"
+    },
+    "problem_title": {
+      "type": "keyword"
+    },
+    "problem_description": {
+      "type": "text"
+    },
+    "problem_difficulty": {
+      "type": "float"
+    },
+    "problem_significance": {
+      "type": "float"
+    },
+    "oj_name": {
+      "type": "keyword"
+    },
+    "source_link": {
+      "type": "text"
+    },
+    "problem_category": {
+      "type": "nested",
+      "properties": {
+        "category_id": {
+          "type": "keyword"
+        },
+        "connection_factor": {
+          "type": "float"
         }
       }
+    },
+    "created_at": {
+      "type": "long"
+    },
+    "created_by": {
+      "type": "keyword"
+    },
+    "updated_at": {
+      "type": "long"
+    },
+    "updated_by": {
+      "type": "keyword"
     }
   }
 }

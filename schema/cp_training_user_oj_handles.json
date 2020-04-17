@@ -1,32 +1,26 @@
 {
-  "cp_training_user_oj_handles": {
-    "mappings": {
-      "_doc": {
-        "dynamic": "strict",
-        "properties": {
-          "oj_id": {
-            "type": "text"
-          },
-          "user_id": {
-            "type": "text"
-          },
-          "handle_name": {
-            "type": "long"
-          },
-          "created_at": {
-            "type": "long"
-          },
-          "created_by": {
-            "type": "keyword"
-          },
-          "updated_at": {
-            "type": "long"
-          },
-          "updated_by": {
-            "type": "keyword"
-          }
-        }
-      }
+  "dynamic": "strict",
+  "properties": {
+    "oj_id": {
+      "type": "text"
+    },
+    "user_id": {
+      "type": "text"
+    },
+    "handle_name": {
+      "type": "long"
+    },
+    "created_at": {
+      "type": "long"
+    },
+    "created_by": {
+      "type": "keyword"
+    },
+    "updated_at": {
+      "type": "long"
+    },
+    "updated_by": {
+      "type": "keyword"
     }
   }
 }
