@@ -1,23 +1,20 @@
-import time
-
-import requests
 from hashlib import md5
-from flask import current_app as app
-from flask import request
-from flask_restplus import Namespace, Resource
+
+import requests, json
+from flask import current_app as app, request
+from flask_restplus import Resource, Namespace
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended.exceptions import *
-from flask_jwt_extended import jwt_required
 from jwt.exceptions import *
+from commons.jwt_helpers import access_required
 
-api = Namespace('user', description='Namespace for user service')
+api = Namespace('user', description='user related services')
 
 _http_headers = {'Content-Type': 'application/json'}
 
 _es_index = 'cp_training_users'
 _es_type = '_doc'
 _es_size = 100
-
 
 @api.errorhandler(NoAuthorizationError)
 def handle_auth_error(e):
@@ -76,72 +73,74 @@ def handle_failed_user_claims_verification(e):
 
 
 @api.route('/<string:user_id>')
-class UserByID(Resource):
+class User(Resource):
 
-    #@jwt_required
-    @api.doc('get user details by id')
+    @access_required(access='ALL')
+    @api.doc('get user by id')
     def get(self, user_id):
-        app.logger.info('Get user_details method called')
+        app.logger.info('Get user API called, id: ' + str(user_id))
         rs = requests.session()
+
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, user_id)
+        app.logger.debug('Elasticsearch query : ' + str(search_url))
         response = rs.get(url=search_url, headers=_http_headers).json()
-        print(response)
+        app.logger.debug('Elasticsearch response :' + str(response))
         if 'found' in response:
             if response['found']:
-                data = response['_source']
-                data['id'] = response['_id']
-                app.logger.info('Get user_details method completed')
-                return data, 200
+                user = response['_source']
+                user['id'] = response['_id']
+                app.logger.info('Get user API completed')
+                return user, 200
             app.logger.warning('User not found')
             return {'found': response['found']}, 404
-        app.logger.error('Elasticsearch down, response: ' + str(response))
+        app.logger.error('Elasticsearch down')
         return response, 500
 
-    #@jwt_required
+    @access_required(access='ALL')
     @api.doc('update user by id')
     def put(self, user_id):
-        app.logger.info('Update user_details method called')
-        rs = requests.session()
-        post_data = request.get_json()
         ignore_fields = ['username', 'password']
 
+        app.logger.info('Update user API called, id: ' + str(user_id))
+        rs = requests.session()
+        user_data = request.get_json()
+
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, user_id)
+        app.logger.debug('Elasticsearch query : ' + str(search_url))
         response = rs.get(url=search_url, headers=_http_headers).json()
-        print(response)
+        app.logger.debug('Elasticsearch response :' + str(response))
+
         if 'found' in response:
             if response['found']:
-                data = response['_source']
-                for key, value in post_data.items():
-                    if key not in ignore_fields:
-                        data[key] = value
-                data['updated_at'] = int(time.time())
-                response = rs.put(url=search_url, json=data, headers=_http_headers).json()
+                user = response['_source']
+                for key in user_data:
+                    if key not in ignore_fields and user_data[key]:
+                        user[key] = user_data[key]
+
+                app.logger.debug('Elasticsearch query : ' + str(search_url))
+                response = rs.put(url=search_url, json=user, headers=_http_headers).json()
+                app.logger.debug('Elasticsearch response :' + str(response))
                 if 'result' in response:
-                    app.logger.info('Update user_details method completed')
+                    app.logger.info('Update user API completed')
                     return response['result'], 200
-                else:
-                    app.logger.error('Elasticsearch down, response: ' + str(response))
-                    return response, 500
-            app.logger.warning('User not found')
-            return {'message': 'not found'}, 404
-        app.logger.error('Elasticsearch down, response: ' + str(response))
+            app.logger.info('User not found')
+            return 'not found', 404
+        app.logger.error('Elasticsearch down')
         return response, 500
 
-    #@jwt_required
+    @access_required(access='ALL')
     @api.doc('delete user by id')
     def delete(self, user_id):
-        app.logger.info('Delete user_details method called')
+        app.logger.info('Delete user API called, id: ' + str(user_id))
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, user_id)
+        app.logger.debug('Elasticsearch query : ' + str(search_url))
         response = rs.delete(url=search_url, headers=_http_headers).json()
-        print(response)
-        if 'result' in response:
-            if response['result'] == 'deleted':
-                app.logger.info('Delete user_details method completed')
-                return response['result'], 200
-            else:
-                return response['result'], 400
-        app.logger.error('Elasticsearch down, response: ' + str(response))
+        app.logger.debug('Elasticsearch response :' + str(response))
+        if 'found' in response:
+            app.logger.info('Delete user API completed')
+            return response['result'], 200
+        app.logger.error('Elasticsearch down')
         return response, 500
 
 
@@ -150,16 +149,16 @@ class CreateUser(Resource):
 
     @staticmethod
     def __validate_json(json_data):
-        mandatory_fields = ['username', 'password', 'first_name', 'user_role', 'mobile']
+        mandatory_fields = ['username', 'password', 'full_name', 'user_role']
         for key, value in json_data.items():
             if key in mandatory_fields and not value:
                 raise KeyError('Mandatory field missing')
         return json_data
 
-    #@jwt_required
-    @api.doc('create user')
+    @access_required(access="ALL")
+    @api.doc('create new user')
     def post(self):
-        app.logger.info('Create user method called')
+        app.logger.info('Create user API called')
         rs = requests.session()
         data = request.get_json()
 
@@ -175,21 +174,17 @@ class CreateUser(Resource):
         response = rs.post(url=search_url, json=query_params, headers=_http_headers).json()
 
         if 'hits' in response:
-            if response['hits']['total'] >= 1:
-                app.logger.warning('Username already exists')
+            if response['hits']['total']['value'] == 1:
+                app.logger.info('Username already exists')
                 return 'username already exists', 200
 
-        data['created_at'] = int(time.time())
-        data['updated_at'] = int(time.time())
-
         post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
-        response = rs.post(url=post_url, json=data, headers=_http_headers).json()
-        print(response)
+        response = rs.post(url=post_url, json=user_data, headers=_http_headers).json()
 
-        if 'result' in response and response['result'] == 'created':
-            app.logger.info('Create user method completed')
-            return response['_id'], 201
-        app.logger.error('Elasticsearch down, response: ' + str(response))
+        if 'result' in response:
+            if response['result'] == 'created':
+                app.logger.info('Create user API completed')
+                return response['_id'], 201
         return response, 500
 
 
@@ -197,38 +192,90 @@ class CreateUser(Resource):
 @api.route('/search/<int:page>')
 class SearchUser(Resource):
 
-    #@jwt_required
-    @api.doc('search user based on post parameters')
+    @access_required(access='ALL')
+    @api.doc('search users based on post parameters')
     def post(self, page=0):
-        app.logger.info('User search method called')
-        rs = requests.session()
+        app.logger.info('Search user API called')
         param = request.get_json()
-        query_json = {'query': {'match_all': {}}}
 
-        must = []
-        keyword_fields = ['user_title', 'user_root']
+        query_json = {'query': {'bool': {'must': []}}}
 
-        for f in param:
-            if f in keyword_fields:
-                must.append({'term': {f: param[f]}})
-            else:
-                must.append({'match': {f: param[f]}})
+        if 'full_name' in param:
+            query_json['query']['bool']['must'].append({'match': {'full_name': param['full_name']}})
 
-        if len(must) > 0:
-            query_json = {'query': {'bool': {'must': must}}}
+        if 'user_role' in param:
+            query_json['query']['bool']['must'].append({'match': {'user_role': param['user_role']}})
 
-        query_json['from'] = page*_es_size
+        query_json['from'] = page * _es_size
         query_json['size'] = _es_size
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
-        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        print(response)
+
+        response = requests.session().post(url=search_url, json=query_json, headers=_http_headers).json()
         if 'hits' in response:
-            item_list = []
+            data = []
             for hit in response['hits']['hits']:
                 user = hit['_source']
                 user['id'] = hit['_id']
-                item_list.append(user)
-            app.logger.info('User search method completed')
-            return item_list, 200
-        app.logger.error('Elasticsearch down, response: ' + str(response))
+                data.append(user)
+            app.logger.info('Search user API completed')
+            return data, 200
+        app.logger.error('Elasticsearch down, response : ' + str(response))
+        return {'message': 'internal server error'}, 500
+
+
+@api.route('/dtsearch')
+class SearchUser(Resource):
+
+    @access_required(access='ALL')
+    @api.doc('search users based on query parameters')
+    def get(self):
+        param = request.args.to_dict()
+        for key in param:
+            param[key] = param[key].replace('"', '')
+
+        pageIndex = 0
+        pageSize = _es_size
+
+        if 'pageIndex' in param:
+            pageIndex = int(param['pageIndex'])
+
+        if 'pageSize' in param:
+            pageSize = int(param['pageSize'])
+
+        should = []
+
+        if 'filter' in param and param['filter']:
+            should.append({'match': {'full_name': param['filter']}})
+            should.append({'match': {'username': param['filter']}})
+            should.append({'match': {'user_role': param['filter']}})
+            should.append({'match': {'action': param['filter']}})
+
+        query = {'bool': {'should': should}}
+
+        if len(should) == 0:
+            query = {'match_all': {}}
+
+        query_json = {'query': query, 'from': pageIndex * pageSize, 'size': pageSize}
+
+        #if 'sortActive' in param:
+        #    query_json['sort'] = [{param['sortActive']: {'order': param['sortOrder']}}]
+
+        app.logger.debug('ES Query: ' + str(query_json))
+
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
+        response = requests.session().post(url=search_url, json=query_json, headers=_http_headers).json()
+
+
+        if 'hits' in response:
+            data = []
+            for hit in response['hits']['hits']:
+                user = hit['_source']
+                user['id'] = hit['_id']
+                data.append(user)
+            return_data = {
+                'user_list': data,
+                'count': response['hits']['total']
+            }
+            return return_data, 200
+            # return data, 200
         return {'message': 'internal server error'}, 500
