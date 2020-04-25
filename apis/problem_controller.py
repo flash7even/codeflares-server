@@ -11,6 +11,8 @@ from jwt.exceptions import *
 
 api = Namespace('problem', description='Namespace for problem service')
 
+from core.category_services import add_problem_category_dependency
+
 _http_headers = {'Content-Type': 'application/json'}
 
 _es_index = 'cp_training_problems'
@@ -155,11 +157,22 @@ class CreateProblem(Resource):
         data['created_at'] = int(time.time())
         data['updated_at'] = int(time.time())
 
+        category_dependency_list = []
+        if 'category_dependency_list' in data:
+            category_dependency_list = data['category_dependency_list']
+            data.pop('category_dependency_list', None)
+
         post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
-        print(response)
 
         if 'result' in response and response['result'] == 'created':
+            for cat in category_dependency_list:
+                edge = {
+                    'problem_id': response['_id'],
+                    'category_id': cat['category_id'],
+                    'dependency_factor': cat['factor']
+                }
+                add_problem_category_dependency(edge)
             app.logger.info('Create problem method completed')
             return response['_id'], 201
         app.logger.error('Elasticsearch down, response: ' + str(response))
