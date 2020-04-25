@@ -158,6 +158,6 @@ class Logout(Resource):
         jti = redis_store.redis_prefix_jwt_token + jti
         redis_store.connection.set(jti, 1 , timedelta(minutes=app.config['JWT_REFRESH_TOKEN_EXPIRES_MINUTES']))
         app.logger.info("logout refresh successful")
-        return {"msg": "Refresh token revoked"}, 200
+        return {"message": "Refresh token revoked"}, 200
 
 

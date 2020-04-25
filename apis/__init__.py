@@ -12,6 +12,7 @@ from .category_controller import api as cat_ns
 from .problem_controller import api as prob_ns
 from .onlinejudge_controller import api as oj_ns
 from .user_controller import api as user_ns
+from extensions.flask_redis import redis_store
 
 blueprint = Blueprint('api', Config.APPNAME, url_prefix='/training')
 
@@ -34,6 +35,8 @@ def create_app(instance_name):
     app.config.from_object(instances[instance_name])
     app.config.from_pyfile(f'{Config.BASEDIR}/jwt-{instance_name}.cfg', silent=True)
     app.config.from_pyfile(f'{Config.BASEDIR}/elastic-{instance_name}.cfg', silent=True)
+    app.config.from_pyfile(f'{Config.BASEDIR}/redis-{instance_name}.cfg', silent=True)
+    redis_store.init_app(app)
     CORS(app)
 
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 100
