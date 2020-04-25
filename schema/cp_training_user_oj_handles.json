@@ -2,13 +2,13 @@
   "dynamic": "strict",
   "properties": {
     "oj_id": {
-      "type": "text"
+      "type": "keyword"
     },
     "user_id": {
-      "type": "text"
+      "type": "keyword"
     },
     "handle_name": {
-      "type": "long"
+      "type": "keyword"
     },
     "created_at": {
       "type": "long"

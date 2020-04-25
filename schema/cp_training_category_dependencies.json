@@ -2,13 +2,13 @@
   "dynamic": "strict",
   "properties": {
     "category_id_1": {
-      "type": "text"
+      "type": "keyword"
     },
     "category_id_2": {
-      "type": "text"
+      "type": "keyword"
     },
     "dependency_factor": {
-      "type": "long"
+      "type": "float"
     },
     "created_at": {
       "type": "long"

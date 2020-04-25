@@ -1,25 +1,13 @@
 {
   "dynamic": "strict",
   "properties": {
-    "category_name": {
-      "type": "text"
-    },
-    "category_title": {
+    "problem_id": {
       "type": "keyword"
     },
-    "category_root": {
+    "category_id": {
       "type": "keyword"
     },
-    "category_description": {
-      "type": "text"
-    },
-    "category_difficulty": {
-      "type": "float"
-    },
-    "category_importance": {
-      "type": "float"
-    },
-    "category_rareness": {
+    "dependency_factor": {
       "type": "float"
     },
     "created_at": {
