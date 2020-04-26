@@ -7,6 +7,9 @@
     "problem_title": {
       "type": "keyword"
     },
+    "problem_id": {
+      "type": "keyword"
+    },
     "problem_description": {
       "type": "text"
     },
