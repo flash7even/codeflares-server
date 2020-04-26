@@ -1,0 +1,32 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "user_id": {
+      "type": "keyword"
+    },
+    "invitation_sent_by": {
+      "type": "keyword"
+    },
+    "invitation_type": {
+      "type": "keyword"
+    },
+    "invitation_text": {
+      "type": "text"
+    },
+    "status": {
+      "type": "keyword"
+    },
+    "created_at": {
+      "type": "long"
+    },
+    "created_by": {
+      "type": "keyword"
+    },
+    "updated_at": {
+      "type": "long"
+    },
+    "updated_by": {
+      "type": "keyword"
+    }
+  }
+}

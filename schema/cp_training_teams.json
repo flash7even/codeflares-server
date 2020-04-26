@@ -1,0 +1,35 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "team_name": {
+      "type": "text"
+    },
+    "team_purpose": {
+      "type": "text"
+    },
+    "team_leader_id": {
+      "type": "keyword"
+    },
+    "description": {
+      "type": "text"
+    },
+    "institution_name": {
+      "type": "text"
+    },
+    "team_type": {
+      "type": "keyword"
+    },
+    "created_at": {
+      "type": "long"
+    },
+    "created_by": {
+      "type": "keyword"
+    },
+    "updated_at": {
+      "type": "long"
+    },
+    "updated_by": {
+      "type": "keyword"
+    }
+  }
+}
