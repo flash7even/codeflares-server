@@ -5,7 +5,7 @@ from flask import current_app as app
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index_problem_category = 'cp_training_problem_category_edges'
+
 _es_index_category = 'cp_training_categories'
 _es_index_category_dependency = 'cp_training_category_dependencies'
 _es_type = '_doc'
@@ -38,23 +38,6 @@ def get_category_id_from_name(category_name):
         for hit in response['hits']['hits']:
             return hit['_id']
     return None
-
-
-def add_problem_category_dependency(data):
-    app.logger.info('add_problem_category_dependency method called')
-    rs = requests.session()
-
-    data['created_at'] = int(time.time())
-    data['updated_at'] = int(time.time())
-
-    post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index_problem_category, _es_type)
-    response = rs.post(url=post_url, json=data, headers=_http_headers).json()
-
-    if 'result' in response and response['result'] == 'created':
-        app.logger.info('add_problem_category_dependency method completed')
-        return response['_id'], 201
-    app.logger.error('Elasticsearch down, response: ' + str(response))
-    return response, 500
 
 
 def add_category_category_dependency(data):
@@ -125,6 +108,6 @@ def search_categories(param, from_value, size_value):
             category['category_dependency_list'] = search_category_dependency_list(category['category_id'])
             item_list.append(category)
         app.logger.info('Category search method completed')
-        return item_list, 200
+        return item_list
     app.logger.error('Elasticsearch down, response: ' + str(response))
     return item_list
