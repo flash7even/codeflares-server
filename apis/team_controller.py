@@ -9,13 +9,13 @@ from flask_jwt_extended.exceptions import *
 from flask_jwt_extended import jwt_required
 from jwt.exceptions import *
 
-api = Namespace('category', description='Namespace for category service')
+api = Namespace('team', description='Namespace for team service')
 
-from core.category_services import add_category_category_dependency, get_category_id_from_name, search_categories
+from core.team_services import add_team_member, delete_team_member, delete_all_users_from_team, get_all_users_from_team
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index = 'cp_training_categories'
+_es_index = 'cp_training_teams'
 _es_type = '_doc'
 _es_size = 100
 
@@ -76,36 +76,37 @@ def handle_failed_user_claims_verification(e):
     return {'message': 'User claims verification failed'}, 400
 
 
-@api.route('/<string:category_id>')
-class CategoryByID(Resource):
+@api.route('/<string:team_id>')
+class TeamByID(Resource):
 
     #@jwt_required
-    @api.doc('get category details by id')
-    def get(self, category_id):
-        app.logger.info('Get category_details api called')
+    @api.doc('get team details by id')
+    def get(self, team_id):
+        app.logger.info('Get team_details method called')
         rs = requests.session()
-        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, category_id)
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, team_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
         print(response)
         if 'found' in response:
             if response['found']:
                 data = response['_source']
                 data['id'] = response['_id']
-                app.logger.info('Get category_details api completed')
+                data['user_list'] = get_all_users_from_team(team_id)
+                app.logger.info('Get team_details method completed')
                 return data, 200
-            app.logger.warning('Category not found')
+            app.logger.warning('Team not found')
             return {'found': response['found']}, 404
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
     #@jwt_required
-    @api.doc('update category by id')
-    def put(self, category_id):
-        app.logger.info('Update category_details api called')
+    @api.doc('update team by id')
+    def put(self, team_id):
+        app.logger.info('Update team_details method called')
         rs = requests.session()
         post_data = request.get_json()
 
-        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, category_id)
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, team_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
         print(response)
         if 'found' in response:
@@ -116,27 +117,28 @@ class CategoryByID(Resource):
                 data['updated_at'] = int(time.time())
                 response = rs.put(url=search_url, json=data, headers=_http_headers).json()
                 if 'result' in response:
-                    app.logger.info('Update category_details api completed')
+                    app.logger.info('Update team_details method completed')
                     return response['result'], 200
                 else:
                     app.logger.error('Elasticsearch down, response: ' + str(response))
                     return response, 500
-            app.logger.warning('Category not found')
+            app.logger.warning('Team not found')
             return {'message': 'not found'}, 404
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
     #@jwt_required
-    @api.doc('delete category by id')
-    def delete(self, category_id):
-        app.logger.info('Delete category_details api called')
+    @api.doc('delete team by id')
+    def delete(self, team_id):
+        app.logger.info('Delete team_details method called')
         rs = requests.session()
-        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, category_id)
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, team_id)
         response = rs.delete(url=search_url, headers=_http_headers).json()
         print(response)
         if 'result' in response:
             if response['result'] == 'deleted':
-                app.logger.info('Delete category_details api completed')
+                delete_all_users_from_team(team_id)
+                app.logger.info('Delete team_details method completed')
                 return response['result'], 200
             else:
                 return response['result'], 400
@@ -145,78 +147,97 @@ class CategoryByID(Resource):
 
 
 @api.route('/')
-class CreateCategory(Resource):
+class CreateTeam(Resource):
 
     #@jwt_required
-    @api.doc('create category')
+    @api.doc('create team')
     def post(self):
-        app.logger.info('Create category api called')
+        app.logger.info('Create team method called')
         rs = requests.session()
         data = request.get_json()
 
         data['created_at'] = int(time.time())
         data['updated_at'] = int(time.time())
 
-        category_dependency_list = []
-        if 'category_dependency_list' in data:
-            category_dependency_list = data['category_dependency_list']
-            data.pop('category_dependency_list', None)
+        member_list = []
+        if 'member_list' in data:
+            member_list = data['member_list']
+            data.pop('member_list', None)
 
         post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
 
         if 'result' in response and response['result'] == 'created':
-            for cat in category_dependency_list:
+            for member in member_list:
                 edge = {
-                    'category_id_1': response['_id'],
-                    'category_id_2': cat['category_id'],
-                    'dependency_factor': cat['factor']
+                    'team_id': response['_id'],
+                    'user_id': member['user_id'],
+                    'remarks': member['remarks']
                 }
-                add_category_category_dependency(edge)
-            app.logger.info('Create category api completed')
+                add_team_member(edge)
+            app.logger.info('Create team method completed')
             return response['_id'], 201
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
 
-@api.route('/dependency')
-class CreateCategory(Resource):
+@api.route('/member/')
+class CreateTeam(Resource):
 
     #@jwt_required
-    @api.doc('add category dependency')
+    @api.doc('add team member')
     def post(self):
-        app.logger.info('Add category dependency api called')
-        rs = requests.session()
+        app.logger.info('Add team member method called')
         data = request.get_json()
+        response = add_team_member(data)
+        app.logger.info('Add team member method completed')
+        return response, 201
 
-        category_id_1 = data.get('category_id', None)
-        if category_id_1 is None:
-            category_id_1 = get_category_id_from_name(data['category_name'])
-
-        cat_list = data['category_dependency_list']
-        for cat in cat_list:
-            category_id_2 = cat.get('category_id', None)
-            if category_id_2 is None:
-                category_id_2 = get_category_id_from_name(cat['category_name'])
-            edge = {
-                'category_id_1': category_id_1,
-                'category_id_2': category_id_2,
-                'dependency_factor': cat['factor']
-            }
-            add_category_category_dependency(edge)
-        app.logger.info('Add category dependency api completed')
-        return {'message': 'success'}, 201
+    #@jwt_required
+    @api.doc('delete team member')
+    def delete(self):
+        app.logger.info('Delete team member method called')
+        data = request.get_json()
+        response = delete_team_member(data['team_id'], data['user_id'])
+        app.logger.info('Delete team member method completed')
+        return response, 201
 
 
 @api.route('/search', defaults={'page': 0})
 @api.route('/search/<int:page>')
-class SearchCategory(Resource):
+class SearchTeam(Resource):
 
     #@jwt_required
-    @api.doc('search category based on post parameters')
+    @api.doc('search team based on post parameters')
     def post(self, page=0):
-        app.logger.info('Category search api called')
+        app.logger.info('Team search method called')
+        rs = requests.session()
         param = request.get_json()
-        result = search_categories(param, page*_es_size, _es_size)
-        app.logger.info('Category search api completed')
-        return result
+        query_json = {'query': {'match_all': {}}}
+
+        must = []
+        keyword_fields = ['team_leader_id', 'team_type']
+
+        for f in param:
+            if f in keyword_fields:
+                must.append({'term': {f: param[f]}})
+            else:
+                must.append({'match': {f: param[f]}})
+
+        if len(must) > 0:
+            query_json = {'query': {'bool': {'must': must}}}
+
+        query_json['from'] = page*_es_size
+        query_json['size'] = _es_size
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        if 'hits' in response:
+            item_list = []
+            for hit in response['hits']['hits']:
+                team = hit['_source']
+                team['id'] = hit['_id']
+                item_list.append(team)
+            app.logger.info('Team search method completed')
+            return item_list, 200
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        return {'message': 'internal server error'}, 500
