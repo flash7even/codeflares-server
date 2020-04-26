@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import requests
 
-logger = logging.getLogger('category uploader logger')
+logger = logging.getLogger('category dependency uploader logger')
 logger.setLevel(logging.DEBUG)
 handler = TimedRotatingFileHandler('category_dependency_uploader.log', when='midnight', interval=1,  backupCount=30)
 handler.setLevel(logging.DEBUG)
