@@ -11,7 +11,7 @@ from jwt.exceptions import *
 
 api = Namespace('category', description='Namespace for category service')
 
-from core.category_services import add_category_category_dependency
+from core.category_services import add_category_category_dependency, get_category_id_from_name, search_categories
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -82,7 +82,7 @@ class CategoryByID(Resource):
     #@jwt_required
     @api.doc('get category details by id')
     def get(self, category_id):
-        app.logger.info('Get category_details method called')
+        app.logger.info('Get category_details api called')
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, category_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
@@ -91,7 +91,7 @@ class CategoryByID(Resource):
             if response['found']:
                 data = response['_source']
                 data['id'] = response['_id']
-                app.logger.info('Get category_details method completed')
+                app.logger.info('Get category_details api completed')
                 return data, 200
             app.logger.warning('Category not found')
             return {'found': response['found']}, 404
@@ -101,7 +101,7 @@ class CategoryByID(Resource):
     #@jwt_required
     @api.doc('update category by id')
     def put(self, category_id):
-        app.logger.info('Update category_details method called')
+        app.logger.info('Update category_details api called')
         rs = requests.session()
         post_data = request.get_json()
 
@@ -116,7 +116,7 @@ class CategoryByID(Resource):
                 data['updated_at'] = int(time.time())
                 response = rs.put(url=search_url, json=data, headers=_http_headers).json()
                 if 'result' in response:
-                    app.logger.info('Update category_details method completed')
+                    app.logger.info('Update category_details api completed')
                     return response['result'], 200
                 else:
                     app.logger.error('Elasticsearch down, response: ' + str(response))
@@ -129,14 +129,14 @@ class CategoryByID(Resource):
     #@jwt_required
     @api.doc('delete category by id')
     def delete(self, category_id):
-        app.logger.info('Delete category_details method called')
+        app.logger.info('Delete category_details api called')
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, category_id)
         response = rs.delete(url=search_url, headers=_http_headers).json()
         print(response)
         if 'result' in response:
             if response['result'] == 'deleted':
-                app.logger.info('Delete category_details method completed')
+                app.logger.info('Delete category_details api completed')
                 return response['result'], 200
             else:
                 return response['result'], 400
@@ -150,7 +150,7 @@ class CreateCategory(Resource):
     #@jwt_required
     @api.doc('create category')
     def post(self):
-        app.logger.info('Create category method called')
+        app.logger.info('Create category api called')
         rs = requests.session()
         data = request.get_json()
 
@@ -173,10 +173,39 @@ class CreateCategory(Resource):
                     'dependency_factor': cat['factor']
                 }
                 add_category_category_dependency(edge)
-            app.logger.info('Create category method completed')
+            app.logger.info('Create category api completed')
             return response['_id'], 201
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
+
+
+@api.route('/dependency')
+class CreateCategory(Resource):
+
+    #@jwt_required
+    @api.doc('add category dependency')
+    def post(self):
+        app.logger.info('Add category dependency api called')
+        rs = requests.session()
+        data = request.get_json()
+
+        category_id_1 = data.get('category_id', None)
+        if category_id_1 is None:
+            category_id_1 = get_category_id_from_name(data['category_name'])
+
+        cat_list = data['category_dependency_list']
+        for cat in cat_list:
+            category_id_2 = cat.get('category_id', None)
+            if category_id_2 is None:
+                category_id_2 = get_category_id_from_name(cat['category_name'])
+            edge = {
+                'category_id_1': category_id_1,
+                'category_id_2': category_id_2,
+                'dependency_factor': cat['factor']
+            }
+            add_category_category_dependency(edge)
+        app.logger.info('Add category dependency api completed')
+        return {'message': 'success'}, 201
 
 
 @api.route('/search', defaults={'page': 0})
@@ -186,35 +215,8 @@ class SearchCategory(Resource):
     #@jwt_required
     @api.doc('search category based on post parameters')
     def post(self, page=0):
-        app.logger.info('Category search method called')
-        rs = requests.session()
+        app.logger.info('Category search api called')
         param = request.get_json()
-        query_json = {'query': {'match_all': {}}}
-
-        must = []
-        keyword_fields = ['category_title', 'category_root']
-
-        for f in param:
-            if f in keyword_fields:
-                must.append({'term': {f: param[f]}})
-            else:
-                must.append({'match': {f: param[f]}})
-
-        if len(must) > 0:
-            query_json = {'query': {'bool': {'must': must}}}
-
-        query_json['from'] = page*_es_size
-        query_json['size'] = _es_size
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
-        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        print(response)
-        if 'hits' in response:
-            item_list = []
-            for hit in response['hits']['hits']:
-                category = hit['_source']
-                category['id'] = hit['_id']
-                item_list.append(category)
-            app.logger.info('Category search method completed')
-            return item_list, 200
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return {'message': 'internal server error'}, 500
+        result = search_categories(param, page*_es_size, _es_size)
+        app.logger.info('Category search api completed')
+        return result
