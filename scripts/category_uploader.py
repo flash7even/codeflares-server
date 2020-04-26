@@ -45,8 +45,10 @@ def category_extract():
     print(len(data))
     print()
 
-
-category_extract()
+if __name__ == '__main__':
+    logger.info('START RUNNING CATEGORY UPLOADER SCRIPT\n')
+    category_extract()
+    logger.info('FINISHED RUNNING CATEGORY UPLOADER SCRIPT\n')
 
 
 
