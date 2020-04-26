@@ -22,17 +22,6 @@
     "source_link": {
       "type": "text"
     },
-    "problem_category": {
-      "type": "nested",
-      "properties": {
-        "category_id": {
-          "type": "keyword"
-        },
-        "connection_factor": {
-          "type": "float"
-        }
-      }
-    },
     "created_at": {
       "type": "long"
     },

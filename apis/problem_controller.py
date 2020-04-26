@@ -11,7 +11,8 @@ from jwt.exceptions import *
 
 api = Namespace('problem', description='Namespace for problem service')
 
-from core.category_services import add_problem_category_dependency
+from core.problem_services import add_problem_category_dependency, search_problems
+from core.category_services import get_category_id_from_name
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -167,9 +168,12 @@ class CreateProblem(Resource):
 
         if 'result' in response and response['result'] == 'created':
             for cat in category_dependency_list:
+                category_id = cat.get('category_id', None)
+                if category_id is None:
+                    category_id = get_category_id_from_name(cat['category_name'])
                 edge = {
                     'problem_id': response['_id'],
-                    'category_id': cat['category_id'],
+                    'category_id': category_id,
                     'dependency_factor': cat['factor']
                 }
                 add_problem_category_dependency(edge)
@@ -189,32 +193,6 @@ class SearchProblem(Resource):
         app.logger.info('Problem search method called')
         rs = requests.session()
         param = request.get_json()
-        query_json = {'query': {'match_all': {}}}
-
-        must = []
-        keyword_fields = ['problem_title', 'problem_root']
-
-        for f in param:
-            if f in keyword_fields:
-                must.append({'term': {f: param[f]}})
-            else:
-                must.append({'match': {f: param[f]}})
-
-        if len(must) > 0:
-            query_json = {'query': {'bool': {'must': must}}}
-
-        query_json['from'] = page*_es_size
-        query_json['size'] = _es_size
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
-        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        print(response)
-        if 'hits' in response:
-            item_list = []
-            for hit in response['hits']['hits']:
-                problem = hit['_source']
-                problem['id'] = hit['_id']
-                item_list.append(problem)
-            app.logger.info('Problem search method completed')
-            return item_list, 200
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return {'message': 'internal server error'}, 500
+        result = search_problems(param, page*_es_size, _es_size)
+        app.logger.info('Problem search method completed')
+        return result
