@@ -1,5 +1,5 @@
 import logging
-import re
+import re, json
 from logging.handlers import TimedRotatingFileHandler
 
 import pandas as pd
@@ -25,7 +25,9 @@ ES_HOST = 'localhost:9200'
 
 
 def add_category_dependency(data):
-    print("Call service with data " , data)
+    url = "http://192.168.0.30:5056/training/category/dependency"
+    response = rs.post(url=url, json=data, headers=_http_headers).json()
+    logger.debug('response: ' + json.dumps(response))
 
 
 def category_dependency_extract():
@@ -54,8 +56,8 @@ def category_dependency_extract():
             "category_name": category_name,
             "category_dependency_list": category_dependency_list
         }
-        print(json_data)
-        #add_category_dependency(json_data)
+        #print(json_data)
+        add_category_dependency(json_data)
     #print(len(data))
     #print(data)
 

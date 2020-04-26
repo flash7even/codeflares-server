@@ -1,5 +1,5 @@
 import logging
-import re
+import re, json
 from logging.handlers import TimedRotatingFileHandler
 
 import pandas as pd
@@ -27,7 +27,9 @@ problem_list_names = ["problem-list - ad_hoc.csv", "problem-list - basic_math.cs
 
 
 def add_problem_list(data):
-    print("Call service with data " , data)
+    url = "http://192.168.0.30:5056/training/problem/"
+    response = rs.post(url=url, json=data, headers=_http_headers).json()
+    logger.debug('response: ' + json.dumps(response))
 
 
 def problem_list_extract(data):
@@ -64,8 +66,8 @@ def problem_list_extract(data):
             "oj_name": oj_name,
             "category_dependency_list": category_dependency_list
         }
-        print(json_data)
-        #add_problem_list(json_data)
+        #print(json_data)
+        add_problem_list(json_data)
 
 
 def problem_datasets():
