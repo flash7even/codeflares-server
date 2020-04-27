@@ -11,7 +11,7 @@ from jwt.exceptions import *
 
 api = Namespace('problem', description='Namespace for problem service')
 
-from core.problem_services import add_problem_category_dependency, search_problems
+from core.problem_services import add_problem_category_dependency, search_problems, add_user_problem_status
 from core.category_services import get_category_id_from_name
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -83,7 +83,7 @@ class ProblemByID(Resource):
     #@jwt_required
     @api.doc('get problem details by id')
     def get(self, problem_id):
-        app.logger.info('Get problem_details method called')
+        app.logger.info('Get problem_details api called')
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
@@ -92,7 +92,7 @@ class ProblemByID(Resource):
             if response['found']:
                 data = response['_source']
                 data['id'] = response['_id']
-                app.logger.info('Get problem_details method completed')
+                app.logger.info('Get problem_details api completed')
                 return data, 200
             app.logger.warning('Problem not found')
             return {'found': response['found']}, 404
@@ -102,7 +102,7 @@ class ProblemByID(Resource):
     #@jwt_required
     @api.doc('update problem by id')
     def put(self, problem_id):
-        app.logger.info('Update problem_details method called')
+        app.logger.info('Update problem_details api called')
         rs = requests.session()
         post_data = request.get_json()
 
@@ -117,7 +117,7 @@ class ProblemByID(Resource):
                 data['updated_at'] = int(time.time())
                 response = rs.put(url=search_url, json=data, headers=_http_headers).json()
                 if 'result' in response:
-                    app.logger.info('Update problem_details method completed')
+                    app.logger.info('Update problem_details api completed')
                     return response['result'], 200
                 else:
                     app.logger.error('Elasticsearch down, response: ' + str(response))
@@ -130,14 +130,14 @@ class ProblemByID(Resource):
     #@jwt_required
     @api.doc('delete problem by id')
     def delete(self, problem_id):
-        app.logger.info('Delete problem_details method called')
+        app.logger.info('Delete problem_details api called')
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
         response = rs.delete(url=search_url, headers=_http_headers).json()
         print(response)
         if 'result' in response:
             if response['result'] == 'deleted':
-                app.logger.info('Delete problem_details method completed')
+                app.logger.info('Delete problem_details api completed')
                 return response['result'], 200
             else:
                 return response['result'], 400
@@ -151,7 +151,7 @@ class CreateProblem(Resource):
     #@jwt_required
     @api.doc('create problem')
     def post(self):
-        app.logger.info('Create problem method called')
+        app.logger.info('Create problem api called')
         rs = requests.session()
         data = request.get_json()
 
@@ -177,7 +177,7 @@ class CreateProblem(Resource):
                     'dependency_factor': cat['factor']
                 }
                 add_problem_category_dependency(edge)
-            app.logger.info('Create problem method completed')
+            app.logger.info('Create problem api completed')
             return response['_id'], 201
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
@@ -190,11 +190,30 @@ class SearchProblem(Resource):
     #@jwt_required
     @api.doc('search problem based on post parameters')
     def post(self, page=0):
-        app.logger.info('Problem search method called')
+        app.logger.info('Problem search api called')
         rs = requests.session()
         param = request.get_json()
         result = search_problems(param, page*_es_size, _es_size)
-        app.logger.info('Problem search method completed')
+        app.logger.info('Problem search api completed')
         return {
             "problem_list": result
         }
+
+
+@api.route('/user')
+class CreateProblem(Resource):
+
+    #@jwt_required
+    @api.doc('create problem user status')
+    def post(self):
+        app.logger.info('Create problem user api called')
+        try:
+            data = request.get_json()
+            mandatory_fields = ['user_id', 'problem_id', 'status']
+            for f in mandatory_fields:
+                if f not in data:
+                    return {'message': 'bad request'}, 409
+            response = add_user_problem_status(data['user_id', data['problem_id'], data['status']])
+            return response, 200
+        except Exception as e:
+            return {'message': 'Internal server error'}, 500
