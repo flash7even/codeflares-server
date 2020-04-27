@@ -180,3 +180,53 @@ def search_problems(param, from_value, size_value):
         return item_list
     app.logger.error('Elasticsearch down, response: ' + str(response))
     return item_list
+
+
+def search_problems_light(param, from_value, size_value):
+    query_json = {'query': {'match_all': {}}}
+    rs = requests.session()
+
+    must = []
+    keyword_fields = ['problem_title', 'oj_name']
+
+    minimum_difficulty = 0
+    maximum_difficulty = 100
+
+    if 'minimum_difficulty' in param and param['minimum_difficulty']:
+        minimum_difficulty = int(param['minimum_difficulty'])
+
+    if 'maximum_difficulty' in param and param['maximum_difficulty']:
+        maximum_difficulty = int(param['maximum_difficulty'])
+
+    param.pop('minimum_difficulty', None)
+    param.pop('maximum_difficulty', None)
+
+    for f in param:
+        if f in keyword_fields:
+            if param[f]:
+                must.append({'term': {f: param[f]}})
+        else:
+            if param[f]:
+                must.append({'match': {f: param[f]}})
+
+    must.append({"range": {"problem_difficulty": {"gte": minimum_difficulty, "lte": maximum_difficulty}}})
+
+    if len(must) > 0:
+        query_json = {'query': {'bool': {'must': must}}}
+
+    query_json['from'] = from_value
+    query_json['size'] = size_value
+
+    search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem, _es_type)
+    response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+    item_list = []
+
+    if 'hits' in response:
+        for hit in response['hits']['hits']:
+            data = hit['_source']
+            data['problem_id'] = hit['_id']
+            item_list.append(data)
+        app.logger.info('Problem search method completed')
+        return item_list
+    app.logger.error('Elasticsearch down, response: ' + str(response))
+    return item_list
