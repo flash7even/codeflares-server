@@ -167,9 +167,12 @@ class CreateCategory(Resource):
 
         if 'result' in response and response['result'] == 'created':
             for cat in category_dependency_list:
+                category_id_2 = cat.get('category_id', None)
+                if category_id_2 is None:
+                    category_id_2 = get_category_id_from_name(cat['category_name'])
                 edge = {
                     'category_id_1': response['_id'],
-                    'category_id_2': cat['category_id'],
+                    'category_id_2': category_id_2,
                     'dependency_factor': cat['factor']
                 }
                 add_category_category_dependency(edge)
