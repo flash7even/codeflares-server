@@ -10,7 +10,7 @@ from core.category_services import get_category_details
 _es_index_problem_category = 'cp_training_problem_category_edges'
 _es_index_problem = 'cp_training_problems'
 _es_type = '_doc'
-_es_size = 100
+_es_size = 500
 
 
 def get_problem_details(problem_id):
@@ -113,6 +113,7 @@ def search_problems(param, from_value, size_value):
     search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem, _es_type)
     response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
     item_list = []
+
     if 'hits' in response:
         for hit in response['hits']['hits']:
             data = hit['_source']

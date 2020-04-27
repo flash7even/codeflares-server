@@ -17,7 +17,7 @@ _http_headers = {'Content-Type': 'application/json'}
 
 _es_index = 'cp_training_categories'
 _es_type = '_doc'
-_es_size = 100
+_es_size = 500
 
 
 @api.errorhandler(NoAuthorizationError)
@@ -219,4 +219,7 @@ class SearchCategory(Resource):
         param = request.get_json()
         result = search_categories(param, page*_es_size, _es_size)
         app.logger.info('Category search api completed')
-        return result
+        print(result)
+        return {
+            "category_list": result
+        }

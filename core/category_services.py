@@ -9,7 +9,7 @@ _http_headers = {'Content-Type': 'application/json'}
 _es_index_category = 'cp_training_categories'
 _es_index_category_dependency = 'cp_training_category_dependencies'
 _es_type = '_doc'
-_es_size = 100
+_es_size = 500
 
 
 def get_category_details(cat_id):
@@ -87,17 +87,34 @@ def search_categories(param, from_value, size_value):
     must = []
     keyword_fields = ['category_title', 'category_root']
 
+    minimum_difficulty = 0
+    maximum_difficulty = 100
+
+    if 'minimum_difficulty' in param and param['minimum_difficulty']:
+        minimum_difficulty = int(param['minimum_difficulty'])
+
+    if 'maximum_difficulty' in param and param['maximum_difficulty']:
+        maximum_difficulty = int(param['maximum_difficulty'])
+
+    param.pop('minimum_difficulty', None)
+    param.pop('maximum_difficulty', None)
+
     for f in param:
         if f in keyword_fields:
-            must.append({'term': {f: param[f]}})
+            if param[f]:
+                must.append({'term': {f: param[f]}})
         else:
-            must.append({'match': {f: param[f]}})
+            if param[f]:
+                must.append({'match': {f: param[f]}})
+
+    must.append({"range": {"category_difficulty": {"gte": minimum_difficulty, "lte": maximum_difficulty}}})
 
     if len(must) > 0:
         query_json = {'query': {'bool': {'must': must}}}
 
     query_json['from'] = from_value
     query_json['size'] = size_value
+    print('query_json: ', json.dumps(query_json))
     search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_category, _es_type)
     response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
     item_list = []
@@ -105,6 +122,7 @@ def search_categories(param, from_value, size_value):
         for hit in response['hits']['hits']:
             category = hit['_source']
             category['category_id'] = hit['_id']
+            category['problem_count'] = 100
             category['category_dependency_list'] = search_category_dependency_list(category['category_id'])
             item_list.append(category)
         app.logger.info('Category search method completed')

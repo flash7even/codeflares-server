@@ -1,5 +1,5 @@
 import time
-
+import json
 import requests
 from flask import current_app as app
 from flask import request
@@ -18,7 +18,7 @@ _http_headers = {'Content-Type': 'application/json'}
 
 _es_index = 'cp_training_problems'
 _es_type = '_doc'
-_es_size = 100
+_es_size = 500
 
 
 @api.errorhandler(NoAuthorizationError)
