@@ -195,4 +195,6 @@ class SearchProblem(Resource):
         param = request.get_json()
         result = search_problems(param, page*_es_size, _es_size)
         app.logger.info('Problem search method completed')
-        return result
+        return {
+            "problem_list": result
+        }

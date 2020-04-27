@@ -51,14 +51,28 @@ def search_problem_dependency_list(problem_id):
     search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_category, _es_type)
     response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
     item_list = []
+    light_data = None
     if 'hits' in response:
         for hit in response['hits']['hits']:
             category = hit['_source']
             category['category_info'] = get_category_details(category['category_id'])
             item_list.append(category)
-        return item_list
+
+            if category['category_info'] and 'category_name' in category['category_info'] and category['category_info']['category_name']:
+                if light_data is None:
+                    light_data = category['category_info']['category_name']
+                else:
+                    light_data = light_data + " " + category['category_info']['category_name']
+
+        return {
+            'dependency_list': item_list,
+            'light_data': light_data
+        }
     app.logger.error('Elasticsearch down, response: ' + str(response))
-    return item_list
+    return {
+        'dependency_list': item_list,
+        'light_data': light_data
+    }
 
 
 def search_problems(param, from_value, size_value):
@@ -86,7 +100,9 @@ def search_problems(param, from_value, size_value):
         for hit in response['hits']['hits']:
             data = hit['_source']
             data['problem_id'] = hit['_id']
-            data['category_dependency_list'] = search_problem_dependency_list(data['problem_id'])
+            dependency_list = search_problem_dependency_list(data['problem_id'])
+            data['category_dependency_list'] = dependency_list['dependency_list']
+            data['category_list_light'] = dependency_list['light_data']
             item_list.append(data)
         app.logger.info('Problem search method completed')
         return item_list

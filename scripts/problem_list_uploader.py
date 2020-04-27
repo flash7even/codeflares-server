@@ -27,7 +27,7 @@ problem_list_names = ["problem-list - ad_hoc.csv", "problem-list - basic_math.cs
 
 
 def add_problem_list(data):
-    url = "http://192.168.0.30:5056/training/problem/"
+    url = "http://localhost:5056/training/problem/"
     response = rs.post(url=url, json=data, headers=_http_headers).json()
     logger.debug('response: ' + json.dumps(response))
 

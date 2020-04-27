@@ -26,7 +26,7 @@ ES_HOST = 'localhost:9200'
 
 
 def add_category(data):
-    url = "http://192.168.0.30:5056/training/category/"
+    url = "http://localhost:5056/training/category/"
     response = rs.post(url=url, json=data, headers=_http_headers).json()
     logger.debug('response: ' + json.dumps(response))
 
