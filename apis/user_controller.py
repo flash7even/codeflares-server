@@ -149,13 +149,13 @@ class CreateUser(Resource):
 
     @staticmethod
     def __validate_json(json_data):
-        mandatory_fields = ['username', 'password', 'full_name', 'user_role']
+        mandatory_fields = ['username', 'password', 'email', 'full_name', 'user_role']
         for key, value in json_data.items():
             if key in mandatory_fields and not value:
                 raise KeyError('Mandatory field missing')
         return json_data
 
-    @access_required(access="ALL")
+    #@access_required(access="ALL")
     @api.doc('create new user')
     def post(self):
         app.logger.info('Create user API called')
@@ -170,13 +170,17 @@ class CreateUser(Resource):
             return 'bad request', 400
 
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
-        query_params = {'query': {'bool': {'must': [{'match': {'username': data['username']}}]}}}
+        should = [
+            {'match': {'username': data['username']}},
+            {'match': {'email': data['email']}}
+        ]
+        query_params = {'query': {'bool': {'should': should}}}
         response = rs.post(url=search_url, json=query_params, headers=_http_headers).json()
 
         if 'hits' in response:
             if response['hits']['total']['value'] == 1:
                 app.logger.info('Username already exists')
-                return 'username already exists', 200
+                return 'Username already exists', 200
 
         post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
         response = rs.post(url=post_url, json=user_data, headers=_http_headers).json()
@@ -198,13 +202,22 @@ class SearchUser(Resource):
         app.logger.info('Search user API called')
         param = request.get_json()
 
-        query_json = {'query': {'bool': {'must': []}}}
+        print(param)
 
-        if 'full_name' in param:
-            query_json['query']['bool']['must'].append({'match': {'full_name': param['full_name']}})
+        must = []
 
-        if 'user_role' in param:
-            query_json['query']['bool']['must'].append({'match': {'user_role': param['user_role']}})
+        text_fields = ['username', 'email', 'mobile']
+        keyword_fields = ['user_role']
+
+        for k in text_fields:
+            if k in param:
+                must.append({'match': {k: param[k]}})
+
+        for k in keyword_fields:
+            if k in param:
+                must.append({'term': {k: param[k]}})
+
+        query_json = {'query': {'bool': {'must': must}}}
 
         query_json['from'] = page * _es_size
         query_json['size'] = _es_size
@@ -216,66 +229,16 @@ class SearchUser(Resource):
             for hit in response['hits']['hits']:
                 user = hit['_source']
                 user['id'] = hit['_id']
+
+                user['rating'] = 1988
+                user['title'] = 'Candidate Master'
+                user['max_rating'] = 1988
+                user['solve_count'] = 890
+                user['follower'] = 921
+                user['following'] = 530
+
                 data.append(user)
             app.logger.info('Search user API completed')
             return data, 200
         app.logger.error('Elasticsearch down, response : ' + str(response))
-        return {'message': 'internal server error'}, 500
-
-
-@api.route('/dtsearch')
-class SearchUser(Resource):
-
-    @access_required(access='ALL')
-    @api.doc('search users based on query parameters')
-    def get(self):
-        param = request.args.to_dict()
-        for key in param:
-            param[key] = param[key].replace('"', '')
-
-        pageIndex = 0
-        pageSize = _es_size
-
-        if 'pageIndex' in param:
-            pageIndex = int(param['pageIndex'])
-
-        if 'pageSize' in param:
-            pageSize = int(param['pageSize'])
-
-        should = []
-
-        if 'filter' in param and param['filter']:
-            should.append({'match': {'full_name': param['filter']}})
-            should.append({'match': {'username': param['filter']}})
-            should.append({'match': {'user_role': param['filter']}})
-            should.append({'match': {'action': param['filter']}})
-
-        query = {'bool': {'should': should}}
-
-        if len(should) == 0:
-            query = {'match_all': {}}
-
-        query_json = {'query': query, 'from': pageIndex * pageSize, 'size': pageSize}
-
-        #if 'sortActive' in param:
-        #    query_json['sort'] = [{param['sortActive']: {'order': param['sortOrder']}}]
-
-        app.logger.debug('ES Query: ' + str(query_json))
-
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
-        response = requests.session().post(url=search_url, json=query_json, headers=_http_headers).json()
-
-
-        if 'hits' in response:
-            data = []
-            for hit in response['hits']['hits']:
-                user = hit['_source']
-                user['id'] = hit['_id']
-                data.append(user)
-            return_data = {
-                'user_list': data,
-                'count': response['hits']['total']
-            }
-            return return_data, 200
-            # return data, 200
         return {'message': 'internal server error'}, 500
