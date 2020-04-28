@@ -13,6 +13,7 @@ from .problem_controller import api as prob_ns
 from .onlinejudge_controller import api as oj_ns
 from .user_controller import api as user_ns
 from .training_controller import api as train_ns
+from .team_controller import api as team_ns
 from extensions.flask_redis import redis_store
 
 blueprint = Blueprint('api', Config.APPNAME, url_prefix='/training')
@@ -28,6 +29,7 @@ api.add_namespace(prob_ns, path='/problem')
 api.add_namespace(cat_ns, path='/category')
 api.add_namespace(oj_ns, path='/oj')
 api.add_namespace(train_ns, path='/training')
+api.add_namespace(team_ns, path='/team')
 
 
 def create_app(instance_name):

@@ -7,6 +7,9 @@
     "user_id": {
       "type": "keyword"
     },
+    "user_handle": {
+      "type": "keyword"
+    },
     "remarks": {
       "type": "float"
     },

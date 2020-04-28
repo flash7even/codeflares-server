@@ -11,7 +11,8 @@ from jwt.exceptions import *
 
 api = Namespace('team', description='Namespace for team service')
 
-from core.team_services import add_team_member, delete_team_member, delete_all_users_from_team, get_all_users_from_team
+from core.team_services import add_team_member, delete_team_member, \
+    delete_all_users_from_team, get_all_users_from_team, search_teams
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -86,7 +87,6 @@ class TeamByID(Resource):
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, team_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
-        print(response)
         if 'found' in response:
             if response['found']:
                 data = response['_source']
@@ -108,7 +108,6 @@ class TeamByID(Resource):
 
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, team_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
-        print(response)
         if 'found' in response:
             if response['found']:
                 data = response['_source']
@@ -134,7 +133,6 @@ class TeamByID(Resource):
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, team_id)
         response = rs.delete(url=search_url, headers=_http_headers).json()
-        print(response)
         if 'result' in response:
             if response['result'] == 'deleted':
                 delete_all_users_from_team(team_id)
@@ -171,7 +169,7 @@ class CreateTeam(Resource):
             for member in member_list:
                 edge = {
                     'team_id': response['_id'],
-                    'user_id': member['user_id'],
+                    'user_handle': member['user_handle'],
                     'remarks': member['remarks']
                 }
                 add_team_member(edge)
@@ -198,7 +196,7 @@ class CreateTeam(Resource):
     def delete(self):
         app.logger.info('Delete team member method called')
         data = request.get_json()
-        response = delete_team_member(data['team_id'], data['user_id'])
+        response = delete_team_member(data['team_id'], data['user_handle'])
         app.logger.info('Delete team member method completed')
         return response, 201
 
@@ -211,33 +209,11 @@ class SearchTeam(Resource):
     @api.doc('search team based on post parameters')
     def post(self, page=0):
         app.logger.info('Team search method called')
-        rs = requests.session()
-        param = request.get_json()
-        query_json = {'query': {'match_all': {}}}
-
-        must = []
-        keyword_fields = ['team_leader_id', 'team_type']
-
-        for f in param:
-            if f in keyword_fields:
-                must.append({'term': {f: param[f]}})
-            else:
-                must.append({'match': {f: param[f]}})
-
-        if len(must) > 0:
-            query_json = {'query': {'bool': {'must': must}}}
-
-        query_json['from'] = page*_es_size
-        query_json['size'] = _es_size
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
-        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        if 'hits' in response:
-            item_list = []
-            for hit in response['hits']['hits']:
-                team = hit['_source']
-                team['id'] = hit['_id']
-                item_list.append(team)
-            app.logger.info('Team search method completed')
-            return item_list, 200
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return {'message': 'internal server error'}, 500
+        try:
+            param = request.get_json()
+            team_list = search_teams(param, page*_es_size, _es_size)
+            return {
+                'team_list': team_list
+            }, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
