@@ -91,7 +91,14 @@ class TeamByID(Resource):
             if response['found']:
                 data = response['_source']
                 data['id'] = response['_id']
-                data['user_list'] = get_all_users_from_team(team_id)
+                data['member_list'] = get_all_users_from_team(team_id)
+                data['rating'] = 1988
+                data['title'] = 'Candidate Master'
+                data['max_rating'] = 1988
+                data['solve_count'] = 890
+                data['follower'] = 921
+                data['following'] = 530
+
                 app.logger.info('Get team_details method completed')
                 return data, 200
             app.logger.warning('Team not found')
