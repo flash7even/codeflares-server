@@ -25,6 +25,9 @@
     "full_name": {
       "type": "text"
     },
+    "current_team_id": {
+      "type": "keyword"
+    },
     "codeforces_handle": {
       "type": "keyword"
     },

@@ -11,7 +11,7 @@ from jwt.exceptions import *
 
 api = Namespace('training', description='Namespace for training service')
 
-from models.training_model import individual_training_problem_list, individual_training_category_list
+from models.training_model import individual_training_problem_list, individual_training_category_list, category_skills
 
 @api.errorhandler(NoAuthorizationError)
 def handle_auth_error(e):
@@ -79,10 +79,12 @@ class IndividualTrainingModel(Resource):
         rs = requests.session()
         problems = individual_training_problem_list()
         categories = individual_training_category_list()
+        category_skill_list = category_skills()
 
         return {
             'problem_stat': problems,
-            'category_stat': categories
+            'category_stat': categories,
+            'category_skill_list': category_skill_list
         }
 
 
