@@ -11,3 +11,5 @@ flask_jwt_extended
 paho-mqtt
 redis
 redis-py-cluster
+beautifulsoup4
+pyppeteer
