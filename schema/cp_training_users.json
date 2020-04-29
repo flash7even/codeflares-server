@@ -5,7 +5,7 @@
       "type": "text"
     },
     "email": {
-      "type": "text"
+      "type": "keyword"
     },
     "mobile": {
       "type": "text"
@@ -24,6 +24,27 @@
     },
     "full_name": {
       "type": "text"
+    },
+    "codeforces_handle": {
+      "type": "keyword"
+    },
+    "codechef_handle": {
+      "type": "keyword"
+    },
+    "uva_handle": {
+      "type": "keyword"
+    },
+    "spoj_handle": {
+      "type": "keyword"
+    },
+    "lightoj_handle": {
+      "type": "keyword"
+    },
+    "atcoder_handle": {
+      "type": "keyword"
+    },
+    "hackerrank_handle": {
+      "type": "keyword"
     },
     "created_at": {
       "type": "long"
