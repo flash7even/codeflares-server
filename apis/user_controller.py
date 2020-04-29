@@ -8,6 +8,8 @@ from flask_jwt_extended.exceptions import *
 from jwt.exceptions import *
 from commons.jwt_helpers import access_required
 
+from core.user_services import synch_user_problem
+
 api = Namespace('user', description='user related services')
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -172,9 +174,10 @@ class CreateUser(Resource):
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
         should = [
             {'match': {'username': data['username']}},
-            {'match': {'email': data['email']}}
+            {'term': {'email': data['email']}}
         ]
         query_params = {'query': {'bool': {'should': should}}}
+
         response = rs.post(url=search_url, json=query_params, headers=_http_headers).json()
 
         if 'hits' in response:
@@ -201,8 +204,6 @@ class SearchUser(Resource):
     def post(self, page=0):
         app.logger.info('Search user API called')
         param = request.get_json()
-
-        print(param)
 
         must = []
 
@@ -242,3 +243,16 @@ class SearchUser(Resource):
             return data, 200
         app.logger.error('Elasticsearch down, response : ' + str(response))
         return {'message': 'internal server error'}, 500
+
+
+@api.route('/sync/<string:user_id>')
+class Sync(Resource):
+
+    @api.doc('Sync user by id')
+    def put(self, user_id):
+        app.logger.info('Get user API called, id: ' + str(user_id))
+        try:
+            synch_user_problem(user_id)
+            return {'message': 'success'}, 200
+        except Exception as e:
+            return {'message': 'Internal server error'}, 500

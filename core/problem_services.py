@@ -134,7 +134,7 @@ def search_problems(param, from_value, size_value):
     rs = requests.session()
 
     must = []
-    keyword_fields = ['problem_title', 'oj_name']
+    keyword_fields = ['problem_title', 'oj_name', 'problem_id']
 
     minimum_difficulty = 0
     maximum_difficulty = 100
@@ -171,7 +171,7 @@ def search_problems(param, from_value, size_value):
     if 'hits' in response:
         for hit in response['hits']['hits']:
             data = hit['_source']
-            data['problem_id'] = hit['_id']
+            data['id'] = hit['_id']
             dependency_list = search_problem_dependency_list(data['problem_id'])
             data['category_dependency_list'] = dependency_list['dependency_list']
             data['category_list_light'] = dependency_list['light_data']
@@ -187,7 +187,7 @@ def search_problems_light(param, from_value, size_value):
     rs = requests.session()
 
     must = []
-    keyword_fields = ['problem_title', 'oj_name']
+    keyword_fields = ['problem_title', 'oj_name', 'problem_id']
 
     minimum_difficulty = 0
     maximum_difficulty = 100
@@ -224,7 +224,7 @@ def search_problems_light(param, from_value, size_value):
     if 'hits' in response:
         for hit in response['hits']['hits']:
             data = hit['_source']
-            data['problem_id'] = hit['_id']
+            data['id'] = hit['_id']
             item_list.append(data)
         app.logger.info('Problem search method completed')
         return item_list
