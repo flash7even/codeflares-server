@@ -77,7 +77,6 @@ def handle_failed_user_claims_verification(e):
 @api.route('/<string:user_id>')
 class User(Resource):
 
-    @access_required(access='ALL')
     @api.doc('get user by id')
     def get(self, user_id):
         app.logger.info('Get user API called, id: ' + str(user_id))
@@ -98,7 +97,6 @@ class User(Resource):
         app.logger.error('Elasticsearch down')
         return response, 500
 
-    @access_required(access='ALL')
     @api.doc('update user by id')
     def put(self, user_id):
         ignore_fields = ['username', 'password']
@@ -106,6 +104,8 @@ class User(Resource):
         app.logger.info('Update user API called, id: ' + str(user_id))
         rs = requests.session()
         user_data = request.get_json()
+
+        print('user_data: ', json.dumps(user_data))
 
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, user_id)
         app.logger.debug('Elasticsearch query : ' + str(search_url))

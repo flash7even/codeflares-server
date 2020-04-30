@@ -28,6 +28,23 @@
     "current_team_id": {
       "type": "keyword"
     },
+    "settings": {
+      "current_team_id": {
+      "type": "keyword"
+      },
+      "show_contact_info": {
+        "type": "keyword"
+      },
+      "get_notification": {
+        "type": "keyword"
+      },
+      "get_email_updates": {
+        "type": "keyword"
+      },
+      "hide_problem_tags": {
+        "type": "keyword"
+      }
+    },
     "codeforces_handle": {
       "type": "keyword"
     },

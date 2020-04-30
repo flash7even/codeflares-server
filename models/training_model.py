@@ -60,7 +60,7 @@ def update_team_member_skills(team_id, root_categories):
         for algo in root_categories:
             skill_list.append(
                 {
-                    "algo_name": algo['category_name'],
+                    "algo_name": algo['category_title'],
                     "solve_count": random.randint(50, 200),
                     "skill_value": random.randint(50, 2500)
                 }
