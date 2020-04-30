@@ -1,4 +1,5 @@
 import time
+import json
 
 import requests
 from flask import current_app as app
@@ -11,7 +12,9 @@ from jwt.exceptions import *
 
 api = Namespace('training', description='Namespace for training service')
 
-from models.training_model import individual_training_problem_list, individual_training_category_list, category_skills, root_category_skills
+from models.training_model import individual_training_problem_list, individual_training_category_list, category_skills, root_category_skills, update_team_member_skills
+from core.team_services import get_team_details
+
 
 @api.errorhandler(NoAuthorizationError)
 def handle_auth_error(e):
@@ -81,8 +84,6 @@ class IndividualTrainingModel(Resource):
         category_skill_list = category_skills()
         root_category_skill_list = root_category_skills()
 
-        print('root_category_skill_list', root_category_skill_list)
-
         return {
             'problem_stat': problems,
             'category_stat': categories,
@@ -98,12 +99,21 @@ class TeamTrainingModel(Resource):
     @api.doc('get training model for currently logged in user')
     def get(self, team_id):
         app.logger.info('Get individual training model api called')
-        problems = individual_training_problem_list()
-        categories = individual_training_category_list()
-        category_skill_list = category_skills()
 
-        return {
-            'problem_stat': problems,
-            'category_stat': categories,
-            'category_skill_list': category_skill_list
-        }
+        try:
+            problems = individual_training_problem_list()
+            categories = individual_training_category_list()
+            category_skill_list = category_skills()
+            root_category_skill_list = root_category_skills()
+            team_details = update_team_member_skills(team_id, root_category_skill_list)
+
+            team_details['problem_stat'] = problems
+            team_details['category_stat'] = categories
+            team_details['category_skill_list'] = category_skill_list
+            team_details['root_category_skill_list'] = root_category_skill_list
+            
+            print('team_details: ', json.dumps(team_details))
+            return team_details
+        
+        except Exception as e:
+            return {'message': str(e)}, 500

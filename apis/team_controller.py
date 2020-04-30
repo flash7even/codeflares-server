@@ -12,7 +12,7 @@ from jwt.exceptions import *
 api = Namespace('team', description='Namespace for team service')
 
 from core.team_services import add_team_member, delete_team_member, \
-    delete_all_users_from_team, get_all_users_from_team, search_teams
+    delete_all_users_from_team, get_all_users_from_team, search_teams, get_team_details
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -84,27 +84,12 @@ class TeamByID(Resource):
     @api.doc('get team details by id')
     def get(self, team_id):
         app.logger.info('Get team_details method called')
-        rs = requests.session()
-        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, team_id)
-        response = rs.get(url=search_url, headers=_http_headers).json()
-        if 'found' in response:
-            if response['found']:
-                data = response['_source']
-                data['id'] = response['_id']
-                data['member_list'] = get_all_users_from_team(team_id)
-                data['rating'] = 1988
-                data['title'] = 'Candidate Master'
-                data['max_rating'] = 1988
-                data['solve_count'] = 890
-                data['follower'] = 921
-                data['following'] = 530
-
-                app.logger.info('Get team_details method completed')
-                return data, 200
-            app.logger.warning('Team not found')
-            return {'found': response['found']}, 404
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return response, 500
+        try:
+            team_info = get_team_details(team_id)
+            return team_info, 200
+        
+        except Exception as e:
+            return {'message': str(e)}, 500
 
     #@jwt_required
     @api.doc('update team by id')

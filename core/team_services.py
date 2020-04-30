@@ -11,6 +11,32 @@ _es_type = '_doc'
 _es_size = 100
 
 
+def get_team_details(team_id):
+    try:
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_team, _es_type, team_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                data['id'] = response['_id']
+                data['member_list'] = get_all_users_from_team(team_id)
+                data['rating'] = 1988
+                data['title'] = 'Candidate Master'
+                data['max_rating'] = 1988
+                data['solve_count'] = 890
+                data['follower'] = 921
+                data['following'] = 530
+                return data
+            app.logger.warning('Team not found')
+            raise Exception('Team not found')
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        raise Exception('Internal server error')
+    
+    except Exception as e:
+        raise Exception(e)
+
+
 def delete_all_users_from_team(team_id):
     rs = requests.session()
     must = [

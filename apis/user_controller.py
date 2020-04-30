@@ -199,7 +199,6 @@ class CreateUser(Resource):
 @api.route('/search/<int:page>')
 class SearchUser(Resource):
 
-    @access_required(access='ALL')
     @api.doc('search users based on post parameters')
     def post(self, page=0):
         app.logger.info('Search user API called')
@@ -240,7 +239,9 @@ class SearchUser(Resource):
 
                 data.append(user)
             app.logger.info('Search user API completed')
-            return data, 200
+            return {
+                'user_list': data
+            }
         app.logger.error('Elasticsearch down, response : ' + str(response))
         return {'message': 'internal server error'}, 500
 
