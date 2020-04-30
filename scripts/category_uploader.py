@@ -25,6 +25,15 @@ _http_headers = {'Content-Type': 'application/json'}
 ES_HOST = 'localhost:9200'
 
 
+def capitalize_text(name):
+    words = name.split('_')
+    cap_words = []
+    for word in words:
+        cap_words.append(word.capitalize())
+    cap_words = ' '.join(cap_words)
+    return cap_words
+
+
 def add_category(data):
     url = "http://localhost:5056/training/category/"
     response = rs.post(url=url, json=data, headers=_http_headers).json()
@@ -37,9 +46,20 @@ def category_extract():
     for i in range(0, len(data)):
         if data['category_root'][i]:
             category_root = data['category_root'][i]
+            root_json = {
+                "category_name": category_root,
+                "category_title": capitalize_text(category_root),
+                "category_root": 'root',
+                "category_root_title": 'Root',
+                "category_difficulty": 0,
+                "category_importance": 10
+            }
+            add_category(root_json)
         json_data = {
             "category_name": data['category_name'][i],
+            "category_title": capitalize_text(data['category_name'][i]),
             "category_root": category_root,
+            "category_root_title": capitalize_text(category_root),
             "category_difficulty": data['category_difficulty'][i],
             "category_importance": data['category_importance'][i]
         }

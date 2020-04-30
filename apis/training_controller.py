@@ -11,7 +11,7 @@ from jwt.exceptions import *
 
 api = Namespace('training', description='Namespace for training service')
 
-from models.training_model import individual_training_problem_list, individual_training_category_list, category_skills
+from models.training_model import individual_training_problem_list, individual_training_category_list, category_skills, root_category_skills
 
 @api.errorhandler(NoAuthorizationError)
 def handle_auth_error(e):
@@ -76,7 +76,28 @@ class IndividualTrainingModel(Resource):
     @api.doc('get training model for currently logged in user')
     def get(self):
         app.logger.info('Get individual training model api called')
-        rs = requests.session()
+        problems = individual_training_problem_list()
+        categories = individual_training_category_list()
+        category_skill_list = category_skills()
+        root_category_skill_list = root_category_skills()
+
+        print('root_category_skill_list', root_category_skill_list)
+
+        return {
+            'problem_stat': problems,
+            'category_stat': categories,
+            'category_skill_list': category_skill_list,
+            'root_category_skill_list': root_category_skill_list
+        }
+
+
+@api.route('/team/<string:team_id>')
+class TeamTrainingModel(Resource):
+
+    # @jwt_required
+    @api.doc('get training model for currently logged in user')
+    def get(self, team_id):
+        app.logger.info('Get individual training model api called')
         problems = individual_training_problem_list()
         categories = individual_training_category_list()
         category_skill_list = category_skills()
@@ -85,21 +106,4 @@ class IndividualTrainingModel(Resource):
             'problem_stat': problems,
             'category_stat': categories,
             'category_skill_list': category_skill_list
-        }
-
-
-@api.route('/team/')
-class IndividualTrainingModel(Resource):
-
-    # @jwt_required
-    @api.doc('get training model for currently logged in user')
-    def get(self):
-        app.logger.info('Get individual training model api called')
-        rs = requests.session()
-        problems = individual_training_problem_list()
-        categories = individual_training_category_list()
-
-        return {
-            'problem_stat': problems,
-            'category_stat': categories
         }

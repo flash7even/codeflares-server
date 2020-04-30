@@ -2,13 +2,16 @@
   "dynamic": "strict",
   "properties": {
     "category_name": {
-      "type": "text"
+      "type": "keyword"
     },
     "category_title": {
-      "type": "keyword"
+      "type": "text"
     },
     "category_root": {
       "type": "keyword"
+    },
+    "category_root_title": {
+      "type": "text"
     },
     "category_description": {
       "type": "text"

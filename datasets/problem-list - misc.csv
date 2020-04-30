@@ -1,0 +1,14 @@
+problem_name,problem_id,problem_difficulty,problem_significance,oj_name,source_link,category_id_1,category_id_2,category_id_3,category_id_4
+Choosing Symbol Pairs,50/B,1.5,,Codeforces,https://codeforces.com/problemset/problem/50/B,"implementation,3","basic_permutation_combination,7",,
+Email address,41/C,3.5,,Codeforces,https://codeforces.com/problemset/problem/41/C,"implementation,10",,,
+Travelling Salesman and Special Numbers,914/C,6,2,Codeforces,https://codeforces.com/problemset/problem/914/C,"basic_math,5.5","digit_dp,4",,
+Factory,485/A,3,2,Codeforces,https://codeforces.com/problemset/problem/485/A,"modular_arithmetic,6","implementation,3","observation,2",
+SwapSort,489/A,2,,Codeforces,https://codeforces.com/problemset/problem/489/A,"implementation,6","observation,4","ad_hoc,3",
+Newspaper Headline,91/A,4,2,Codeforces,https://codeforces.com/problemset/problem/91/A,"implementation,7","observation,6","ad_hoc,5","basic_math,5.5"
+Easy Number Challenge,236/B,3,,Codeforces,https://codeforces.com/problemset/problem/236/B,"implementation,5","factorization,5","divisor_theory,6",
+Fortune Telling,59/B,2,,Codeforces,https://codeforces.com/problemset/problem/59/B,"observation,2","ad_hoc,3",,
+Code Parsing,255/B,3.5,1,Codeforces,https://codeforces.com/problemset/problem/255/B,"observation,7.5",,,
+Prime Permutation,123/A,4.5,2,Codeforces,https://codeforces.com/problemset/problem/123/A,"sieve,5","implementation,8","observation,6",
+Vitaly and Strings,518/A,2.5,3.5,Codeforces,https://codeforces.com/problemset/problem/518/A,"implementation,5","observation,3.5",,
+Array,224/B,2.5,6,Codeforces,https://codeforces.com/problemset/problem/224/B,"ad_hoc,5","observation,5",,
+Young Photographer,14/B,1,2.5,Codeforces,https://codeforces.com/problemset/problem/14/B,"ad_hoc,7",,,

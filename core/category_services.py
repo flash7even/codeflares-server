@@ -27,7 +27,7 @@ def get_category_details(cat_id):
 def get_category_id_from_name(category_name):
     rs = requests.session()
     must = [
-        {'match': {'category_name': category_name}}
+        {'term': {'category_name': category_name}}
     ]
     query_json = {'query': {'bool': {'must': must}}}
     query_json['size'] = 1
@@ -112,6 +112,13 @@ def search_categories(param, from_value, size_value):
     if len(must) > 0:
         query_json = {'query': {'bool': {'must': must}}}
 
+
+    if 'category_root' not in param:
+        if 'query' in query_json and 'bool' in query_json['query']:
+            query_json['query']['bool']['must_not'] = [{'term': {'category_root': 'root'}}]
+        else:
+            query_json = {'query': {'bool': {'must_not': [{'term': {'category_root': 'root'}}]}}}
+
     query_json['from'] = from_value
     query_json['size'] = size_value
     print('query_json: ', json.dumps(query_json))
@@ -136,7 +143,7 @@ def search_categories_light(param, from_value, size_value):
     rs = requests.session()
 
     must = []
-    keyword_fields = ['category_title', 'category_root']
+    keyword_fields = ['category_name', 'category_root']
 
     minimum_difficulty = 0
     maximum_difficulty = 100
@@ -157,11 +164,19 @@ def search_categories_light(param, from_value, size_value):
         else:
             if param[f]:
                 must.append({'match': {f: param[f]}})
-
+    
     must.append({"range": {"category_difficulty": {"gte": minimum_difficulty, "lte": maximum_difficulty}}})
 
     if len(must) > 0:
         query_json = {'query': {'bool': {'must': must}}}
+
+
+    if 'category_root' not in param:
+        if 'query' in query_json and 'bool' in query_json['query']:
+            query_json['query']['bool']['must_not'] = [{'term': {'category_root': 'root'}}]
+        else:
+            query_json = {'query': {'bool': {'must_not': [{'term': {'category_root': 'root'}}]}}}
+
 
     query_json['from'] = from_value
     query_json['size'] = size_value
