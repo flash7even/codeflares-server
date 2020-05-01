@@ -10,6 +10,9 @@
     "user_handle": {
       "type": "keyword"
     },
+    "status": {
+      "type": "keyword"
+    },
     "remarks": {
       "type": "float"
     },

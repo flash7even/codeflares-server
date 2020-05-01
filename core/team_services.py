@@ -12,10 +12,13 @@ _es_size = 100
 
 
 def get_team_details(team_id):
+    print('get_team_details: ', team_id)
     try:
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_team, _es_type, team_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
+        print('response: ', json.dumps(response))
+
         if 'found' in response:
             if response['found']:
                 data = response['_source']
@@ -38,19 +41,19 @@ def get_team_details(team_id):
 
 
 def delete_all_users_from_team(team_id):
-    rs = requests.session()
-    must = [
-        {'term': {'team_id': team_id}},
-    ]
-    query_json = {'query': {'bool': {'must': must}}}
-    query_json['size'] = _es_size
-    search_url = 'http://{}/{}/{}/_delete_by_query'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type)
-    response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+    try:
+        rs = requests.session()
+        must = [
+            {'term': {'team_id': team_id}},
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = _es_size
+        search_url = 'http://{}/{}/{}/_delete_by_query'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        return response
 
-    return {
-        'code': 200,
-        'body': response
-    }
+    except Exception as e:
+        raise Exception(e)
 
 
 def get_all_users_from_team(team_id):
@@ -69,12 +72,15 @@ def get_all_users_from_team(team_id):
         for hit in response['hits']['hits']:
             data = hit['_source']
             data['id'] = hit['_id']
+            if 'status' not in data:
+                data['status'] = 'pending'
             item_list.append(data)
 
     return item_list
 
 
 def get_user_team_edge(team_id, user_handle):
+    print('get_user_team_edge: ', team_id, user_handle)
     rs = requests.session()
     must = [
         {'term': {'team_id': team_id}},
@@ -82,6 +88,7 @@ def get_user_team_edge(team_id, user_handle):
     ]
     query_json = {'query': {'bool': {'must': must}}}
     query_json['size'] = 1
+    print('query: ', json.dumps(query_json))
     search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type)
     response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
 
@@ -94,67 +101,82 @@ def get_user_team_edge(team_id, user_handle):
 
 
 def add_team_member(data):
-    app.logger.info('add_team_members method called')
-    rs = requests.session()
+    try:
+        app.logger.info('add_team_members method called')
+        rs = requests.session()
 
-    resp = get_user_team_edge(data['team_id'], data['user_handle'])
+        resp = get_user_team_edge(data['team_id'], data['user_handle'])
 
-    if resp is not None:
-        return {
-            'code': 400,
-            'body': resp
-        }
+        if resp is not None:
+            raise Exception('Member already added')
 
-    data['created_at'] = int(time.time())
-    data['updated_at'] = int(time.time())
+        data['created_at'] = int(time.time())
+        data['updated_at'] = int(time.time())
 
-    post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type)
-    response = rs.post(url=post_url, json=data, headers=_http_headers).json()
+        post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type)
+        response = rs.post(url=post_url, json=data, headers=_http_headers).json()
 
-    if 'result' in response and response['result'] == 'created':
-        app.logger.info('add_team_members method completed')
-        return {
-            'code': 201,
-            'body': response
-        }
-    app.logger.error('Elasticsearch down, response: ' + str(response))
-    return {
-            'code': 500,
-            'body': response
-        }
+        if 'result' in response and response['result'] == 'created':
+            app.logger.info('add_team_members method completed')
+            return response
+
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        raise Exception('Internal server error')
+
+    except Exception as e:
+        raise e
+
+
+def update_team_member(data):
+    try:
+        app.logger.info('update_team_member method called')
+        print('data: ', json.dumps(data))
+        rs = requests.session()
+
+        resp = get_user_team_edge(data['team_id'], data['user_handle'])
+
+        if resp is None:
+            raise Exception('Member not found')
+
+        resp_data = resp['_source']
+        resp_data['status'] = data['status']
+        resp_data['updated_at'] = int(time.time())
+
+        url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type, resp['_id'])
+        response = rs.put(url=url, json=resp_data, headers=_http_headers).json()
+
+        if 'result' in response:
+            app.logger.info('update_team_member method completed')
+            return response
+
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        raise Exception('Internal server error')
+
+    except Exception as e:
+        raise e
 
 
 def delete_team_member(team_id, user_handle):
-    app.logger.info('add_team_members method called')
-    rs = requests.session()
-    resp = get_user_team_edge(team_id, user_handle)
+    try:
+        app.logger.info('delete_team_member method called')
+        rs = requests.session()
+        resp = get_user_team_edge(team_id, user_handle)
 
-    if resp is None:
-        return {
-            'code': 400,
-            'body': resp
-        }
+        if resp is None:
+            raise Exception('Member not found')
 
-    url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type, resp['_id'])
-    response = rs.delete(url=url, headers=_http_headers).json()
+        url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type, resp['_id'])
+        response = rs.delete(url=url, headers=_http_headers).json()
 
-    if 'result' in response:
-        if response['result'] == 'deleted':
-            app.logger.info('Delete delete_team_member method completed')
-            return {
-                'code': 200,
-                'body': response['result']
-            }
-        else:
-            return {
-                'code': 400,
-                'body': response['result']
-            }
-    app.logger.error('Elasticsearch down, response: ' + str(response))
-    return {
-        'code': 500,
-        'body': response
-    }
+        if 'result' in response:
+            app.logger.info('delete_team_member method completed')
+            return response
+
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        raise Exception('Internal server error')
+
+    except Exception as e:
+        raise e
 
 
 def search_teams(param, from_val, size_val):
@@ -187,6 +209,46 @@ def search_teams(param, from_val, size_val):
                 team['id'] = hit['_id']
                 member_edge_list = get_all_users_from_team(team['id'])
                 team['member_list'] = member_edge_list
+                item_list.append(team)
+            print('item_list', json.dumps(item_list))
+            app.logger.info('Team search method completed')
+            return item_list
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        raise Exception('Internal server error')
+
+    except Exception as e:
+        raise Exception('Internal server error')
+
+
+def search_teams_for_user(user_handle, param):
+    try:
+        app.logger.info('search_teams_for_user called')
+        rs = requests.session()
+
+        must = []
+        must.append({'term': {'user_handle': user_handle}})
+        for p in param:
+            must.append({'term': {p: param[p]}})
+
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['query']['bool']['must_not'] = [
+            {'term': {'status': 'rejected'}},
+            {'term': {'status': 'removed'}},
+            {'term': {'status': 'deleted'}}
+        ]
+
+        print('query_json: ', json.dumps(query_json))
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        print('response: ', json.dumps(response))
+        if 'hits' in response:
+            item_list = []
+            for hit in response['hits']['hits']:
+                team_edge = hit['_source']
+                print('Search details for: ', json.dumps(team_edge))
+                team = get_team_details(team_edge['team_id'])
+                print('Found Details')
+                team['status'] = team_edge.get('status', 'pending')
                 item_list.append(team)
             print('item_list', json.dumps(item_list))
             app.logger.info('Team search method completed')
