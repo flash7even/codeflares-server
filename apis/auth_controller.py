@@ -8,6 +8,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token, jwt_re
 from flask_jwt_extended.exceptions import *
 from flask_restplus import Resource, Namespace
 from jwt.exceptions import *
+from commons.jwt_helpers import access_required
 
 from extensions.flask_redis import redis_store
 
@@ -141,7 +142,7 @@ class Logout(Resource):
     @jwt_required
     def post(self):
         app.logger.info("logout at called")
-        return 'alright', 200
+        return {'message': 'alright'}, 200
         jti = get_raw_jwt()['jti']
         jti = redis_store.redis_prefix_jwt_token + jti
         redis_store.connection.set(jti, 1 , timedelta(minutes=app.config['JWT_ACCESS_TOKEN_EXPIRES_MINUTES']))

@@ -8,6 +8,7 @@ from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended.exceptions import *
 from flask_jwt_extended import jwt_required
 from jwt.exceptions import *
+from commons.jwt_helpers import access_required
 
 api = Namespace('problem', description='Namespace for problem service')
 
@@ -80,7 +81,6 @@ def handle_failed_user_claims_verification(e):
 @api.route('/<string:problem_id>')
 class ProblemByID(Resource):
 
-    #@jwt_required
     @api.doc('get problem details by id')
     def get(self, problem_id):
         app.logger.info('Get problem_details api called')
@@ -99,7 +99,7 @@ class ProblemByID(Resource):
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('update problem by id')
     def put(self, problem_id):
         app.logger.info('Update problem_details api called')
@@ -127,7 +127,7 @@ class ProblemByID(Resource):
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('delete problem by id')
     def delete(self, problem_id):
         app.logger.info('Delete problem_details api called')
@@ -148,7 +148,7 @@ class ProblemByID(Resource):
 @api.route('/')
 class CreateProblem(Resource):
 
-    #@jwt_required
+    #@access_required(access="ALL")
     @api.doc('create problem')
     def post(self):
         app.logger.info('Create problem api called')
@@ -187,7 +187,6 @@ class CreateProblem(Resource):
 @api.route('/search/<int:page>')
 class SearchProblem(Resource):
 
-    #@jwt_required
     @api.doc('search problem based on post parameters')
     def post(self, page=0):
         app.logger.info('Problem search api called')
@@ -203,7 +202,7 @@ class SearchProblem(Resource):
 @api.route('/user')
 class CreateProblem(Resource):
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('create problem user status')
     def post(self):
         app.logger.info('Create problem user api called')
