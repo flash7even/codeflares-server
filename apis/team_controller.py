@@ -153,6 +153,11 @@ class CreateTeam(Resource):
     def post(self):
         try:
             app.logger.info('Create team method called')
+
+            print('identity: ', get_jwt_identity())
+
+            current_user = get_jwt_identity().get('id')
+            print('current_user: ', current_user)
             rs = requests.session()
             data = request.get_json()
 
@@ -163,6 +168,8 @@ class CreateTeam(Resource):
             if 'member_list' in data:
                 member_list = data['member_list']
                 data.pop('member_list', None)
+            
+            data['team_leader_id'] = current_user
 
             post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
             response = rs.post(url=post_url, json=data, headers=_http_headers).json()
