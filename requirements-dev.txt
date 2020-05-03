@@ -13,3 +13,4 @@ redis
 redis-py-cluster
 beautifulsoup4
 pyppeteer
+selenium

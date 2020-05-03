@@ -7,7 +7,7 @@ login_url = 'http://www.lightoj.com/login_main.php'
 user_details_url = 'http://www.lightoj.com/volume_userstat.php?user_id='
 
 
-class LightScrapper:
+class LightOJScrapper:
 
     def get_user_info(self, username, credentials):
 
@@ -62,7 +62,7 @@ class LightScrapper:
 
 if __name__ == '__main__':
     print('START RUNNING SPOJ SCRAPPER SCRIPT\n')
-    loj_scrapper = LightScrapper()
+    loj_scrapper = LightOJScrapper()
     credentials = {
         'username': 'tarangokhan77@gmail.com',
         'password': 'HeLLo@WoRLD2014'
