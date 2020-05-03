@@ -8,6 +8,7 @@ from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended.exceptions import *
 from flask_jwt_extended import jwt_required
 from jwt.exceptions import *
+from commons.jwt_helpers import access_required
 
 api = Namespace('team', description='Namespace for team service')
 
@@ -80,7 +81,6 @@ def handle_failed_user_claims_verification(e):
 @api.route('/<string:team_id>')
 class TeamByID(Resource):
 
-    #@jwt_required
     @api.doc('get team details by id')
     def get(self, team_id):
         app.logger.info('Get team_details method called')
@@ -92,7 +92,7 @@ class TeamByID(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('update team by id')
     def put(self, team_id):
         try:
@@ -123,7 +123,7 @@ class TeamByID(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('delete team by id')
     def delete(self, team_id):
         try:
@@ -148,7 +148,7 @@ class TeamByID(Resource):
 @api.route('/')
 class CreateTeam(Resource):
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('create team')
     def post(self):
         try:
@@ -197,7 +197,7 @@ class CreateTeam(Resource):
 @api.route('/member/')
 class CreateTeam(Resource):
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('add team member')
     def post(self):
         try:
@@ -210,7 +210,7 @@ class CreateTeam(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('update team member')
     def put(self):
         try:
@@ -223,7 +223,7 @@ class CreateTeam(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('delete team member')
     def delete(self):
         try:
@@ -241,7 +241,6 @@ class CreateTeam(Resource):
 @api.route('/search/<int:page>')
 class SearchTeam(Resource):
 
-    #@jwt_required
     @api.doc('search team based on post parameters')
     def post(self, page=0):
         app.logger.info('Team search method called')
@@ -258,7 +257,7 @@ class SearchTeam(Resource):
 @api.route('/search/user/<string:user_handle>')
 class SearchTeamForUser(Resource):
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('search team based on post parameters')
     def post(self, user_handle):
         app.logger.info('Team search method called')

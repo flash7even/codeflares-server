@@ -8,6 +8,7 @@ from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended.exceptions import *
 from flask_jwt_extended import jwt_required
 from jwt.exceptions import *
+from commons.jwt_helpers import access_required
 
 api = Namespace('category', description='Namespace for category service')
 
@@ -79,7 +80,6 @@ def handle_failed_user_claims_verification(e):
 @api.route('/<string:category_id>')
 class CategoryByID(Resource):
 
-    #@jwt_required
     @api.doc('get category details by id')
     def get(self, category_id):
         app.logger.info('Get category_details api called')
@@ -98,7 +98,7 @@ class CategoryByID(Resource):
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('update category by id')
     def put(self, category_id):
         app.logger.info('Update category_details api called')
@@ -126,7 +126,7 @@ class CategoryByID(Resource):
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('delete category by id')
     def delete(self, category_id):
         app.logger.info('Delete category_details api called')
@@ -147,7 +147,7 @@ class CategoryByID(Resource):
 @api.route('/')
 class CreateCategory(Resource):
 
-    #@jwt_required
+    #@access_required(access="ALL")
     @api.doc('create category')
     def post(self):
         app.logger.info('Create category api called')
@@ -185,7 +185,7 @@ class CreateCategory(Resource):
 @api.route('/dependency')
 class CreateCategory(Resource):
 
-    #@jwt_required
+    #@access_required(access="ALL")
     @api.doc('add category dependency')
     def post(self):
         app.logger.info('Add category dependency api called')
@@ -215,7 +215,6 @@ class CreateCategory(Resource):
 @api.route('/search/<int:page>')
 class SearchCategory(Resource):
 
-    #@jwt_required
     @api.doc('search category based on post parameters')
     def post(self, page=0):
         app.logger.info('Category search api called')

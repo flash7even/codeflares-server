@@ -8,6 +8,7 @@ from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended.exceptions import *
 from flask_jwt_extended import jwt_required
 from jwt.exceptions import *
+from commons.jwt_helpers import access_required
 
 api = Namespace('onlinejudge', description='Namespace for onlinejudge service')
 
@@ -77,7 +78,6 @@ def handle_failed_user_claims_verification(e):
 @api.route('/<string:onlinejudge_id>')
 class OnlinejudgeByID(Resource):
 
-    #@jwt_required
     @api.doc('get onlinejudge details by id')
     def get(self, onlinejudge_id):
         app.logger.info('Get onlinejudge_details method called')
@@ -96,7 +96,7 @@ class OnlinejudgeByID(Resource):
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('update onlinejudge by id')
     def put(self, onlinejudge_id):
         app.logger.info('Update onlinejudge_details method called')
@@ -124,7 +124,7 @@ class OnlinejudgeByID(Resource):
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('delete onlinejudge by id')
     def delete(self, onlinejudge_id):
         app.logger.info('Delete onlinejudge_details method called')
@@ -145,7 +145,7 @@ class OnlinejudgeByID(Resource):
 @api.route('/')
 class CreateOnlinejudge(Resource):
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('create onlinejudge')
     def post(self):
         app.logger.info('Create onlinejudge method called')
@@ -170,7 +170,6 @@ class CreateOnlinejudge(Resource):
 @api.route('/search/<int:page>')
 class SearchOnlinejudge(Resource):
 
-    #@jwt_required
     @api.doc('search onlinejudge based on post parameters')
     def post(self, page=0):
         app.logger.info('Onlinejudge search method called')

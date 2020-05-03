@@ -97,6 +97,7 @@ class User(Resource):
         app.logger.error('Elasticsearch down')
         return response, 500
 
+    @access_required(access="ALL")
     @api.doc('update user by id')
     def put(self, user_id):
         ignore_fields = ['username', 'password']
@@ -157,7 +158,6 @@ class CreateUser(Resource):
                 raise KeyError('Mandatory field missing')
         return json_data
 
-    #@access_required(access="ALL")
     @api.doc('create new user')
     def post(self):
         app.logger.info('Create user API called')
@@ -199,6 +199,7 @@ class CreateUser(Resource):
 @api.route('/search/<int:page>')
 class SearchUser(Resource):
 
+    @access_required(access="ALL")
     @api.doc('search users based on post parameters')
     def post(self, page=0):
         app.logger.info('Search user API called')
@@ -249,6 +250,7 @@ class SearchUser(Resource):
 @api.route('/sync/<string:user_id>')
 class Sync(Resource):
 
+    @access_required(access="ALL")
     @api.doc('Sync user by id')
     def put(self, user_id):
         app.logger.info('Get user API called, id: ' + str(user_id))

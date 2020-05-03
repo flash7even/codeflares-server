@@ -9,6 +9,7 @@ from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended.exceptions import *
 from flask_jwt_extended import jwt_required
 from jwt.exceptions import *
+from commons.jwt_helpers import access_required
 
 api = Namespace('training', description='Namespace for training service')
 
@@ -75,7 +76,7 @@ def handle_failed_user_claims_verification(e):
 @api.route('/individual/')
 class IndividualTrainingModel(Resource):
 
-    #@jwt_required
+    @access_required(access="ALL")
     @api.doc('get training model for currently logged in user')
     def get(self):
         app.logger.info('Get individual training model api called')
@@ -95,7 +96,7 @@ class IndividualTrainingModel(Resource):
 @api.route('/team/<string:team_id>')
 class TeamTrainingModel(Resource):
 
-    # @jwt_required
+    @access_required(access="ALL")
     @api.doc('get training model for currently logged in user')
     def get(self, team_id):
         app.logger.info('Get individual training model api called')
