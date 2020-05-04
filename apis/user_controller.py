@@ -8,7 +8,7 @@ from flask_jwt_extended.exceptions import *
 from jwt.exceptions import *
 from commons.jwt_helpers import access_required
 
-from core.user_services import synch_user_problem, search_user
+from core.user_services import synch_user_problem, search_user, get_user_details, get_user_rating_history
 
 api = Namespace('user', description='user related services')
 
@@ -81,23 +81,8 @@ class User(Resource):
     def get(self, user_id):
         try:
             app.logger.info('Get user API called, id: ' + str(user_id))
-            rs = requests.session()
-
-            search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, user_id)
-            app.logger.debug('Elasticsearch query : ' + str(search_url))
-            response = rs.get(url=search_url, headers=_http_headers).json()
-            app.logger.debug('Elasticsearch response :' + str(response))
-            if 'found' in response:
-                if response['found']:
-                    user = response['_source']
-                    user['id'] = response['_id']
-                    app.logger.info('Get user API completed')
-                    return user, 200
-                app.logger.warning('User not found')
-                return {'found': response['found']}, 404
-            app.logger.error('Elasticsearch down')
-            return response, 500
-
+            data = get_user_details(user_id)
+            data['rating_history'] = get_user_rating_history(user_id)
         except Exception as e:
             return {'message': str(e)}, 500
 
