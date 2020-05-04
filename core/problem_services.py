@@ -96,14 +96,17 @@ def add_user_problem_status(user_id, problem_id, status):
 
 
 def search_problem_dependency_list(problem_id):
+    print('search_problem_dependency_list: ', problem_id)
     rs = requests.session()
     must = [
         {'term': {'problem_id': problem_id}}
     ]
     query_json = {'query': {'bool': {'must': must}}}
     query_json['size'] = _es_size
+    print(query_json)
     search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_category, _es_type)
     response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+    print(response)
     item_list = []
     light_data = None
     if 'hits' in response:
@@ -172,7 +175,7 @@ def search_problems(param, from_value, size_value):
         for hit in response['hits']['hits']:
             data = hit['_source']
             data['id'] = hit['_id']
-            dependency_list = search_problem_dependency_list(data['problem_id'])
+            dependency_list = search_problem_dependency_list(data['id'])
             data['category_dependency_list'] = dependency_list['dependency_list']
             data['category_list_light'] = dependency_list['light_data']
             item_list.append(data)

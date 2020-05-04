@@ -1,14 +1,71 @@
 import time
 import json
 import requests
+import datetime
 from flask import current_app as app
 
 _http_headers = {'Content-Type': 'application/json'}
+
+from core.user_services import search_user
+from scrappers.codeforces_scrapper import CodeforcesScrapper
 
 _es_index_user_team_edge = 'cp_training_user_team_edges'
 _es_index_team = 'cp_training_teams'
 _es_type = '_doc'
 _es_size = 100
+
+
+def get_team_rating_history(team_id):
+    return [
+        {
+            "date": {
+                "year": 2013, "month": 1, "day": 16
+            },
+            "rating": 1408
+        },
+        {
+            "date": {
+                "year": 2013, "month": 3, "day": 4
+            },
+            "rating": 1520
+        },
+        {
+            "date": {
+                "year": 2013, "month": 5, "day": 8
+            },
+            "rating": 1780
+        },
+        {
+            "date": {
+                "year": 2013, "month": 9, "day": 22
+            },
+            "rating": 1710
+        },
+        {
+            "date": {
+                "year": 2013, "month": 12, "day": 5
+            },
+            "rating": 1812
+        },
+        {
+            "date": {
+                "year": 2014, "month": 2, "day": 6
+            },
+            "rating": 1730
+        },
+        {
+            "date": {
+                "year": 2014, "month": 3, "day": 18
+            },
+            "rating": 1905
+        },
+        {
+            "date": {
+                "year": 2014, "month": 4, "day": 22
+            },
+            "rating": 2070
+        }
+    ]
 
 
 def get_team_details(team_id):
@@ -30,6 +87,7 @@ def get_team_details(team_id):
                 data['solve_count'] = 890
                 data['follower'] = 921
                 data['following'] = 530
+                data['rating_history'] = get_team_rating_history(team_id)
                 return data
             app.logger.warning('Team not found')
             raise Exception('Team not found')
@@ -258,3 +316,78 @@ def search_teams_for_user(user_handle, param):
 
     except Exception as e:
         raise Exception('Internal server error')
+
+
+def get_rating_history_codeforces(team_id):
+    members = get_all_users_from_team(team_id)
+    handle_list = []
+    handle_wise_rating = []
+    history_list = []
+    cf_scrapper = CodeforcesScrapper()
+
+    for member in members:
+        print('member details: ', member)
+        user_handle = member['user_handle']
+        matched_user_list = search_user({'username': user_handle}, 0, 1)
+        if len(matched_user_list) > 0:
+            user_details = matched_user_list[0]
+            print('   user details: ', user_details)
+            cf_handle = user_details.get('codeforces_handle', None)
+            if cf_handle:
+                rating_history = cf_scrapper.get_user_rating_history(cf_handle)
+                handle_list.append({'user_handle': user_handle})
+                history_list.append(rating_history)
+
+    date_list = []
+
+    for idx in range(0, len(history_list)):
+        history = history_list[idx]
+        for contest in history:
+            d = contest['ratingUpdateTimeSeconds']
+            if d not in date_list:
+                date_list.append(d)
+
+    date_list.sort()
+
+    for history in history_list:
+        date_list_len = len(date_list)
+        idx = 0
+        rating_list = []
+
+        for c_idx in range(0, len(history)):
+            contest = history[c_idx]
+            contest_time = contest['ratingUpdateTimeSeconds']
+            effect_end = date_list[len(date_list)-1]
+            if c_idx+1 < len(history):
+                effect_end = history[c_idx+1]['ratingUpdateTimeSeconds']
+            while idx < date_list_len:
+                if date_list[idx] <= effect_end:
+                    rating_list.append({'rating': contest['newRating']})
+                    idx += 1
+                else:
+                    break
+
+        handle_wise_rating.append(rating_list)
+
+    rating_stat = []
+    for date_idx in range(0, len(date_list)):
+        day = datetime.date.fromtimestamp(date_list[date_idx])
+
+        data = {
+            'date': {
+                "year": day.year,
+                "month": day.month,
+                "day": day.day
+            },
+            'rating_list': []
+        }
+
+        for c_idx in range(0, len(handle_wise_rating)):
+            data['rating_list'].append(handle_wise_rating[c_idx][date_idx])
+
+        rating_stat.append(data)
+
+    return {
+        'handle_list': handle_list,
+        'history': rating_stat
+    }

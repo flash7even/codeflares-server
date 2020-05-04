@@ -83,3 +83,48 @@ def synch_user_problem(user_id):
 
     except Exception as e:
         raise Exception(e)
+
+
+def search_user(param, from_val, to_val):
+    try:
+        must = []
+
+        text_fields = ['username', 'email', 'mobile']
+        keyword_fields = ['user_role']
+
+        for k in text_fields:
+            if k in param:
+                must.append({'match': {k: param[k]}})
+
+        for k in keyword_fields:
+            if k in param:
+                must.append({'term': {k: param[k]}})
+
+        query_json = {'query': {'bool': {'must': must}}}
+
+        query_json['from'] = from_val
+        query_json['size'] = to_val
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user, _es_type)
+        response = requests.session().post(url=search_url, json=query_json, headers=_http_headers).json()
+
+        if 'hits' in response:
+            data = []
+            for hit in response['hits']['hits']:
+                user = hit['_source']
+                user['id'] = hit['_id']
+
+                user['rating'] = 1988
+                user['title'] = 'Candidate Master'
+                user['max_rating'] = 1988
+                user['solve_count'] = 890
+                user['follower'] = 921
+                user['following'] = 530
+
+                data.append(user)
+            app.logger.info('Search user API completed')
+            return data
+        app.logger.error('Elasticsearch down, response : ' + str(response))
+        raise Exception('Internal server error')
+
+    except Exception as e:
+        raise e

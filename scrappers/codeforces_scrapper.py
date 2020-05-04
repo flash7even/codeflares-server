@@ -9,6 +9,8 @@ _http_headers = {'Content-Type': 'application/json'}
 
 class CodeforcesScrapper:
 
+    rating_history_url = 'https://codeforces.com/api/user.rating?handle='
+
     def get_user_info(self, username):
         rs = requests.session()
         url = f'http://codeforces.com/api/user.status?handle={username}&from=1&count=1000000'
@@ -23,13 +25,11 @@ class CodeforcesScrapper:
                 if problem not in solved_problems:
                     solved_problems.append(problem)
 
-
-        return {
-            'platform': 'codeforces',
-            'user_name': username,
-            'solved_count': len(solved_problems),
-            'solved_problems': solved_problems
-        }
+    def get_user_rating_history(self, username):
+        rs = requests.session()
+        url = self.rating_history_url + username
+        rating_history = rs.get(url=url, headers=_http_headers).json()
+        return rating_history['result']
 
 
 if __name__ == '__main__':

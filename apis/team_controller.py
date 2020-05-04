@@ -13,7 +13,8 @@ from commons.jwt_helpers import access_required
 api = Namespace('team', description='Namespace for team service')
 
 from core.team_services import add_team_member, delete_team_member, \
-    delete_all_users_from_team, get_all_users_from_team, search_teams_for_user, get_team_details, update_team_member, search_teams
+    delete_all_users_from_team, get_all_users_from_team,\
+    search_teams_for_user, get_team_details, update_team_member, search_teams, get_rating_history_codeforces
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -275,5 +276,21 @@ class SearchTeamForUser(Resource):
             return {
                 'team_list': team_list
             }, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/rating-history/<string:team_id>/<string:platform>')
+class RatingHistoryOnlineJudge(Resource):
+
+    # @access_required(access="ALL")
+    @api.doc('get rating history')
+    def get(self, team_id, platform):
+        app.logger.info('Team search method called')
+        try:
+            if platform == "codeforces":
+                result = get_rating_history_codeforces(team_id)
+                return result
+            return {}
         except Exception as e:
             return {'message': str(e)}, 500
