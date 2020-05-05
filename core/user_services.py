@@ -84,7 +84,7 @@ def get_user_details(user_id):
                 return data
         raise Exception('User not found')
     except Exception as e:
-        raise Exception(e)
+        raise e
 
 
 def sync_problems(user_id, problem_list):
@@ -97,7 +97,7 @@ def sync_problems(user_id, problem_list):
             add_user_problem_status(user_id, problem_id, 'SOLVED')
 
     except Exception as e:
-        raise Exception(e)
+        raise e
 
 
 def synch_user_problem(user_id):
@@ -135,7 +135,7 @@ def synch_user_problem(user_id):
                 sync_problems(user_id, problem_stat['solved_problems'])
 
     except Exception as e:
-        raise Exception(e)
+        raise e
 
 
 def search_user(param, from_val, to_val):

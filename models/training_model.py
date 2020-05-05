@@ -7,7 +7,7 @@ from flask import current_app as app
 _http_headers = {'Content-Type': 'application/json'}
 
 from core.problem_services import search_problems_light
-from core.category_services import search_categories_light
+from core.category_services import search_categories
 from core.team_services import get_team_details
 
 _es_size = 500
@@ -21,7 +21,7 @@ def individual_training_problem_list():
 
 
 def individual_training_category_list():
-    category_list = search_categories_light({}, 0, 5)
+    category_list = search_categories({}, 0, 5)
     for category in category_list:
         category['relevant_score'] = random.randint(50, 100)
         category['skill_value'] = random.randint(50, 2200)
@@ -31,7 +31,7 @@ def individual_training_category_list():
 
 
 def category_skills():
-    category_list = search_categories_light({}, 0, _es_size)
+    category_list = search_categories({}, 0, _es_size)
     for category in category_list:
         category['relevant_score'] = random.randint(50, 100)
         category['skill_value'] = random.randint(50, 2200)
@@ -42,7 +42,7 @@ def category_skills():
 
 
 def root_category_skills():
-    category_list = search_categories_light({'category_root': 'root'}, 0, _es_size)
+    category_list = search_categories({'category_root': 'root'}, 0, _es_size)
     for category in category_list:
         category['skill_value'] = random.randint(50, 2200)
         category['skill_title'] = 'EXPERT'

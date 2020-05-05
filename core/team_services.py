@@ -95,7 +95,7 @@ def get_team_details(team_id):
         raise Exception('Internal server error')
     
     except Exception as e:
-        raise Exception(e)
+        raise e
 
 
 def delete_all_users_from_team(team_id):
@@ -111,51 +111,55 @@ def delete_all_users_from_team(team_id):
         return response
 
     except Exception as e:
-        raise Exception(e)
+        raise e
 
 
 def get_all_users_from_team(team_id):
-    rs = requests.session()
-    must = [
-        {'term': {'team_id': team_id}},
-    ]
-    query_json = {'query': {'bool': {'must': must}}}
-    query_json['size'] = _es_size
-    search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type)
-    response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+    try:
+        rs = requests.session()
+        must = [
+            {'term': {'team_id': team_id}},
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = _es_size
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
 
-    item_list = []
+        item_list = []
 
-    if 'hits' in response:
-        for hit in response['hits']['hits']:
-            data = hit['_source']
-            data['id'] = hit['_id']
-            if 'status' not in data:
-                data['status'] = 'pending'
-            item_list.append(data)
-
-    return item_list
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                data = hit['_source']
+                data['id'] = hit['_id']
+                if 'status' not in data:
+                    data['status'] = 'pending'
+                item_list.append(data)
+        return item_list
+    except Exception as e:
+        raise e
 
 
 def get_user_team_edge(team_id, user_handle):
-    print('get_user_team_edge: ', team_id, user_handle)
-    rs = requests.session()
-    must = [
-        {'term': {'team_id': team_id}},
-        {'term': {'user_handle': user_handle}}
-    ]
-    query_json = {'query': {'bool': {'must': must}}}
-    query_json['size'] = 1
-    print('query: ', json.dumps(query_json))
-    search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type)
-    response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+    try:
+        print('get_user_team_edge: ', team_id, user_handle)
+        rs = requests.session()
+        must = [
+            {'term': {'team_id': team_id}},
+            {'term': {'user_handle': user_handle}}
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = 1
+        print('query: ', json.dumps(query_json))
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
 
-    print('response: ', json.dumps(response))
+        print('response: ', json.dumps(response))
 
-    if 'hits' in response:
-        if response['hits']['total']['value'] > 0:
-            return response['hits']['hits'][0]
-    return None
+        if 'hits' in response:
+            if response['hits']['total']['value'] > 0:
+                return response['hits']['hits'][0]
+    except Exception as e:
+        raise e
 
 
 def add_team_member(data):
@@ -180,7 +184,6 @@ def add_team_member(data):
 
         app.logger.error('Elasticsearch down, response: ' + str(response))
         raise Exception('Internal server error')
-
     except Exception as e:
         raise e
 
@@ -275,7 +278,7 @@ def search_teams(param, from_val, size_val):
         raise Exception('Internal server error')
 
     except Exception as e:
-        raise Exception('Internal server error')
+        raise e
 
 
 def search_teams_for_user(user_handle, param):
@@ -315,79 +318,82 @@ def search_teams_for_user(user_handle, param):
         raise Exception('Internal server error')
 
     except Exception as e:
-        raise Exception('Internal server error')
+        raise e
 
 
 def get_rating_history_codeforces(team_id):
-    members = get_all_users_from_team(team_id)
-    handle_list = []
-    handle_wise_rating = []
-    history_list = []
-    cf_scrapper = CodeforcesScrapper()
+    try:
+        members = get_all_users_from_team(team_id)
+        handle_list = []
+        handle_wise_rating = []
+        history_list = []
+        cf_scrapper = CodeforcesScrapper()
 
-    for member in members:
-        print('member details: ', member)
-        user_handle = member['user_handle']
-        matched_user_list = search_user({'username': user_handle}, 0, 1)
-        if len(matched_user_list) > 0:
-            user_details = matched_user_list[0]
-            print('   user details: ', user_details)
-            cf_handle = user_details.get('codeforces_handle', None)
-            if cf_handle:
-                rating_history = cf_scrapper.get_user_rating_history(cf_handle)
-                handle_list.append({'user_handle': user_handle})
-                history_list.append(rating_history)
+        for member in members:
+            print('member details: ', member)
+            user_handle = member['user_handle']
+            matched_user_list = search_user({'username': user_handle}, 0, 1)
+            if len(matched_user_list) > 0:
+                user_details = matched_user_list[0]
+                print('   user details: ', user_details)
+                cf_handle = user_details.get('codeforces_handle', None)
+                if cf_handle:
+                    rating_history = cf_scrapper.get_user_rating_history(cf_handle)
+                    handle_list.append({'user_handle': user_handle})
+                    history_list.append(rating_history)
 
-    date_list = []
+        date_list = []
 
-    for idx in range(0, len(history_list)):
-        history = history_list[idx]
-        for contest in history:
-            d = contest['ratingUpdateTimeSeconds']
-            if d not in date_list:
-                date_list.append(d)
+        for idx in range(0, len(history_list)):
+            history = history_list[idx]
+            for contest in history:
+                d = contest['ratingUpdateTimeSeconds']
+                if d not in date_list:
+                    date_list.append(d)
 
-    date_list.sort()
+        date_list.sort()
 
-    for history in history_list:
-        date_list_len = len(date_list)
-        idx = 0
-        rating_list = []
+        for history in history_list:
+            date_list_len = len(date_list)
+            idx = 0
+            rating_list = []
 
-        for c_idx in range(0, len(history)):
-            contest = history[c_idx]
-            contest_time = contest['ratingUpdateTimeSeconds']
-            effect_end = date_list[len(date_list)-1]
-            if c_idx+1 < len(history):
-                effect_end = history[c_idx+1]['ratingUpdateTimeSeconds']
-            while idx < date_list_len:
-                if date_list[idx] <= effect_end:
-                    rating_list.append({'rating': contest['newRating']})
-                    idx += 1
-                else:
-                    break
+            for c_idx in range(0, len(history)):
+                contest = history[c_idx]
+                contest_time = contest['ratingUpdateTimeSeconds']
+                effect_end = date_list[len(date_list)-1]
+                if c_idx+1 < len(history):
+                    effect_end = history[c_idx+1]['ratingUpdateTimeSeconds']
+                while idx < date_list_len:
+                    if date_list[idx] <= effect_end:
+                        rating_list.append({'rating': contest['newRating']})
+                        idx += 1
+                    else:
+                        break
 
-        handle_wise_rating.append(rating_list)
+            handle_wise_rating.append(rating_list)
 
-    rating_stat = []
-    for date_idx in range(0, len(date_list)):
-        day = datetime.date.fromtimestamp(date_list[date_idx])
+        rating_stat = []
+        for date_idx in range(0, len(date_list)):
+            day = datetime.date.fromtimestamp(date_list[date_idx])
 
-        data = {
-            'date': {
-                "year": day.year,
-                "month": day.month,
-                "day": day.day
-            },
-            'rating_list': []
+            data = {
+                'date': {
+                    "year": day.year,
+                    "month": day.month,
+                    "day": day.day
+                },
+                'rating_list': []
+            }
+
+            for c_idx in range(0, len(handle_wise_rating)):
+                data['rating_list'].append(handle_wise_rating[c_idx][date_idx])
+
+            rating_stat.append(data)
+
+        return {
+            'handle_list': handle_list,
+            'history': rating_stat
         }
-
-        for c_idx in range(0, len(handle_wise_rating)):
-            data['rating_list'].append(handle_wise_rating[c_idx][date_idx])
-
-        rating_stat.append(data)
-
-    return {
-        'handle_list': handle_list,
-        'history': rating_stat
-    }
+    except Exception as e:
+        raise e

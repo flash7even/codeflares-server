@@ -83,66 +83,75 @@ class ProblemByID(Resource):
 
     @api.doc('get problem details by id')
     def get(self, problem_id):
-        app.logger.info('Get problem_details api called')
-        rs = requests.session()
-        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
-        response = rs.get(url=search_url, headers=_http_headers).json()
-        print(response)
-        if 'found' in response:
-            if response['found']:
-                data = response['_source']
-                data['id'] = response['_id']
-                app.logger.info('Get problem_details api completed')
-                return data, 200
-            app.logger.warning('Problem not found')
-            return {'found': response['found']}, 404
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return response, 500
+        try:
+            app.logger.info('Get problem_details api called')
+            rs = requests.session()
+            search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
+            response = rs.get(url=search_url, headers=_http_headers).json()
+            print(response)
+            if 'found' in response:
+                if response['found']:
+                    data = response['_source']
+                    data['id'] = response['_id']
+                    app.logger.info('Get problem_details api completed')
+                    return data, 200
+                app.logger.warning('Problem not found')
+                return {'found': response['found']}, 404
+            app.logger.error('Elasticsearch down, response: ' + str(response))
+            return response, 500
+        except Exception as e:
+            return {'message': str(e)}, 500
 
     @access_required(access="ALL")
     @api.doc('update problem by id')
     def put(self, problem_id):
-        app.logger.info('Update problem_details api called')
-        rs = requests.session()
-        post_data = request.get_json()
+        try:
+            app.logger.info('Update problem_details api called')
+            rs = requests.session()
+            post_data = request.get_json()
 
-        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
-        response = rs.get(url=search_url, headers=_http_headers).json()
-        print(response)
-        if 'found' in response:
-            if response['found']:
-                data = response['_source']
-                for key, value in post_data.items():
-                    data[key] = value
-                data['updated_at'] = int(time.time())
-                response = rs.put(url=search_url, json=data, headers=_http_headers).json()
-                if 'result' in response:
-                    app.logger.info('Update problem_details api completed')
-                    return response['result'], 200
-                else:
-                    app.logger.error('Elasticsearch down, response: ' + str(response))
-                    return response, 500
-            app.logger.warning('Problem not found')
-            return {'message': 'not found'}, 404
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return response, 500
+            search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
+            response = rs.get(url=search_url, headers=_http_headers).json()
+            print(response)
+            if 'found' in response:
+                if response['found']:
+                    data = response['_source']
+                    for key, value in post_data.items():
+                        data[key] = value
+                    data['updated_at'] = int(time.time())
+                    response = rs.put(url=search_url, json=data, headers=_http_headers).json()
+                    if 'result' in response:
+                        app.logger.info('Update problem_details api completed')
+                        return response['result'], 200
+                    else:
+                        app.logger.error('Elasticsearch down, response: ' + str(response))
+                        return response, 500
+                app.logger.warning('Problem not found')
+                return {'message': 'not found'}, 404
+            app.logger.error('Elasticsearch down, response: ' + str(response))
+            return response, 500
+        except Exception as e:
+            return {'message': str(e)}, 500
 
     @access_required(access="ALL")
     @api.doc('delete problem by id')
     def delete(self, problem_id):
-        app.logger.info('Delete problem_details api called')
-        rs = requests.session()
-        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
-        response = rs.delete(url=search_url, headers=_http_headers).json()
-        print(response)
-        if 'result' in response:
-            if response['result'] == 'deleted':
-                app.logger.info('Delete problem_details api completed')
-                return response['result'], 200
-            else:
-                return response['result'], 400
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return response, 500
+        try:
+            app.logger.info('Delete problem_details api called')
+            rs = requests.session()
+            search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
+            response = rs.delete(url=search_url, headers=_http_headers).json()
+            print(response)
+            if 'result' in response:
+                if response['result'] == 'deleted':
+                    app.logger.info('Delete problem_details api completed')
+                    return response['result'], 200
+                else:
+                    return response['result'], 400
+            app.logger.error('Elasticsearch down, response: ' + str(response))
+            return response, 500
+        except Exception as e:
+            return {'message': str(e)}, 500
 
 
 @api.route('/')
@@ -151,36 +160,39 @@ class CreateProblem(Resource):
     #@access_required(access="ALL")
     @api.doc('create problem')
     def post(self):
-        app.logger.info('Create problem api called')
-        rs = requests.session()
-        data = request.get_json()
+        try:
+            app.logger.info('Create problem api called')
+            rs = requests.session()
+            data = request.get_json()
 
-        data['created_at'] = int(time.time())
-        data['updated_at'] = int(time.time())
+            data['created_at'] = int(time.time())
+            data['updated_at'] = int(time.time())
 
-        category_dependency_list = []
-        if 'category_dependency_list' in data:
-            category_dependency_list = data['category_dependency_list']
-            data.pop('category_dependency_list', None)
+            category_dependency_list = []
+            if 'category_dependency_list' in data:
+                category_dependency_list = data['category_dependency_list']
+                data.pop('category_dependency_list', None)
 
-        post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
-        response = rs.post(url=post_url, json=data, headers=_http_headers).json()
+            post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
+            response = rs.post(url=post_url, json=data, headers=_http_headers).json()
 
-        if 'result' in response and response['result'] == 'created':
-            for cat in category_dependency_list:
-                category_id = cat.get('category_id', None)
-                if category_id is None:
-                    category_id = get_category_id_from_name(cat['category_name'])
-                edge = {
-                    'problem_id': response['_id'],
-                    'category_id': category_id,
-                    'dependency_factor': cat['factor']
-                }
-                add_problem_category_dependency(edge)
-            app.logger.info('Create problem api completed')
-            return response['_id'], 201
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return response, 500
+            if 'result' in response and response['result'] == 'created':
+                for cat in category_dependency_list:
+                    category_id = cat.get('category_id', None)
+                    if category_id is None:
+                        category_id = get_category_id_from_name(cat['category_name'])
+                    edge = {
+                        'problem_id': response['_id'],
+                        'category_id': category_id,
+                        'dependency_factor': cat['factor']
+                    }
+                    add_problem_category_dependency(edge)
+                app.logger.info('Create problem api completed')
+                return response['_id'], 201
+            app.logger.error('Elasticsearch down, response: ' + str(response))
+            return response, 500
+        except Exception as e:
+            return {'message': str(e)}, 500
 
 
 @api.route('/search', defaults={'page': 0})
@@ -189,14 +201,17 @@ class SearchProblem(Resource):
 
     @api.doc('search problem based on post parameters')
     def post(self, page=0):
-        app.logger.info('Problem search api called')
-        rs = requests.session()
-        param = request.get_json()
-        result = search_problems(param, page*_es_size, _es_size)
-        app.logger.info('Problem search api completed')
-        return {
-            "problem_list": result
-        }
+        try:
+            app.logger.info('Problem search api called')
+            rs = requests.session()
+            param = request.get_json()
+            result = search_problems(param, page*_es_size, _es_size)
+            app.logger.info('Problem search api completed')
+            return {
+                "problem_list": result
+            }
+        except Exception as e:
+            return {'message': str(e)}, 500
 
 
 @api.route('/user')
@@ -215,4 +230,4 @@ class CreateProblem(Resource):
             response = add_user_problem_status(data['user_id', data['problem_id'], data['status']])
             return response, 200
         except Exception as e:
-            return {'message': 'Internal server error'}, 500
+            return {'message': str(e)}, 500
