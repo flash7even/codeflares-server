@@ -9,7 +9,7 @@ from scrappers.uva_scrapper import UvaScrapper
 from scrappers.codechef_scrapper import CodechefScrapper
 
 from core.problem_services import add_user_problem_status
-from core.problem_services import search_problems_light
+from core.problem_services import search_problems
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -90,7 +90,7 @@ def get_user_details(user_id):
 def sync_problems(user_id, problem_list):
     try:
         for problem in problem_list:
-            problem_db = search_problems_light({'problem_id': problem}, 0, 1)
+            problem_db = search_problems({'problem_id': problem}, 0, 1)
             if len(problem_db) == 0:
                 continue
             problem_id = problem_db[0]['id']

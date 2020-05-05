@@ -203,9 +203,26 @@ class SearchProblem(Resource):
     def post(self, page=0):
         try:
             app.logger.info('Problem search api called')
-            rs = requests.session()
             param = request.get_json()
             result = search_problems(param, page*_es_size, _es_size)
+            app.logger.info('Problem search api completed')
+            return {
+                "problem_list": result
+            }
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/search/heavy', defaults={'page': 0})
+@api.route('/search/heavy/<int:page>')
+class SearchProblem(Resource):
+
+    @api.doc('search problem based on post parameters')
+    def post(self, page=0):
+        try:
+            app.logger.info('Problem search api called')
+            param = request.get_json()
+            result = search_problems(param, page*_es_size, _es_size, heavy=True)
             app.logger.info('Problem search api completed')
             return {
                 "problem_list": result

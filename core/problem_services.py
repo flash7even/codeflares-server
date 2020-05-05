@@ -12,6 +12,7 @@ _es_index_problem_user = 'cp_training_user_problem_edges'
 _es_index_problem = 'cp_training_problems'
 _es_type = '_doc'
 _es_size = 500
+_es_max_solved_problem = 1000
 
 SOLVED = 'SOLVED'
 SOLVE_LATER = 'SOLVE_LATER'
@@ -141,7 +142,7 @@ def search_problem_dependency_list(problem_id):
         raise e
 
 
-def search_problems(param, from_value, size_value):
+def search_problems(param, from_value, size_value, heavy = False):
     try:
         query_json = {'query': {'match_all': {}}}
         rs = requests.session()
@@ -186,8 +187,9 @@ def search_problems(param, from_value, size_value):
                 data = hit['_source']
                 data['id'] = hit['_id']
                 dependency_list = search_problem_dependency_list(data['id'])
-                data['category_dependency_list'] = dependency_list['dependency_list']
-                data['category_list_light'] = dependency_list['light_data']
+                if heavy:
+                    data['category_dependency_list'] = dependency_list['dependency_list']
+                    data['category_list_light'] = dependency_list['light_data']
                 item_list.append(data)
             app.logger.info('Problem search method completed')
             return item_list
@@ -197,54 +199,38 @@ def search_problems(param, from_value, size_value):
         raise e
 
 
-def search_problems_light(param, from_value, size_value):
+def search_problems_for_user(param, user_id, heavy=False):
     try:
-        query_json = {'query': {'match_all': {}}}
+        app.logger.info('find_solved_problems_of_user method called')
         rs = requests.session()
-
-        must = []
-        keyword_fields = ['problem_title', 'oj_name', 'problem_id']
-
-        minimum_difficulty = 0
-        maximum_difficulty = 100
-
-        if 'minimum_difficulty' in param and param['minimum_difficulty']:
-            minimum_difficulty = int(param['minimum_difficulty'])
-
-        if 'maximum_difficulty' in param and param['maximum_difficulty']:
-            maximum_difficulty = int(param['maximum_difficulty'])
-
-        param.pop('minimum_difficulty', None)
-        param.pop('maximum_difficulty', None)
+        must = [
+            {'term': {'user_id': user_id}}
+        ]
 
         for f in param:
-            if f in keyword_fields:
-                if param[f]:
-                    must.append({'term': {f: param[f]}})
+            if f == 'status' and len(param[f]) > 0:
+                should = []
+                for s in param[f]:
+                    should.append({'term': {'status': s}})
+                must.append({"bool": {"should": should}})
             else:
                 if param[f]:
-                    must.append({'match': {f: param[f]}})
+                    must.append({'term': {f: param[f]}})
 
-        must.append({"range": {"problem_difficulty": {"gte": minimum_difficulty, "lte": maximum_difficulty}}})
-
-        if len(must) > 0:
-            query_json = {'query': {'bool': {'must': must}}}
-
-        query_json['from'] = from_value
-        query_json['size'] = size_value
-
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem, _es_type)
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = _es_max_solved_problem
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        item_list = []
 
+        problem_list = []
         if 'hits' in response:
             for hit in response['hits']['hits']:
-                data = hit['_source']
-                data['id'] = hit['_id']
-                item_list.append(data)
-            app.logger.info('Problem search method completed')
-            return item_list
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return item_list
+                edge = hit['_source']
+                if heavy:
+                    problem = get_problem_details(edge['problem_id'])
+                    problem_list.append(problem)
+                else:
+                    problem_list.append(edge['problem_id'])
+        return problem_list
     except Exception as e:
         raise e
