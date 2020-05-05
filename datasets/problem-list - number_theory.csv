@@ -1,0 +1,6 @@
+problem_name,problem_id,problem_difficulty,problem_significance,oj_name,source_link,category_id_1,category_id_2,category_id_3,category_id_4
+T-primes,230/B,3,6.5,Codechef,https://codeforces.com/problemset/problem/230/B,"factorization,6","implementation,4",,
+Divisors,DIV,3.5,8,SPOJ,https://www.spoj.com/problems/DIV/,"divisor_theory,5","factorization,5",,
+Euler Totient Function,ETF,3.5,7,SPOJ,https://www.spoj.com/problems/ETF/,"prime_number,7","sieve,7",,
+Game of Lines,LINES,5,4.5,SPOJ,https://www.spoj.com/problems/LINES/,"gcd,6","lcm,7",,
+MARBLES,Marbles,3.5,7.5,SPOJ,https://www.spoj.com/problems/MARBLES/,"basic_permutation_combination,6","factorial,5",,
