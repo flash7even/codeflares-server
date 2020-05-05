@@ -73,7 +73,7 @@ dynamic_programming,coin_change,4,10
 ,longest_common_subsequence,4.5,7
 ,edit_distance,4.5,4
 ,bit_mask,5.5,8.5
-,non_classical,6,9
+,non_classical_dp,6,9
 ,interval_dp,6.5,4
 ,divide_and_conquere_optimization,8,4
 ,component_dp,7,2
@@ -123,8 +123,9 @@ miscellaneous,basic_backtracking,3.5,10
 ,fft,9,6
 base,ad_hoc,1,10
 ,observation,3,8
-,implementatiom,3.5,7
+,implementation,3.5,7
 ,math_calculation,5,4
 ,pattern,4,6.5
 ,basic_math,3,9
 ,advanced_math,9.5,4
+,bit_manipulation,5.5,7.5

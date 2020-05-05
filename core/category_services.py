@@ -9,6 +9,7 @@ from core.problem_services import search_problems_for_user
 
 _es_index_category = 'cp_training_categories'
 _es_index_category_dependency = 'cp_training_category_dependencies'
+_es_index_category_problem = 'cp_training_problem_category_edges'
 _es_type = '_doc'
 _es_size = 500
 _bulk_size = 25
@@ -166,7 +167,7 @@ def process_bulk_query(bulk_list, cnt_dict, problem_solved_list):
             bulk_query += current_query
             bulk_list.append(cat)
 
-        url = 'http://{}/{}/_msearch'.format(app.config['ES_HOST'], _es_index_category)
+        url = 'http://{}/{}/_msearch'.format(app.config['ES_HOST'], _es_index_category_problem)
         response_list = rs.post(url=url, json=bulk_query, headers=_http_headers).json()
 
         if 'responses' in response_list:

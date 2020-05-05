@@ -12,7 +12,7 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('category', description='Namespace for category service')
 
-from core.category_services import add_category_category_dependency, get_category_id_from_name, search_categories
+from core.category_services import add_category_category_dependency, get_category_id_from_name, search_categories, category_wise_problem_solve_for_user
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -255,6 +255,23 @@ class SearchCategory(Resource):
             app.logger.info('Category search api called')
             param = request.get_json()
             result = search_categories(param, page*_es_size, _es_size, heavy=True)
+            app.logger.info('Category search api completed')
+            print(result)
+            return {
+                "category_list": result
+            }
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/solved/search/user/<string:user_id>')
+class CategoryWiseSolvedUser(Resource):
+
+    @api.doc('search category based on post parameters')
+    def get(self, user_id):
+        try:
+            app.logger.info('Category search api called')
+            result = category_wise_problem_solve_for_user(user_id)
             app.logger.info('Category search api completed')
             print(result)
             return {

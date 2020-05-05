@@ -6,7 +6,7 @@ from flask import current_app as app
 
 _http_headers = {'Content-Type': 'application/json'}
 
-from core.problem_services import search_problems_light
+from core.problem_services import search_problems
 from core.category_services import search_categories
 from core.team_services import get_team_details
 
@@ -14,7 +14,7 @@ _es_size = 500
 
 
 def individual_training_problem_list():
-    problem_list = search_problems_light({}, 0, 5)
+    problem_list = search_problems({}, 0, 5)
     for problem in problem_list:
         problem['relevant_score'] = random.randint(50, 100)
     return problem_list

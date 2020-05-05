@@ -23,7 +23,8 @@ _http_headers = {'Content-Type': 'application/json'}
 
 ES_HOST = 'localhost:9200'
 
-problem_list_names = ["problem-list - ad_hoc.csv", "problem-list - basic_math.csv", "problem-list - implementation.csv", "problem-list - misc.csv"]
+problem_list_names = ["problem-list - ad_hoc.csv", "problem-list - basic_math.csv", "problem-list - implementation.csv", "problem-list - misc.csv",
+                      "problem-list - number_theory.csv", "problem-list - number_theory.csv"]
 
 
 def add_problem_list(data):
