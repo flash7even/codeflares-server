@@ -1,10 +1,7 @@
 import argparse
 import json
 
-
-class Skill:
-    max_skill = 2000
-    skill_levels = [0, 10, 20, 45, 85, 130, 175, 220, 300, 450, 750]
+from commons.skillset import Skill
 
 
 MAX_PROBLEM_SOLVED = 100
