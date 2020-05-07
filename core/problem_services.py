@@ -198,39 +198,3 @@ def search_problems(param, from_value, size_value, heavy = False):
     except Exception as e:
         raise e
 
-
-def search_problems_for_user(param, user_id, heavy=False):
-    try:
-        app.logger.info('find_solved_problems_of_user method called')
-        rs = requests.session()
-        must = [
-            {'term': {'user_id': user_id}}
-        ]
-
-        for f in param:
-            if f == 'status' and len(param[f]) > 0:
-                should = []
-                for s in param[f]:
-                    should.append({'term': {'status': s}})
-                must.append({"bool": {"should": should}})
-            else:
-                if param[f]:
-                    must.append({'term': {f: param[f]}})
-
-        query_json = {'query': {'bool': {'must': must}}}
-        query_json['size'] = _es_max_solved_problem
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
-        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-
-        problem_list = []
-        if 'hits' in response:
-            for hit in response['hits']['hits']:
-                edge = hit['_source']
-                if heavy:
-                    problem = get_problem_details(edge['problem_id'])
-                    problem_list.append(problem)
-                else:
-                    problem_list.append(edge['problem_id'])
-        return problem_list
-    except Exception as e:
-        raise e

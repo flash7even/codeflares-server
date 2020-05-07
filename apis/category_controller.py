@@ -12,7 +12,8 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('category', description='Namespace for category service')
 
-from core.category_services import add_category_category_dependency, get_category_id_from_name, search_categories, category_wise_problem_solve_for_user
+from core.category_services import add_category_category_dependency, get_category_id_from_name, search_categories
+from core.training_model_services import category_wise_problem_solve_for_user
 
 _http_headers = {'Content-Type': 'application/json'}
 
