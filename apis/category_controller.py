@@ -274,7 +274,6 @@ class CategoryWiseSolvedUser(Resource):
             app.logger.info('Category search api called')
             result = category_wise_problem_solve_for_user(user_id)
             app.logger.info('Category search api completed')
-            print(result)
             return {
                 "category_list": result
             }

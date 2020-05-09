@@ -101,6 +101,7 @@ def sync_problems(user_id, problem_list):
 
 
 def synch_user_problem(user_id):
+    app.logger.info('synch_user_problem called: ' + str(user_id))
     try:
         uva = UvaScrapper()
         codeforces = CodeforcesScrapper()
@@ -108,28 +109,33 @@ def synch_user_problem(user_id):
         codechef = CodechefScrapper()
 
         user_info = get_user_details(user_id)
+        print('user_info: ', user_info)
         allowed_judges = ['codeforces', 'uva', 'codechef', 'spoj']
 
         if 'codeforces' in allowed_judges:
             handle = user_info.get('codeforces_handle', None)
+            print('Codeforces: ', handle)
             if handle:
                 problem_stat = codeforces.get_user_info(handle)
                 sync_problems(user_id, problem_stat['solved_problems'])
 
         if 'codechef' in allowed_judges:
             handle = user_info.get('codechef_handle', None)
+            print('codechef: ', handle)
             if handle:
                 problem_stat = codechef.get_user_info(handle)
                 sync_problems(user_id, problem_stat['solved_problems'])
 
         if 'uva' in allowed_judges:
             handle = user_info.get('uva_handle', None)
+            print('uva: ', handle)
             if handle:
                 problem_stat = uva.get_user_info(handle)
                 sync_problems(user_id, problem_stat['solved_problems'])
 
         if 'spoj' in allowed_judges:
             handle = user_info.get('spoj_handle', None)
+            print('spoj: ', handle)
             if handle:
                 problem_stat = spoj.get_user_info(handle)
                 sync_problems(user_id, problem_stat['solved_problems'])

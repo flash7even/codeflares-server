@@ -221,7 +221,7 @@ class Sync(Resource):
     @access_required(access="ALL")
     @api.doc('Sync user by id')
     def put(self, user_id):
-        app.logger.info('Get user API called, id: ' + str(user_id))
+        app.logger.info('Sync user API called, id: ' + str(user_id))
         try:
             synch_user_problem(user_id)
             return {'message': 'success'}, 200

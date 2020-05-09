@@ -43,8 +43,8 @@ def create_app(instance_name):
     redis_store.init_app(app)
     CORS(app)
 
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 100
-    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = 100
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 100000
+    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = 100000
 
     jwt = JWTManager()
 

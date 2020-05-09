@@ -41,7 +41,7 @@ def add_category(data):
 
 
 def category_extract():
-    data = pd.read_csv("../datasets/category-list - algorithms.csv")
+    data = pd.read_csv("../datasets/categories/category-list - algorithms.csv")
     data = data.replace({np.nan: None})
     for i in range(0, len(data)):
         if data['category_root'][i]:

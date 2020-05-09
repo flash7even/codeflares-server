@@ -31,7 +31,7 @@ def add_category_dependency(data):
 
 
 def category_dependency_extract():
-    data = pd.read_csv("../datasets/category-list - algorithm-links.csv")
+    data = pd.read_csv("../datasets/categories/category-list - algorithm-links.csv")
     data = data.replace({np.nan: None})
     for i in range(0, len(data)):
         category_name = data['category_name'][i]

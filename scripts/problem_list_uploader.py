@@ -1,4 +1,5 @@
 import logging
+import os
 import re, json
 from logging.handlers import TimedRotatingFileHandler
 
@@ -72,17 +73,17 @@ def problem_list_extract(data):
 
 
 def problem_datasets():
-    for file in problem_list_names:
-        data = pd.read_csv("../datasets/" + str(file))
-        problem_list_extract(data)
+    dirpath = '../datasets/problems/'
+    for dirpath, dirnames, filenames in os.walk(dirpath):
+        for filename in filenames:
+            full_filepath = os.path.join(dirpath, filename)
+            data = pd.read_csv(full_filepath)
+            problem_list_extract(data)
 
 
 if __name__ == '__main__':
     logger.info('START RUNNING CATEGORY DEPENDENCY UPLOADER SCRIPT\n')
     problem_datasets()
     logger.info('FINISHED RUNNING CATEGORY DEPENDENCY UPLOADER SCRIPT\n')
-
-
-
 
 
