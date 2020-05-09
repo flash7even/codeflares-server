@@ -94,8 +94,12 @@ def sync_problems(user_id, problem_list):
             if len(problem_db) == 0:
                 continue
             problem_id = problem_db[0]['id']
-            add_user_problem_status(user_id, problem_id, 'SOLVED')
-
+            data = {
+                'user_id': user_id,
+                'problem_id': problem_id,
+                'status': 'SOLVED'
+            }
+            add_user_problem_status(user_id, problem_id, data)
     except Exception as e:
         raise e
 

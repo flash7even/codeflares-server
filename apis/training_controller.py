@@ -15,6 +15,10 @@ api = Namespace('training', description='Namespace for training service')
 
 from models.training_model import individual_training_problem_list, individual_training_category_list, category_skills, root_category_skills, update_team_member_skills
 from core.team_services import get_team_details
+from core.training_model_services import category_wise_problem_solve_for_user
+from models.category_skill_model import SkillGenerator
+from operator import itemgetter
+from commons.skillset import Skill
 
 
 @api.errorhandler(NoAuthorizationError)
@@ -73,16 +77,31 @@ def handle_failed_user_claims_verification(e):
     return {'message': 'User claims verification failed'}, 400
 
 
-@api.route('/individual/')
+@api.route('/individual/<string:user_id>')
 class IndividualTrainingModel(Resource):
 
     @access_required(access="ALL")
     @api.doc('get training model for currently logged in user')
-    def get(self):
+    def get(self, user_id):
         app.logger.info('Get individual training model api called')
+
+        category_list = category_wise_problem_solve_for_user(user_id)
+        for category in category_list:
+            skill_generator = SkillGenerator()
+            skill_stat = skill_generator.generate_skill(category['solved_stat']['difficulty_wise_count'])
+            category['relevant_score'] = skill_stat['level']
+            category['skill_value'] = skill_stat['skill']
+            skill_obj = Skill()
+            category['skill_title'] = skill_obj.get_skill_title(skill_stat['skill'])
+            category['solve_count'] = category['solved_stat']['total_count']
+            category.pop('solved_stat', None)
+
+        category_list = sorted(category_list, key=itemgetter('skill_value'), reverse=True)
+
+
         problems = individual_training_problem_list()
         categories = individual_training_category_list()
-        category_skill_list = category_skills()
+        category_skill_list = category_list
         root_category_skill_list = root_category_skills()
 
         return {

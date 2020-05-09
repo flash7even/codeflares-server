@@ -229,22 +229,3 @@ class SearchProblem(Resource):
             }
         except Exception as e:
             return {'message': str(e)}, 500
-
-
-@api.route('/user')
-class CreateProblem(Resource):
-
-    @access_required(access="ALL")
-    @api.doc('create problem user status')
-    def post(self):
-        app.logger.info('Create problem user api called')
-        try:
-            data = request.get_json()
-            mandatory_fields = ['user_id', 'problem_id', 'status']
-            for f in mandatory_fields:
-                if f not in data:
-                    return {'message': 'bad request'}, 409
-            response = add_user_problem_status(data['user_id', data['problem_id'], data['status']])
-            return response, 200
-        except Exception as e:
-            return {'message': str(e)}, 500

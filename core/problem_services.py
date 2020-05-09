@@ -15,8 +15,82 @@ _es_size = 500
 _es_max_solved_problem = 1000
 
 SOLVED = 'SOLVED'
+UNSOLVED = 'UNSOLVED'
 SOLVE_LATER = 'SOLVE_LATER'
-SKIP = 'SKIP'
+FLAGGED = 'FLAGGED'
+
+
+def get_user_problem_status(user_id, problem_id):
+    try:
+        rs = requests.session()
+        must = [
+            {'term': {'user_id': user_id}},
+            {'term': {'problem_id': problem_id}}
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = 1
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                edge = hit['_source']
+                edge['id'] = hit['_id']
+                return edge
+        return None
+
+    except Exception as e:
+        raise e
+
+
+def find_problems_for_user_by_status_filtered(status, user_id, heavy=False):
+    try:
+        app.logger.info('find_solved_problems_of_user method called')
+        rs = requests.session()
+
+        should = []
+        for s in status:
+            should.append({'term': {'status': s}})
+
+        must = [
+            {'term': {'user_id': user_id}},
+            {"bool": {"should": should}}
+        ]
+
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = _es_max_solved_problem
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+
+        problem_list = []
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                edge = hit['_source']
+                if heavy:
+                    problem = get_problem_details(edge['problem_id'])
+                    problem_list.append(problem)
+                else:
+                    problem_list.append(edge['problem_id'])
+        return problem_list
+    except Exception as e:
+        raise e
+
+
+def available_problems_for_user(user_id):
+    try:
+        app.logger.info('available_problems_for_user method called')
+        problem_list = search_problems({}, 0, _es_size)
+        available_list = []
+        for problem in problem_list:
+            edge = get_user_problem_status(user_id, problem['id'])
+            if edge is None:
+                available_list.append(problem)
+            else:
+                status = edge.get('status', None)
+                if status == UNSOLVED:
+                    available_list.append(problem)
+        return available_list
+    except Exception as e:
+        raise e
 
 
 def get_problem_details(problem_id):
@@ -53,40 +127,27 @@ def add_problem_category_dependency(data):
         raise e
 
 
-def add_user_problem_status(user_id, problem_id, status):
+def add_user_problem_status(user_id, problem_id, data):
     try:
         app.logger.info('add_user_problem_status method called')
         rs = requests.session()
-        must = [
-            {'term': {'user_id': user_id}},
-            {'term': {'problem_id': problem_id}}
-        ]
-        query_json = {'query': {'bool': {'must': must}}}
-        query_json['size'] = 1
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
-        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        edge = None
-        edge_id = None
-        if 'hits' in response:
-            for hit in response['hits']['hits']:
-                edge = hit['_source']
-                edge_id = hit['_id']
+        edge = get_user_problem_status(user_id, problem_id)
 
         if edge is None:
-            edge = {
-                'user_id': user_id,
-                'problem_id': problem_id,
-                'status': status
-            }
-            edge['created_at'] = int(time.time())
-            edge['updated_at'] = int(time.time())
+            data['created_at'] = int(time.time())
+            data['updated_at'] = int(time.time())
             post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
-            response = rs.post(url=post_url, json=edge, headers=_http_headers).json()
+            response = rs.post(url=post_url, json=data, headers=_http_headers).json()
             if 'result' in response:
                 return response['_id']
             raise Exception('Internal server error')
 
-        edge['status'] = status
+        edge_id = edge['id']
+        edge.pop('id', None)
+
+        for f in data:
+            edge[f] = data[f]
+
         edge['updated_at'] = int(time.time())
 
         url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type, edge_id)
@@ -95,49 +156,28 @@ def add_user_problem_status(user_id, problem_id, status):
         if 'result' in response:
             app.logger.info('add_user_problem_status method completed')
             return response['result']
-
         raise Exception('Internal server error')
-
     except Exception as e:
         raise Exception('Internal server error')
 
 
-def search_problem_dependency_list(problem_id):
+def find_problem_dependency_list(problem_id):
     try:
-        print('search_problem_dependency_list: ', problem_id)
         rs = requests.session()
         must = [
             {'term': {'problem_id': problem_id}}
         ]
         query_json = {'query': {'bool': {'must': must}}}
         query_json['size'] = _es_size
-        print(query_json)
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_category, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        print(response)
         item_list = []
-        light_data = None
         if 'hits' in response:
             for hit in response['hits']['hits']:
                 category = hit['_source']
                 category['category_info'] = get_category_details(category['category_id'])
                 item_list.append(category)
-
-                if category['category_info'] and 'category_name' in category['category_info'] and category['category_info']['category_name']:
-                    if light_data is None:
-                        light_data = category['category_info']['category_name']
-                    else:
-                        light_data = light_data + " " + category['category_info']['category_name']
-
-            return {
-                'dependency_list': item_list,
-                'light_data': light_data
-            }
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return {
-            'dependency_list': item_list,
-            'light_data': light_data
-        }
+        return item_list
     except Exception as e:
         raise e
 
@@ -186,7 +226,7 @@ def search_problems(param, from_value, size_value, heavy = False):
             for hit in response['hits']['hits']:
                 data = hit['_source']
                 data['id'] = hit['_id']
-                dependency_list = search_problem_dependency_list(data['id'])
+                dependency_list = find_problem_dependency_list(data['id'])
                 if heavy:
                     data['category_dependency_list'] = dependency_list['dependency_list']
                     data['category_list_light'] = dependency_list['light_data']

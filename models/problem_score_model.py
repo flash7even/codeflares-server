@@ -7,7 +7,7 @@ from commons.skillset import Skill
 eps = 0.0000001
 
 
-class ScoreGenerator:
+class ProblemScoreGenerator:
 
     def generate_score(self, problem_diff, category_level):
         up = category_level + 1
@@ -64,7 +64,7 @@ class ScoreGenerator:
 
 
 if __name__ == '__main__':
-    score_generator = ScoreGenerator()
+    score_generator = ProblemScoreGenerator()
     category_skill = 7
 
     print('CATEGORY SKILL: ', category_skill)

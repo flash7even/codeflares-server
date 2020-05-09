@@ -13,7 +13,6 @@ from core.team_services import get_team_details
 _es_size = 500
 
 
-
 def individual_training_problem_list():
     problem_list = search_problems({}, 0, 5)
     for problem in problem_list:
@@ -39,7 +38,6 @@ def category_skills():
         category['skill_title'] = 'EXPERT'
         category['solve_count'] = random.randint(500, 1000)
     return category_list
-
 
 
 def root_category_skills():
