@@ -25,6 +25,13 @@ class CodeforcesScrapper:
                 if problem not in solved_problems:
                     solved_problems.append(problem)
 
+        return {
+            'platform': 'codeforces',
+            'user_name': username,
+            'solved_count': len(solved_problems),
+            'solved_problems': solved_problems
+        }
+
     def get_user_rating_history(self, username):
         rs = requests.session()
         url = self.rating_history_url + username
