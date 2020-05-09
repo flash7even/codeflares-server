@@ -1,16 +1,25 @@
 {
   "dynamic": "strict",
   "properties": {
-    "problem_id": {
+    "category_id": {
       "type": "keyword"
     },
     "user_id": {
       "type": "keyword"
     },
+    "solve_count": {
+      "type": "long"
+    },
     "relevant_score": {
       "type": "float"
     },
-    "status": {
+    "skill_value": {
+      "type": "float"
+    },
+    "skill_level": {
+      "type": "long"
+    },
+    "skill_title": {
       "type": "keyword"
     },
     "created_at": {
