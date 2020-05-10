@@ -9,6 +9,7 @@ from jwt.exceptions import *
 from commons.jwt_helpers import access_required
 
 from core.user_services import synch_user_problem, search_user, get_user_details, get_user_rating_history
+from core.training_model_services import sync_problem_score_for_user, sync_category_score_for_user, sync_root_category_score_for_user
 
 api = Namespace('user', description='user related services')
 
@@ -224,6 +225,22 @@ class Sync(Resource):
         app.logger.info('Sync user API called, id: ' + str(user_id))
         try:
             synch_user_problem(user_id)
+            return {'message': 'success'}, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/sync/training-model/<string:user_id>')
+class Sync(Resource):
+
+    @access_required(access="ALL")
+    @api.doc('Sync user training model by id')
+    def put(self, user_id):
+        app.logger.info('Sync user training model API called, id: ' + str(user_id))
+        try:
+            sync_category_score_for_user(user_id)
+            sync_problem_score_for_user(user_id)
+            sync_root_category_score_for_user(user_id)
             return {'message': 'success'}, 200
         except Exception as e:
             return {'message': str(e)}, 500

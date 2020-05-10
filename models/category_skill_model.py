@@ -8,7 +8,7 @@ MAX_PROBLEM_SOLVED = 100
 score_table = [0, 1, 2.82, 5.19, 8, 11.18, 14.69, 18.52, 22.62, 27, 31.62]
 
 
-class SkillGenerator:
+class CategorySkillGenerator:
 
     def __init__(self, group_table = None, group_bound = None):
         self.n = 0.40
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     group_table = [0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
     group_bound = [0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
 
-    skill_generator = SkillGenerator(group_table,group_bound)
+    skill_generator = CategorySkillGenerator(group_table,group_bound)
 
     for table in score_data:
         skill = skill_generator.generate_skill(table)

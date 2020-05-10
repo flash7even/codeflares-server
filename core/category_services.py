@@ -67,7 +67,7 @@ def add_category_category_dependency(data):
         raise e
 
 
-def search_category_dependency_list(category_id_1):
+def find_category_dependency_list(category_id_1):
     try:
         rs = requests.session()
         must = [
@@ -144,7 +144,7 @@ def search_categories(param, from_value, size_value, heavy = False):
                 category['category_id'] = hit['_id']
                 category['problem_count'] = 100
                 if heavy:
-                    category['category_dependency_list'] = search_category_dependency_list(category['category_id'])
+                    category['category_dependency_list'] = find_category_dependency_list(category['category_id'])
                 item_list.append(category)
             app.logger.info('Category search method completed')
             return item_list

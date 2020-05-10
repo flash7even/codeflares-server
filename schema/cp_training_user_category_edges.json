@@ -7,11 +7,23 @@
     "user_id": {
       "type": "keyword"
     },
-    "skill": {
+    "skill_title": {
+      "type": "keyword"
+    },
+    "skill_value": {
+      "type": "float"
+    },
+    "skill_level": {
+      "type": "float"
+    },
+    "relevant_score": {
       "type": "float"
     },
     "solve_count": {
       "type": "long"
+    },
+    "category_root": {
+      "type": "keyword"
     },
     "created_at": {
       "type": "long"

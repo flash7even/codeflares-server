@@ -15,10 +15,7 @@ api = Namespace('training', description='Namespace for training service')
 
 from models.training_model import individual_training_problem_list, individual_training_category_list, category_skills, root_category_skills, update_team_member_skills
 from core.team_services import get_team_details
-from core.training_model_services import category_wise_problem_solve_for_user
-from models.category_skill_model import SkillGenerator
-from operator import itemgetter
-from commons.skillset import Skill
+from core.training_model_services import search_top_skilled_categoires_for_user, search_top_skilled_problems_for_user
 
 
 @api.errorhandler(NoAuthorizationError)
@@ -85,24 +82,10 @@ class IndividualTrainingModel(Resource):
     def get(self, user_id):
         app.logger.info('Get individual training model api called')
 
-        category_list = category_wise_problem_solve_for_user(user_id)
-        for category in category_list:
-            skill_generator = SkillGenerator()
-            skill_stat = skill_generator.generate_skill(category['solved_stat']['difficulty_wise_count'])
-            category['relevant_score'] = skill_stat['level']
-            category['skill_value'] = skill_stat['skill']
-            skill_obj = Skill()
-            category['skill_title'] = skill_obj.get_skill_title(skill_stat['skill'])
-            category['solve_count'] = category['solved_stat']['total_count']
-            category.pop('solved_stat', None)
-
-        category_list = sorted(category_list, key=itemgetter('skill_value'), reverse=True)
-
-
-        problems = individual_training_problem_list()
-        categories = individual_training_category_list()
-        category_skill_list = category_list
-        root_category_skill_list = root_category_skills()
+        problems = search_top_skilled_problems_for_user(user_id, 'relevant_score', 5, True)
+        categories = search_top_skilled_categoires_for_user(user_id, 'ALL', 'relevant_score', 5, True)
+        category_skill_list = search_top_skilled_categoires_for_user(user_id, 'ALL', 'skill_value', 5, True)
+        root_category_skill_list = search_top_skilled_categoires_for_user(user_id, 'root', 'skill_value', 5, True)
 
         return {
             'problem_stat': problems,
