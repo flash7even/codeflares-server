@@ -77,6 +77,7 @@ def get_user_details(user_id):
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_user, _es_type, user_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
+        print('response: ', response)
         if 'found' in response:
             if response['found']:
                 data = response['_source']

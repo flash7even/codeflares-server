@@ -13,7 +13,7 @@ from commons.jwt_helpers import access_required
 api = Namespace('category', description='Namespace for category service')
 
 from core.category_services import add_category_category_dependency, get_category_id_from_name, search_categories
-from core.training_model_services import category_wise_problem_solve_for_user
+from core.training_model_services import category_wise_problem_solve_for_users
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -272,7 +272,7 @@ class CategoryWiseSolvedUser(Resource):
     def get(self, user_id):
         try:
             app.logger.info('Category search api called')
-            result = category_wise_problem_solve_for_user(user_id)
+            result = category_wise_problem_solve_for_users([user_id])
             app.logger.info('Category search api completed')
             return {
                 "category_list": result

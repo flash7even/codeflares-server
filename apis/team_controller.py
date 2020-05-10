@@ -16,6 +16,8 @@ from core.team_services import add_team_member, delete_team_member, \
     delete_all_users_from_team, get_all_users_from_team,\
     search_teams_for_user, get_team_details, update_team_member, search_teams, get_rating_history_codeforces
 
+from core.training_model_services import sync_problem_score_for_team, sync_category_score_for_team, sync_root_category_score_for_team
+
 _http_headers = {'Content-Type': 'application/json'}
 
 _es_index = 'cp_training_teams'
@@ -292,5 +294,21 @@ class RatingHistoryOnlineJudge(Resource):
                 result = get_rating_history_codeforces(team_id)
                 return result
             return {}
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/sync/training-model/<string:team_id>')
+class Sync(Resource):
+
+    @access_required(access="ALL")
+    @api.doc('Sync team training model by id')
+    def put(self, team_id):
+        app.logger.info('Sync team training model API called, id: ' + str(team_id))
+        try:
+            sync_category_score_for_team(team_id)
+            sync_problem_score_for_team(team_id)
+            sync_root_category_score_for_team(team_id)
+            return {'message': 'success'}, 200
         except Exception as e:
             return {'message': str(e)}, 500

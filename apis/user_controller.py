@@ -84,6 +84,7 @@ class User(Resource):
             app.logger.info('Get user API called, id: ' + str(user_id))
             data = get_user_details(user_id)
             data['rating_history'] = get_user_rating_history(user_id)
+            return data
         except Exception as e:
             return {'message': str(e)}, 500
 
