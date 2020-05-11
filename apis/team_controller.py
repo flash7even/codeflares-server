@@ -185,7 +185,7 @@ class CreateTeam(Resource):
                     edge = {
                         'team_id': response['_id'],
                         'user_handle': member['user_handle'],
-                        'remarks': member['remarks'],
+                        'remarks': member.get('remarks', None),
                         'status': 'confirmed'
                     }
 

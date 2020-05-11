@@ -14,7 +14,7 @@
       "type": "keyword"
     },
     "remarks": {
-      "type": "float"
+      "type": "text"
     },
     "created_at": {
       "type": "long"
