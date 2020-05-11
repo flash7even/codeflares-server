@@ -77,16 +77,13 @@ team_list = [
             'team_type': 'team',
             'member_list': [
                 {
-                    'user_handle': 'flash_7',
-                    'remarks': 'contestant'
+                    'user_handle': 'flash_7'
                 },
                 {
-                    'user_handle': 'Labib666',
-                    'remarks': 'contestant'
+                    'user_handle': 'Labib666'
                 },
                 {
-                    'user_handle': 'hasib',
-                    'remarks': 'contestant'
+                    'user_handle': 'hasib'
                 }
             ]
         }
@@ -100,16 +97,13 @@ team_list = [
             'team_type': 'team',
             'member_list': [
                 {
-                    'user_handle': 'flash_7',
-                    'remarks': 'contestant'
+                    'user_handle': 'flash_7'
                 },
                 {
-                    'user_handle': 'Labib666',
-                    'remarks': 'contestant'
+                    'user_handle': 'Labib666'
                 },
                 {
-                    'user_handle': 'forthright48',
-                    'remarks': 'contestant'
+                    'user_handle': 'forthright48'
                 }
             ]
         }
