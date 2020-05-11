@@ -22,13 +22,24 @@ logger.addHandler(handler)
 rs = requests.session()
 _http_headers = {'Content-Type': 'application/json'}
 
-ES_HOST = 'localhost:9200'
 
-problem_list_names = ["problem-list - ad_hoc.csv", "problem-list - basic_math.csv", "problem-list - implementation.csv", "problem-list - misc.csv",
-                      "problem-list - number_theory.csv", "problem-list - number_theory.csv"]
+def check_existance(problem_id, oj_name):
+    json_data = {}
+    json_data["problem_id"] = problem_id
+    json_data["oj_name"] = oj_name
+    s_url = "http://localhost:5056/training/problem/search/0"
+    response = rs.post(url=s_url, json=json_data, headers=_http_headers).json()
+    if 'problem_list' in response:
+        problem_list = response['problem_list']
+        if len(problem_list) > 0:
+            return True
+    return False
 
 
 def add_problem_list(data):
+    if check_existance(data['problem_id'], data['oj_name']):
+        logger.error('PROBLEM ALREADY EXISTS: ' + json.dumps(data))
+        return
     url = "http://localhost:5056/training/problem/"
     response = rs.post(url=url, json=data, headers=_http_headers).json()
     logger.debug('response: ' + json.dumps(response))
@@ -46,44 +57,48 @@ def problem_list_extract(data):
             problem_significance = 1
         else:
             problem_significance = data['problem_significance'][i]
-        current_row = data.iloc[i,6:-1]
-        #print(current_row)
-        #print(problem_name)
+        current_row = data.iloc[i,7:-1]
         category_dependency_list = []
-        for r in current_row:
-            if r:
-                name, factor = r.split(',')
+        for category in current_row:
+            if category:
+                category = category.replace(" ", "")
+                split_list = category.split(',')
+                if len(split_list) != 2:
+                    logger.error('Inconsistent category dependency found for: ' + str(problem_name) + " " + oj_name)
+                    continue
                 dependency_data = {
-                    "category_name": name,
-                    "factor": factor
+                    "category_name": split_list[0],
+                    "factor": split_list[1]
                 }
-                #print(dependency_data)
                 category_dependency_list.append(dependency_data)
+            else:
+                logger.error('Category dependency not found for: ' + str(problem_name) + " " + oj_name)
         json_data = {
-            "problem_name": problem_name,
-            "problem_difficulty": problem_difficulty,
-            "problem_significance": problem_significance,
-            "source_link": source_link,
-            "problem_id": problem_id,
-            "oj_name": oj_name,
+            "problem_name": str(problem_name),
+            "problem_difficulty": str(problem_difficulty),
+            "problem_significance": str(problem_significance),
+            "source_link": str(source_link),
+            "problem_id": str(problem_id),
+            "oj_name": str(oj_name),
             "category_dependency_list": category_dependency_list
         }
-        #print(json_data)
+        print('json_data: ', json_data)
         add_problem_list(json_data)
 
 
-def problem_datasets():
+def upload_problem_datasets():
     dirpath = '../datasets/problems/'
     for dirpath, dirnames, filenames in os.walk(dirpath):
         for filename in filenames:
             full_filepath = os.path.join(dirpath, filename)
+            print('full_filepath: ', full_filepath)
             data = pd.read_csv(full_filepath)
             problem_list_extract(data)
 
 
 if __name__ == '__main__':
     logger.info('START RUNNING CATEGORY DEPENDENCY UPLOADER SCRIPT\n')
-    problem_datasets()
+    upload_problem_datasets()
     logger.info('FINISHED RUNNING CATEGORY DEPENDENCY UPLOADER SCRIPT\n')
 
 
