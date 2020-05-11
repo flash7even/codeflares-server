@@ -13,6 +13,7 @@ from core.problem_services import get_problem_details, find_problems_for_user_by
     find_problem_dependency_list, add_user_problem_status
 from core.user_model_sync_services import add_user_category_data, get_user_category_data
 from core.team_services import get_team_details
+from core.user_services import get_user_details_by_handle_name
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -85,14 +86,17 @@ def search_top_skilled_problems_for_user(user_id, sort_field, size, heavy=False)
 
 
 def category_wise_problem_solve_for_users(user_list):
+    app.logger.debug('category_wise_problem_solve_for_users: ' + json.dumps(user_list))
     try:
         solved_problems = []
         for user_id in user_list:
             cur_list = find_problems_for_user_by_status_filtered(['SOLVED'], user_id)
+            app.logger.debug('cur_list: ' + json.dumps(cur_list))
             for problem in cur_list:
                 if problem not in solved_problems:
                     solved_problems.append(problem)
 
+        app.logger.debug('solved_problems: ' + json.dumps(solved_problems))
         cnt_dict = {}
         category_list = search_categories({}, 0, _es_size)
         for category in category_list:
@@ -256,7 +260,10 @@ def sync_problem_score_for_team(team_id):
     team_details = get_team_details(team_id)
     marked_list = {}
     for member in team_details['member_list']:
-        user_id = member['id']
+        user_details = get_user_details_by_handle_name(member['user_handle'])
+        if user_details is None:
+            continue
+        user_id = user_details['id']
         problem_list = available_problems_for_user(user_id)
         for problem in problem_list:
             problem_id = problem['id']
@@ -272,9 +279,14 @@ def sync_category_score_for_team(team_id):
     team_details = get_team_details(team_id)
     user_list = []
     for member in team_details['member_list']:
-        user_list.append(member['id'])
+        user_details = get_user_details_by_handle_name(member['user_handle'])
+        if user_details is None:
+            continue
+        user_list.append(user_details['id'])
 
+    app.logger.debug('user_list: ' + json.dumps(user_list))
     category_list = category_wise_problem_solve_for_users(user_list)
+    app.logger.debug('category_list: ' + json.dumps(category_list))
     for category in category_list:
         if category['category_root'] == 'root':
             continue
@@ -287,7 +299,10 @@ def sync_root_category_score_for_team(team_id):
     team_details = get_team_details(team_id)
     solved_problems = []
     for member in team_details['member_list']:
-        user_id = member['id']
+        user_details = get_user_details_by_handle_name(member['user_handle'])
+        if user_details is None:
+            continue
+        user_id = user_details['id']
         problem_list = find_problems_for_user_by_status_filtered(['SOLVED'], user_id)
         for problem in problem_list:
             if problem not in solved_problems:

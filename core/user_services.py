@@ -73,6 +73,22 @@ def get_user_rating_history(user_id):
     ]
 
 
+def get_user_details_by_handle_name(username):
+    try:
+        rs = requests.session()
+        query_json = {'query': {'bool': {'must': [{'match': {'username': username}}]}}}
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                user = hit['_source']
+                user['id'] = hit['_id']
+                return user
+        return None
+    except Exception as e:
+        raise e
+
+
 def get_user_details(user_id):
     try:
         rs = requests.session()

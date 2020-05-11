@@ -14,6 +14,8 @@ from commons.jwt_helpers import access_required
 api = Namespace('training', description='Namespace for training service')
 
 from core.training_model_services import search_top_skilled_categoires_for_user, search_top_skilled_problems_for_user
+from core.team_services import get_all_users_from_team, get_team_details
+from core.user_services import get_user_details_by_handle_name
 
 
 @api.errorhandler(NoAuthorizationError)
@@ -105,9 +107,18 @@ class TeamTrainingModel(Resource):
         category_skill_list = search_top_skilled_categoires_for_user(team_id, 'ALL', 'skill_value', 150, True)
         root_category_skill_list = search_top_skilled_categoires_for_user(team_id, 'root', 'skill_value', 15, True)
 
-        return {
-            'problem_stat': problems,
-            'category_stat': categories,
-            'category_skill_list': category_skill_list,
-            'root_category_skill_list': root_category_skill_list
-        }
+        team_details = get_team_details(team_id)
+        team_details['skill_info'] = []
+        member_list = team_details.get('member_list', [])
+        for member in member_list:
+            user_details = get_user_details_by_handle_name(member['user_handle'])
+            if user_details is None:
+                continue
+            skill_list = search_top_skilled_categoires_for_user(user_details['id'], 'root', 'skill_value', 15, True)
+            team_details['skill_info'].append({'skill_list': skill_list})
+
+        team_details['problem_stat'] = problems
+        team_details['category_stat'] = categories
+        team_details['category_skill_list'] = category_skill_list
+        team_details['root_category_skill_list'] = root_category_skill_list
+        return team_details
