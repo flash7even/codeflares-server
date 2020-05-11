@@ -21,21 +21,6 @@ _http_headers = {'Content-Type': 'application/json'}
 
 user_list = [
     {
-        "id": "100",
-        "data": {
-          "username" : "flash_7",
-          "full_name" : "Tarango Khan",
-          "email" : "tarangokhan77@gmail.com",
-          "password" : "123456",
-          "codeforces_handle" : "flash_7",
-          "codechef_handle" : "tarango_khan",
-          "spoj_handle" : "tarango_khan",
-          "uva_handle" : "flash_7",
-          "lightoj_handle" : "14826",
-          "user_role" : "contestant"
-        }
-    },
-    {
         "id": "101",
         "data": {
           "username" : "forthright48",

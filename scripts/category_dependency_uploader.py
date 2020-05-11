@@ -8,7 +8,7 @@ import requests
 
 logger = logging.getLogger('category dependency uploader logger')
 logger.setLevel(logging.DEBUG)
-handler = TimedRotatingFileHandler('category_dependency_uploader.log', when='midnight', interval=1,  backupCount=30)
+handler = TimedRotatingFileHandler('../logs/category_dependency_uploader.log', when='midnight', interval=1,  backupCount=30)
 handler.setLevel(logging.DEBUG)
 handler.setFormatter(logging.Formatter(
     fmt='[%(asctime)s.%(msecs)03d] [%(levelname)s]: %(message)s',

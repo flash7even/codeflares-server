@@ -26,7 +26,7 @@ app = create_app(os.getenv('FLASK_ENV', 'development'))
 app.app_context().push()
 manager = Manager(app)
 
-handler = TimedRotatingFileHandler('cp_training.log', when='midnight', interval=1,  backupCount=30)
+handler = TimedRotatingFileHandler('./logs/cp_training.log', when='midnight', interval=1,  backupCount=30)
 handler.setLevel(logging.DEBUG)
 handler.setFormatter(logging.Formatter(
     fmt='[%(asctime)s.%(msecs)03d] [%(levelname)s]: %(message)s',

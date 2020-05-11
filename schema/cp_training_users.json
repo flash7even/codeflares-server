@@ -1,82 +1,85 @@
 {
   "dynamic": "strict",
-  "properties": {
-    "username": {
-      "type": "text"
-    },
-    "email": {
-      "type": "keyword"
-    },
-    "mobile": {
-      "type": "text"
-    },
-    "password": {
-      "type": "keyword"
-    },
-    "user_role": {
-      "type": "keyword"
-    },
-    "first_name": {
-      "type": "text"
-    },
-    "last_name": {
-      "type": "text"
-    },
-    "full_name": {
-      "type": "text"
-    },
-    "current_team_id": {
-      "type": "keyword"
-    },
-    "settings": {
+    "properties": {
+      "username": {
+        "type": "text"
+      },
+      "email": {
+        "type": "keyword"
+      },
+      "mobile": {
+        "type": "text"
+      },
+      "password": {
+        "type": "keyword"
+      },
+      "user_role": {
+        "type": "keyword"
+      },
+      "first_name": {
+        "type": "text"
+      },
+      "last_name": {
+        "type": "text"
+      },
+      "full_name": {
+        "type": "text"
+      },
       "current_team_id": {
-      "type": "keyword"
-      },
-      "show_contact_info": {
         "type": "keyword"
       },
-      "get_notification": {
+      "settings": {
+        "type": "nested",
+        "properties": {
+          "current_team_id": {
+          "type": "keyword"
+          },
+          "show_contact_info": {
+            "type": "keyword"
+          },
+          "get_notification": {
+            "type": "keyword"
+          },
+          "get_email_updates": {
+            "type": "keyword"
+          },
+          "hide_problem_tags": {
+            "type": "keyword"
+          }
+        }
+      },
+      "codeforces_handle": {
         "type": "keyword"
       },
-      "get_email_updates": {
+      "codechef_handle": {
         "type": "keyword"
       },
-      "hide_problem_tags": {
+      "uva_handle": {
+        "type": "keyword"
+      },
+      "spoj_handle": {
+        "type": "keyword"
+      },
+      "lightoj_handle": {
+        "type": "keyword"
+      },
+      "atcoder_handle": {
+        "type": "keyword"
+      },
+      "hackerrank_handle": {
+        "type": "keyword"
+      },
+      "created_at": {
+        "type": "long"
+      },
+      "created_by": {
+        "type": "keyword"
+      },
+      "updated_at": {
+        "type": "long"
+      },
+      "updated_by": {
         "type": "keyword"
       }
-    },
-    "codeforces_handle": {
-      "type": "keyword"
-    },
-    "codechef_handle": {
-      "type": "keyword"
-    },
-    "uva_handle": {
-      "type": "keyword"
-    },
-    "spoj_handle": {
-      "type": "keyword"
-    },
-    "lightoj_handle": {
-      "type": "keyword"
-    },
-    "atcoder_handle": {
-      "type": "keyword"
-    },
-    "hackerrank_handle": {
-      "type": "keyword"
-    },
-    "created_at": {
-      "type": "long"
-    },
-    "created_by": {
-      "type": "keyword"
-    },
-    "updated_at": {
-      "type": "long"
-    },
-    "updated_by": {
-      "type": "keyword"
     }
-  }
 }

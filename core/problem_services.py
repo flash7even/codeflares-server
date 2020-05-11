@@ -79,6 +79,7 @@ def available_problems_for_user(user_id):
     try:
         app.logger.info('available_problems_for_user method called')
         problem_list = search_problems({}, 0, _es_size)
+        print('problem_list found')
         available_list = []
         for problem in problem_list:
             edge = get_user_problem_status(user_id, problem['id'])
@@ -88,6 +89,7 @@ def available_problems_for_user(user_id):
                 status = edge.get('status', None)
                 if status == UNSOLVED:
                     available_list.append(problem)
+        print('available_list found')
         return available_list
     except Exception as e:
         raise e

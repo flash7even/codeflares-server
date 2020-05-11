@@ -21,7 +21,7 @@ def get_category_details(cat_id):
         if 'found' in response:
             if response['found']:
                 data = response['_source']
-                app.logger.info('Get category_details method completed')
+                #app.logger.info('Get category_details method completed')
                 return data
         return None
     except Exception as e:

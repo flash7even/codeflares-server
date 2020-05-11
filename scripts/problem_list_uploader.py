@@ -9,7 +9,7 @@ import requests
 
 logger = logging.getLogger('problem list uploader logger')
 logger.setLevel(logging.DEBUG)
-handler = TimedRotatingFileHandler('problem_list_uploader.log', when='midnight', interval=1,  backupCount=30)
+handler = TimedRotatingFileHandler('../logs/problem_list_uploader.log', when='midnight', interval=1,  backupCount=30)
 handler.setLevel(logging.DEBUG)
 handler.setFormatter(logging.Formatter(
     fmt='[%(asctime)s.%(msecs)03d] [%(levelname)s]: %(message)s',

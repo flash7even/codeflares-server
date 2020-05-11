@@ -98,8 +98,6 @@ class User(Resource):
             rs = requests.session()
             user_data = request.get_json()
 
-            print('user_data: ', json.dumps(user_data))
-
             search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, user_id)
             app.logger.debug('Elasticsearch query : ' + str(search_url))
             response = rs.get(url=search_url, headers=_http_headers).json()
@@ -240,8 +238,11 @@ class Sync(Resource):
         app.logger.info('Sync user training model API called, id: ' + str(user_id))
         try:
             sync_category_score_for_user(user_id)
+            app.logger.info('sync_category_score_for_user done')
             sync_problem_score_for_user(user_id)
+            app.logger.info('sync_problem_score_for_user done')
             sync_root_category_score_for_user(user_id)
+            app.logger.info('sync_root_category_score_for_user done')
             return {'message': 'success'}, 200
         except Exception as e:
             return {'message': str(e)}, 500

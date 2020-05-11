@@ -105,7 +105,7 @@ def category_wise_problem_solve_for_users(user_list):
                     edge = hit['_source']
                     problem_id = edge['problem_id']
                     problem_details = get_problem_details(problem_id)
-                    problem_diff = int(problem_details['problem_difficulty'])
+                    problem_diff = int(float(problem_details['problem_difficulty']))
                     cat_id = edge['category_id']
                     if cat_id not in cnt_dict:
                         cnt_dict[cat_id] = {
@@ -115,7 +115,6 @@ def category_wise_problem_solve_for_users(user_list):
                     if problem_id in solved_problems:
                         cnt_dict[cat_id]['difficulty_wise_count'][problem_diff] += 1
                         cnt_dict[cat_id]['total_count'] += 1
-                        print(cnt_dict[cat_id])
         for cat in category_list:
             cat_id = cat['category_id']
             cat['solved_stat'] = cnt_dict.get(cat_id, {'total_count': 0, 'difficulty_wise_count': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]})
@@ -173,6 +172,7 @@ def root_category_solved_count_by_solved_problem_list(solve_problems):
 
 
 def sync_root_category_score_for_user(user_id):
+    app.logger.debug(f'sync_root_category_score_for_user called for user_id: {user_id}')
     solved_problems = find_problems_for_user_by_status_filtered(['SOLVED'], user_id)
     root_solved_count = root_category_solved_count_by_solved_problem_list(solved_problems)
     category_list = search_categories({'category_root': 'root'}, 0, 100)
@@ -210,6 +210,7 @@ def generate_sync_data_for_category(user_id, category):
 
 
 def sync_category_score_for_user(user_id):
+    app.logger.debug(f'sync_category_score_for_user called for user_id: {user_id}')
     category_list = category_wise_problem_solve_for_users([user_id])
 
     for category in category_list:
@@ -232,7 +233,7 @@ def generate_sync_data_for_problem(user_id, problem):
         category_level_list.append(category_level)
 
     problem_score_generator = ProblemScoreGenerator()
-    relevant_score = problem_score_generator.generate_score(problem['problem_difficulty'], category_level_list)
+    relevant_score = problem_score_generator.generate_score(int(float(problem['problem_difficulty'])), category_level_list)
     data = {
         'problem_id': problem['id'],
         'relevant_score': relevant_score['score'],
@@ -243,6 +244,7 @@ def generate_sync_data_for_problem(user_id, problem):
 
 
 def sync_problem_score_for_user(user_id):
+    app.logger.debug(f'sync_problem_score_for_user called for user: {user_id}')
     problem_list = available_problems_for_user(user_id)
     for problem in problem_list:
         data = generate_sync_data_for_problem(user_id, problem)
@@ -250,6 +252,7 @@ def sync_problem_score_for_user(user_id):
 
 
 def sync_problem_score_for_team(team_id):
+    app.logger.debug(f'sync_problem_score_for_team called for team_id: {team_id}')
     team_details = get_team_details(team_id)
     marked_list = {}
     for member in team_details['member_list']:
@@ -265,8 +268,8 @@ def sync_problem_score_for_team(team_id):
 
 
 def sync_category_score_for_team(team_id):
+    app.logger.debug(f'sync_category_score_for_team called for team_id: {team_id}')
     team_details = get_team_details(team_id)
-    print('team_details: ', team_details)
     user_list = []
     for member in team_details['member_list']:
         user_list.append(member['id'])
@@ -280,6 +283,7 @@ def sync_category_score_for_team(team_id):
 
 
 def sync_root_category_score_for_team(team_id):
+    app.logger.debug(f'sync_root_category_score_for_team called for team_id: {team_id}')
     team_details = get_team_details(team_id)
     solved_problems = []
     for member in team_details['member_list']:

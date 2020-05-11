@@ -8,19 +8,23 @@ user_details_url = 'http://www.lightoj.com/volume_userstat.php?user_id='
 
 
 class LightOJScrapper:
+    credentials = {
+        'username': 'tarangokhan77@gmail.com',
+        'password': 'HeLLo@WoRLD2014'
+    }
 
-    def get_user_info(self, username, credentials):
+    def get_user_info(self, username):
 
         driver = webdriver.Firefox()
         driver.get(login_url)
 
         elem = driver.find_element_by_name("myuserid")
         elem.clear()
-        elem.send_keys(credentials['username'])
+        elem.send_keys(self.credentials['username'])
 
         elem = driver.find_element_by_name("mypassword")
         elem.clear()
-        elem.send_keys(credentials['password'])
+        elem.send_keys(self.credentials['password'])
 
         elem.send_keys(Keys.ENTER)
 
@@ -67,5 +71,5 @@ if __name__ == '__main__':
         'username': 'tarangokhan77@gmail.com',
         'password': 'HeLLo@WoRLD2014'
     }
-    resp = loj_scrapper.get_user_info('14826', credentials)
+    resp = loj_scrapper.get_user_info('14826')
     print(json.dumps(resp))
