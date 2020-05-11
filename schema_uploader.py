@@ -12,7 +12,7 @@ from logging.handlers import TimedRotatingFileHandler
 
 logger = logging.getLogger('schema uploader logger')
 logger.setLevel(logging.DEBUG)
-handler = TimedRotatingFileHandler('schema_uploader.log', when='midnight', interval=1,  backupCount=30)
+handler = TimedRotatingFileHandler('./logs/schema_uploader.log', when='midnight', interval=1,  backupCount=30)
 handler.setLevel(logging.DEBUG)
 handler.setFormatter(logging.Formatter(
     fmt='[%(asctime)s.%(msecs)03d] [%(levelname)s]: %(message)s',
@@ -35,10 +35,13 @@ def delete_index(index_name):
     logger.debug(f'Delete response: {response}')
 
 
-def create_index(index_name):
+def create_index(index_name, index_data):
+    data = {
+        "mappings": index_data
+    }
     logger.debug(f'Create index: {index_name}')
     url = f'http://{ES_HOST}/{index_name}'
-    response = rs.put(url=url, headers=_http_headers).json()
+    response = rs.put(url=url, json=data, headers=_http_headers).json()
     logger.debug(f'Create response: {response}')
 
 
@@ -69,11 +72,24 @@ def create_schema(dirpath):
                 index_name = os.path.splitext(filename)[0]
                 with open(full_filepath) as f:
                     index_data = json.load(f)
-                    create_index(index_name)
-                    update_index(index_name, index_data)
+                    create_index(index_name, index_data)
 
     logger.info('Create schema process completed')
 
+
+def update_schema(dirpath):
+    logger.info('Update schema process starts')
+
+    for dirpath, dirnames, filenames in os.walk(dirpath):
+        for filename in filenames:
+            full_filepath = os.path.join(dirpath, filename)
+            if filename.endswith('.json'):
+                index_name = os.path.splitext(filename)[0]
+                with open(full_filepath) as f:
+                    index_data = json.load(f)
+                    update_index(index_name, index_data)
+
+    logger.info('Update schema process completed')
 
 if __name__ == '__main__':
     logger.info('START RUNNING ES INDEX MIGRATION SCRIPT\n')
@@ -82,6 +98,7 @@ if __name__ == '__main__':
     parser.add_argument('--dir', help="Directory of the es schema")
     parser.add_argument('--delete', help="Set true to delete existing schema")
     parser.add_argument('--create', help="Set true to create new schema")
+    parser.add_argument('--update', help="Set true to update existing schema")
     args = parser.parse_args()
 
     dir = None
@@ -100,3 +117,7 @@ if __name__ == '__main__':
     if args.create and args.create == "true":
         logger.info('Command for creating new schema')
         create_schema(args.dir)
+
+    if args.update and args.update == "true":
+        logger.info('Command for creating new schema')
+        update_index(args.dir)
