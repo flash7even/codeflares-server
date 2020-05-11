@@ -1,0 +1,8 @@
+problem_name,problem_id,problem_difficulty,problem_significance,oj_name,source_link,solved_count,category_id_1,category_id_2,category_id_3
+Baker Vai,1071,5.5,4.5,lightoj,http://lightoj.com/volume_showproblem.php?problem=1071,625,"min_cost_max_flow,6.5","non_classical_dp, 7.5",
+Gift Packing,1222,6,4,lightoj,http://lightoj.com/volume_showproblem.php?problem=1222,296,"min_cost_max_flow,8.5",,
+Sending Secret Messages,1404,6.5,3.5,lightoj,http://lightoj.com/volume_showproblem.php?problem=1404,179,"min_cost_max_flow,8.5",,
+Cyber Cafe,1237,7,3,lightoj,http://lightoj.com/volume_showproblem.php?problem=1237,174,"min_cost_max_flow,8.5",,
+Guardian Knights,1243,7.5,2.5,lightoj,http://lightoj.com/volume_showproblem.php?problem=1243,138,"min_cost_max_flow,8.5",,
+Rent a Car,1409,9.1,2,lightoj,http://lightoj.com/volume_showproblem.php?problem=1409,71,"min_cost_max_flow,8.5",,
+The Great Merger,1290,9.3,1.5,lightoj,http://lightoj.com/volume_showproblem.php?problem=1290,41,"min_cost_max_flow,8.5",,

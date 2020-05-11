@@ -1,0 +1,5 @@
+problem_name,problem_id,problem_difficulty,problem_significance,oj_name,source_link,solved_count,category_id_1,category_id_2,category_id_3
+Consistency Checker,1129,3.5,6.5,lightoj,http://lightoj.com/volume_showproblem.php?problem=1129,1253,"trie,9",,
+DNA Prefix,1224,4.26,5.74,lightoj,http://lightoj.com/volume_showproblem.php?problem=1224,1039,"trie,9",,
+Easily Readable,1114,5.03,4.97,lightoj,http://lightoj.com/volume_showproblem.php?problem=1114,613,"trie,9",,
+Consecutive Sum,1269,5.79,4.21,lightoj,http://lightoj.com/volume_showproblem.php?problem=1269,426,"trie,10",,
