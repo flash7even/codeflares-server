@@ -15,7 +15,7 @@ api = Namespace('training', description='Namespace for training service')
 
 from core.training_model_services import search_top_skilled_categoires_for_user, search_top_skilled_problems_for_user
 from core.team_services import get_all_users_from_team, get_team_details
-from core.user_services import get_user_details_by_handle_name
+from core.user_services import get_user_details_by_handle_name, get_user_details_public
 
 
 @api.errorhandler(NoAuthorizationError)
@@ -121,4 +121,29 @@ class TeamTrainingModel(Resource):
         team_details['category_stat'] = categories
         team_details['category_skill_list'] = category_skill_list
         team_details['root_category_skill_list'] = root_category_skill_list
+        return team_details
+
+
+@api.route('/classroom/<string:team_id>')
+class TeamTrainingModel(Resource):
+
+    @access_required(access="ALL")
+    @api.doc('get classroom model ')
+    def get(self, team_id):
+        app.logger.info('Get classroom training model api called')
+        team_details = get_team_details(team_id)
+        member_stat = []
+        member_list = team_details.get('member_list', [])
+        for member in member_list:
+            user_details = get_user_details_by_handle_name(member['user_handle'])
+            if user_details is None:
+                continue
+            user_public_info = get_user_details_public(user_details['id'])
+            skill_list = search_top_skilled_categoires_for_user(user_details['id'], 'root', 'category_id', 15, True)
+            data = {
+                'user_info': user_public_info,
+                'skill_info': skill_list
+            }
+            member_stat.append(data)
+        team_details['member_stat'] = member_stat
         return team_details

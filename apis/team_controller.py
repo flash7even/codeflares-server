@@ -184,6 +184,7 @@ class CreateTeam(Resource):
 
                     edge = {
                         'team_id': response['_id'],
+                        'team_type': data['team_type'],
                         'user_handle': member['user_handle'],
                         'remarks': member.get('remarks', None),
                         'status': 'confirmed'
@@ -226,6 +227,7 @@ class CreateTeam(Resource):
         try:
             app.logger.info('Update team member method called')
             data = request.get_json()
+            print('provided data: ', data)
             response = update_team_member(data)
             app.logger.info('Update team member method completed')
             return response, 201
@@ -257,6 +259,7 @@ class SearchTeam(Resource):
         try:
             param = request.get_json()
             team_list = search_teams(param, page*_es_size, _es_size)
+            print('team_list: ', team_list)
             return {
                 'team_list': team_list
             }, 200
