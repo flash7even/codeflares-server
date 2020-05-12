@@ -28,6 +28,12 @@
       "current_team_id": {
         "type": "keyword"
       },
+      "current_skill": {
+        "type": "float"
+      },
+      "solve_count": {
+        "type": "long"
+      },
       "settings": {
         "type": "nested",
         "properties": {

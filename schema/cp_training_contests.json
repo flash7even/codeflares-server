@@ -1,23 +1,26 @@
 {
   "dynamic": "strict",
   "properties": {
-    "team_id": {
-      "type": "keyword"
-    },
-    "team_type": {
-      "type": "keyword"
-    },
-    "user_id": {
-      "type": "keyword"
-    },
-    "user_handle": {
-      "type": "keyword"
-    },
-    "status": {
-      "type": "keyword"
-    },
-    "remarks": {
+    "contest_name": {
       "type": "text"
+    },
+    "setter_id": {
+      "type": "keyword"
+    },
+    "contest_ref_id": {
+      "type": "keyword"
+    },
+    "contest_type": {
+      "type": "keyword"
+    },
+    "description": {
+      "type": "text"
+    },
+    "start_date": {
+      "type": "date"
+    },
+    "end_date": {
+      "type": "date"
     },
     "created_at": {
       "type": "long"

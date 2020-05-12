@@ -1,23 +1,14 @@
 {
   "dynamic": "strict",
   "properties": {
-    "team_id": {
+    "problem_id": {
       "type": "keyword"
     },
-    "team_type": {
-      "type": "keyword"
-    },
-    "user_id": {
-      "type": "keyword"
-    },
-    "user_handle": {
+    "contest_id": {
       "type": "keyword"
     },
     "status": {
       "type": "keyword"
-    },
-    "remarks": {
-      "type": "text"
     },
     "created_at": {
       "type": "long"
