@@ -140,10 +140,9 @@ class TeamTrainingModel(Resource):
                 continue
             user_public_info = get_user_details_public(user_details['id'])
             skill_list = search_top_skilled_categoires_for_user(user_details['id'], 'root', 'category_id', 15, True)
-            data = {
-                'user_info': user_public_info,
-                'skill_info': skill_list
-            }
-            member_stat.append(data)
+            user_public_info['status'] = 'pending'
+            for f in user_public_info:
+                member[f] = user_public_info[f]
+            member_stat.append(skill_list)
         team_details['member_stat'] = member_stat
         return team_details

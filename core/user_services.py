@@ -19,7 +19,7 @@ _es_index_user = 'cp_training_users'
 _es_type = '_doc'
 _es_size = 500
 
-public_fields = ['username', 'first_name', 'last_name', 'full_name', 'current_skill', 'solve_count']
+public_fields = ['username', 'first_name', 'last_name', 'full_name', 'skill_value', 'skill_title', 'solve_count']
 
 
 def get_user_rating_history(user_id):
@@ -119,6 +119,7 @@ def get_user_details_public(user_id):
                 public_data = {}
                 for f in public_fields:
                     public_data[f] = data.get(f, None)
+                public_data['id'] = user_id
                 app.logger.info('Get user_details method completed')
                 return public_data
         raise Exception('User not found')
