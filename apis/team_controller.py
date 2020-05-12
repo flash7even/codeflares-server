@@ -235,13 +235,17 @@ class CreateTeam(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
 
+
+@api.route('/member/<string:team_id>/<string:user_handle>')
+class CreateTeam(Resource):
+
     @access_required(access="ALL")
     @api.doc('delete team member')
-    def delete(self):
+    def delete(self, team_id, user_handle):
         try:
             app.logger.info('Delete team member method called')
-            data = request.get_json()
-            response = delete_team_member(data['team_id'], data['user_handle'])
+            print('team_id: ', team_id, ' user_handle: ', user_handle)
+            response = delete_team_member(team_id, user_handle)
             app.logger.info('Delete team member method completed')
             return response, 201
 

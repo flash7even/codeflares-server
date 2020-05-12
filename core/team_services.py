@@ -222,12 +222,14 @@ def delete_team_member(team_id, user_handle):
         app.logger.info('delete_team_member method called')
         rs = requests.session()
         resp = get_user_team_edge(team_id, user_handle)
+        print('resp: ', resp)
 
         if resp is None:
             raise Exception('Member not found')
 
         url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type, resp['_id'])
         response = rs.delete(url=url, headers=_http_headers).json()
+        print('response: ', response)
 
         if 'result' in response:
             app.logger.info('delete_team_member method completed')
