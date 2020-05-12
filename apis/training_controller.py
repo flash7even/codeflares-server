@@ -105,7 +105,7 @@ class TeamTrainingModel(Resource):
         problems = search_top_skilled_problems_for_user(team_id, 'relevant_score', 5, True)
         categories = search_top_skilled_categoires_for_user(team_id, 'ALL', 'relevant_score', 5, True)
         category_skill_list = search_top_skilled_categoires_for_user(team_id, 'ALL', 'skill_value', 150, True)
-        root_category_skill_list = search_top_skilled_categoires_for_user(team_id, 'root', 'skill_value', 15, True)
+        root_category_skill_list = search_top_skilled_categoires_for_user(team_id, 'root', 'category_id', 15, True)
 
         team_details = get_team_details(team_id)
         team_details['skill_info'] = []
@@ -114,7 +114,7 @@ class TeamTrainingModel(Resource):
             user_details = get_user_details_by_handle_name(member['user_handle'])
             if user_details is None:
                 continue
-            skill_list = search_top_skilled_categoires_for_user(user_details['id'], 'root', 'skill_value', 15, True)
+            skill_list = search_top_skilled_categoires_for_user(user_details['id'], 'root', 'category_id', 15, True)
             team_details['skill_info'].append({'skill_list': skill_list})
 
         team_details['problem_stat'] = problems
