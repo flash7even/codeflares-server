@@ -19,6 +19,8 @@ _es_index_user = 'cp_training_users'
 _es_type = '_doc'
 _es_size = 500
 
+public_fields = ['username', 'first_name', 'last_name', 'full_name', 'current_skill', 'solve_count']
+
 
 def get_user_rating_history(user_id):
     return [
@@ -100,6 +102,25 @@ def get_user_details(user_id):
                 data = response['_source']
                 app.logger.info('Get user_details method completed')
                 return data
+        raise Exception('User not found')
+    except Exception as e:
+        raise e
+
+
+def get_user_details_public(user_id):
+    try:
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_user, _es_type, user_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        print('response: ', response)
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                public_data = {}
+                for f in public_fields:
+                    public_data[f] = data.get(f, None)
+                app.logger.info('Get user_details method completed')
+                return public_data
         raise Exception('User not found')
     except Exception as e:
         raise e
