@@ -78,6 +78,21 @@ def create_schema(dirpath):
 
 
 def update_schema(dirpath):
+    logger.info('Create schema process starts')
+
+    for dirpath, dirnames, filenames in os.walk(dirpath):
+        for filename in filenames:
+            full_filepath = os.path.join(dirpath, filename)
+            if filename.endswith('.json'):
+                index_name = os.path.splitext(filename)[0]
+                with open(full_filepath) as f:
+                    index_data = json.load(f)
+                    update_index(index_name, index_data)
+
+    logger.info('Create schema process completed')
+
+
+def update_schema(dirpath):
     logger.info('Update schema process starts')
 
     for dirpath, dirnames, filenames in os.walk(dirpath):
@@ -120,4 +135,4 @@ if __name__ == '__main__':
 
     if args.update and args.update == "true":
         logger.info('Command for creating new schema')
-        update_index(args.dir)
+        update_schema(args.dir)
