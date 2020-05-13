@@ -1,5 +1,6 @@
 import logging
 import re
+import os
 import json
 from logging.handlers import TimedRotatingFileHandler
 
@@ -23,9 +24,11 @@ rs = requests.session()
 _http_headers = {'Content-Type': 'application/json'}
 
 ES_HOST = 'localhost:9200'
+total_cnt = 0
 
 
 def capitalize_text(name):
+    name = str(name)
     words = name.split('_')
     cap_words = []
     for word in words:
@@ -37,40 +40,52 @@ def capitalize_text(name):
 def add_category(data):
     url = "http://localhost:5056/api/category/"
     response = rs.post(url=url, json=data, headers=_http_headers).json()
-    logger.debug('response: ' + json.dumps(response))
+    print('response: ' + json.dumps(response))
 
 
-def category_extract():
-    data = pd.read_csv("../datasets/categories/category-list - algorithms.csv")
+def category_extract(data):
+    global total_cnt
     data = data.replace({np.nan: None})
+    category_cnt = 0
     for i in range(0, len(data)):
-        if data['category_root'][i]:
-            category_root = data['category_root'][i]
-            root_json = {
-                "category_name": category_root,
-                "category_title": capitalize_text(category_root),
-                "category_root": 'root',
-                "category_root_title": 'Root',
-                "category_difficulty": 0,
-                "category_importance": 10
-            }
-            add_category(root_json)
         json_data = {
             "category_name": data['category_name'][i],
             "category_title": capitalize_text(data['category_name'][i]),
-            "category_root": category_root,
-            "category_root_title": capitalize_text(category_root),
+            "category_root": data['category_root'][i],
+            "category_root_title": capitalize_text(data['category_root'][i]),
             "category_difficulty": data['category_difficulty'][i],
-            "category_importance": data['category_importance'][i]
+            "category_importance": data['category_importance'][i],
+            "factor": data['factor'][i],
+            "short_name": data['short_name'][i],
+            "score_percentage": data['score_percentage'][i]
         }
-        add_category(json_data)
 
-    print(len(data))
-    print()
+        for f in json_data:
+            json_data[f] = str(json_data[f])
+
+        if json_data['category_root'] != 'sum':
+            add_category(json_data)
+            category_cnt += 1
+            total_cnt += 1
+
+    logger.debug('Category uploaded: ' + str(category_cnt))
+    logger.debug('Total count now: ' + str(total_cnt))
+
+
+def upload_category_datasets():
+    dirpath = '../datasets/categories/category-list/'
+    for dirpath, dirnames, filenames in os.walk(dirpath):
+        for filename in filenames:
+            full_filepath = os.path.join(dirpath, filename)
+            print('full_filepath: ', full_filepath)
+            logger.debug('Category file path: ' + str(full_filepath))
+            data = pd.read_csv(full_filepath)
+            category_extract(data)
+
 
 if __name__ == '__main__':
     logger.info('START RUNNING CATEGORY UPLOADER SCRIPT\n')
-    category_extract()
+    upload_category_datasets()
     logger.info('FINISHED RUNNING CATEGORY UPLOADER SCRIPT\n')
 
 
