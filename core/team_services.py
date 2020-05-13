@@ -8,6 +8,7 @@ _http_headers = {'Content-Type': 'application/json'}
 
 from core.user_services import search_user
 from scrappers.codeforces_scrapper import CodeforcesScrapper
+from core.classroom_services import search_task_lists, search_class_lists
 
 _es_index_user_team_edge = 'cp_training_user_team_edges'
 _es_index_team = 'cp_training_teams'
@@ -88,6 +89,8 @@ def get_team_details(team_id):
                 data['follower'] = 921
                 data['following'] = 530
                 data['rating_history'] = get_team_rating_history(team_id)
+                data['task_list'] = search_task_lists({'classroom_id': team_id}, 0, 3)
+                data['class_list'] = search_class_lists({'classroom_id': team_id}, 0, 3)
                 return data
             app.logger.warning('Team not found')
             raise Exception('Team not found')

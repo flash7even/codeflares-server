@@ -10,6 +10,8 @@ from flask_jwt_extended import jwt_required
 from jwt.exceptions import *
 from commons.jwt_helpers import access_required
 
+from core.classroom_services import search_task_lists
+
 api = Namespace('classroom_task', description='Namespace for classroom_task service')
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -174,35 +176,12 @@ class SearchClassroomTask(Resource):
 
     @api.doc('search classroom_task based on post parameters')
     def post(self, page=0):
-        app.logger.info('ClassroomTask search method called')
-        rs = requests.session()
-        param = request.get_json()
-        query_json = {'query': {'match_all': {}}}
-
-        must = []
-        keyword_fields = ['classroom_task_title', 'classroom_task_root']
-
-        for f in param:
-            if f in keyword_fields:
-                must.append({'term': {f: param[f]}})
-            else:
-                must.append({'match': {f: param[f]}})
-
-        if len(must) > 0:
-            query_json = {'query': {'bool': {'must': must}}}
-
-        query_json['from'] = page*_es_size
-        query_json['size'] = _es_size
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_classroom_tasks, _es_type)
-        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        print(response)
-        if 'hits' in response:
-            item_list = []
-            for hit in response['hits']['hits']:
-                classroom_task = hit['_source']
-                classroom_task['id'] = hit['_id']
-                item_list.append(classroom_task)
-            app.logger.info('ClassroomTask search method completed')
-            return item_list, 200
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return {'message': 'internal server error'}, 500
+        try:
+            app.logger.info('ClassroomTask search method called')
+            param = request.get_json()
+            task_list = search_task_lists(param, page, _es_size)
+            return {
+                'task_list': task_list
+            }
+        except Exception as e:
+            return {'message': str(e)}, 500

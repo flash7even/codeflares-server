@@ -10,6 +10,8 @@ from flask_jwt_extended import jwt_required
 from jwt.exceptions import *
 from commons.jwt_helpers import access_required
 
+from core.classroom_services import search_class_lists
+
 api = Namespace('classroom_class', description='Namespace for classroom_class service')
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -151,6 +153,7 @@ class CreateClassroomClass(Resource):
         app.logger.info('Create classroom_class method called')
         rs = requests.session()
         data = request.get_json()
+        print('data: ', data)
 
         data['created_at'] = int(time.time())
         data['updated_at'] = int(time.time())
@@ -172,35 +175,12 @@ class SearchClassroomClass(Resource):
 
     @api.doc('search classroom_class based on post parameters')
     def post(self, page=0):
-        app.logger.info('ClassroomClass search method called')
-        rs = requests.session()
-        param = request.get_json()
-        query_json = {'query': {'match_all': {}}}
-
-        must = []
-        keyword_fields = ['classroom_class_title', 'classroom_class_root']
-
-        for f in param:
-            if f in keyword_fields:
-                must.append({'term': {f: param[f]}})
-            else:
-                must.append({'match': {f: param[f]}})
-
-        if len(must) > 0:
-            query_json = {'query': {'bool': {'must': must}}}
-
-        query_json['from'] = page*_es_size
-        query_json['size'] = _es_size
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_classroom_classes, _es_type)
-        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        print(response)
-        if 'hits' in response:
-            item_list = []
-            for hit in response['hits']['hits']:
-                classroom_class = hit['_source']
-                classroom_class['id'] = hit['_id']
-                item_list.append(classroom_class)
-            app.logger.info('ClassroomClass search method completed')
-            return item_list, 200
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return {'message': 'internal server error'}, 500
+        try:
+            app.logger.info('Classroom class search method called')
+            param = request.get_json()
+            class_list = search_class_lists(param, page, _es_size)
+            return {
+                'class_list': class_list
+            }
+        except Exception as e:
+            return {'message': str(e)}, 500
