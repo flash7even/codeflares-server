@@ -9,7 +9,8 @@ from jwt.exceptions import *
 from commons.jwt_helpers import access_required
 
 from core.user_services import synch_user_problem, search_user, get_user_details, get_user_rating_history
-from core.training_model_services import sync_problem_score_for_user, sync_category_score_for_user, sync_root_category_score_for_user
+from core.training_model_services import sync_problem_score_for_user, sync_category_score_for_user,\
+    sync_root_category_score_for_user, sync_overall_stat_for_user
 
 api = Namespace('user', description='user related services')
 
@@ -243,6 +244,8 @@ class Sync(Resource):
             app.logger.info('sync_problem_score_for_user done')
             sync_root_category_score_for_user(user_id)
             app.logger.info('sync_root_category_score_for_user done')
+            sync_overall_stat_for_user(user_id)
+            app.logger.info('sync_overall_stat_for_user done')
             return {'message': 'success'}, 200
         except Exception as e:
             return {'message': str(e)}, 500

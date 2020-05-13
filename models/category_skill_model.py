@@ -19,7 +19,7 @@ class CategorySkillGenerator:
         if group_bound:
             self.group_bound = group_bound
 
-    def generate_skill(self, solved_table):
+    def generate_skill(self, solved_table, problem_factor):
         factor = {}
         x = 1.0
         skill = 0
@@ -40,7 +40,7 @@ class CategorySkillGenerator:
 
             while solve_count > 0:
                 take = min(solve_count, gcount)
-                skill_diff = take*score*factor[factor_dx]
+                skill_diff = take*score*factor[factor_dx]*problem_factor
                 skill += skill_diff
                 solve_count -= take
                 factor_dx += 1

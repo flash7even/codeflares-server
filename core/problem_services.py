@@ -11,7 +11,7 @@ _es_index_problem_category = 'cp_training_problem_category_edges'
 _es_index_problem_user = 'cp_training_user_problem_edges'
 _es_index_problem = 'cp_training_problems'
 _es_type = '_doc'
-_es_size = 500
+_es_size = 100
 _es_max_solved_problem = 1000
 
 SOLVED = 'SOLVED'
@@ -38,6 +38,24 @@ def get_user_problem_status(user_id, problem_id):
                 return edge
         return None
 
+    except Exception as e:
+        raise e
+
+
+def get_solved_problem_count_for_user(user_id):
+    try:
+        rs = requests.session()
+        must = [
+            {'term': {'user_id': user_id}},
+            {'term': {'status': SOLVED}}
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = 1
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        if 'hits' in response:
+            return response['hits']['total']['value']
+        return 0
     except Exception as e:
         raise e
 

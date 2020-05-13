@@ -10,10 +10,10 @@ from models.problem_score_model import ProblemScoreGenerator
 
 from core.category_services import search_categories, find_category_dependency_list, get_category_details
 from core.problem_services import get_problem_details, find_problems_for_user_by_status_filtered, available_problems_for_user, \
-    find_problem_dependency_list, add_user_problem_status
+    find_problem_dependency_list, add_user_problem_status, get_solved_problem_count_for_user
 from core.user_model_sync_services import add_user_category_data, get_user_category_data
 from core.team_services import get_team_details
-from core.user_services import get_user_details_by_handle_name
+from core.user_services import get_user_details_by_handle_name, update_user_details
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -30,6 +30,30 @@ _bulk_size = 20
 SOLVED = 'SOLVED'
 SOLVE_LATER = 'SOLVE_LATER'
 SKIP = 'SKIP'
+
+
+def generate_skill_value_for_user(user_id):
+    app.logger.info('generate_skill_value_for_user: ' + str(user_id))
+    rs = requests.session()
+    must = [
+        {'term': {'category_root': 'root'}},
+        {'term': {'user_id': user_id}},
+    ]
+    query_json = {'query': {'bool': {'must': must}}}
+    aggregate = {
+        "skill_value_by_percentage": {"sum": {"field": "skill_value_by_percentage"}}
+    }
+    query_json['aggs'] = aggregate
+    query_json['size'] = 0
+
+    search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user_category, _es_type)
+    response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+
+    if 'aggregations' not in response:
+        raise Exception('Internal server error')
+
+    skill_value = response['aggregations']['skill_value_by_percentage']['value']
+    return skill_value
 
 
 def search_top_skilled_categoires_for_user(user_id, category_root, sort_field, size, heavy=False):
@@ -127,12 +151,16 @@ def category_wise_problem_solve_for_users(user_list):
         raise e
 
 
-def generate_sync_data_for_root_category(category, root_solved_count):
+def generate_sync_data_for_root_category(user_id, category, root_solved_count):
     rs = requests.session()
-    query_json = {'query': {'bool': {'must': [{'term': {'category_root': category['category_name']}}]}}}
+    skill_obj = Skill()
+    must = [
+        {'term': {'category_root': category['category_name']}},
+        {'term': {'user_id': user_id}}
+    ]
+    query_json = {'query': {'bool': {'must': must}}}
     aggregate = {
-        "skill_level": {"sum": {"field": "skill_level"}},
-        "skill_value": {"sum": {"field": "skill_value"}}
+        "skill_value_by_percentage": {"sum": {"field": "skill_value_by_percentage"}}
     }
     query_json['aggs'] = aggregate
     query_json['size'] = 0
@@ -143,17 +171,15 @@ def generate_sync_data_for_root_category(category, root_solved_count):
     if 'aggregations' not in response:
         raise Exception('Internal server error')
 
-    total_data = response['hits']['total']['value']
-    skill_level_sum = response['aggregations']['skill_level']['value']
-    skill_value_sum = response['aggregations']['skill_value']['value']
-
-    skill_value = skill_value_sum / total_data
-    skill_level = skill_level_sum / total_data
-    skill_obj = Skill()
+    skill_value = response['aggregations']['skill_value_by_percentage']['value']
+    root_category_percentage = float(category.get('score_percentage', 100))
+    skill_value_by_percentage_sum = skill_value*root_category_percentage/100
+    skill_level = skill_obj.get_skill_level_from_skill(skill_value)
 
     data = {
         'relevant_score': -1,
         'skill_value': skill_value,
+        'skill_value_by_percentage': skill_value_by_percentage_sum,
         'skill_level': skill_level,
         'skill_title': skill_obj.get_skill_title(skill_level),
         'solve_count': root_solved_count.get(category['category_name'], 0),
@@ -181,13 +207,14 @@ def sync_root_category_score_for_user(user_id):
     root_solved_count = root_category_solved_count_by_solved_problem_list(solved_problems)
     category_list = search_categories({'category_root': 'root'}, 0, 100)
     for category in category_list:
-        data = generate_sync_data_for_root_category(category, root_solved_count)
+        data = generate_sync_data_for_root_category(user_id, category, root_solved_count)
         add_user_category_data(user_id, category['category_id'], data)
 
 
 def generate_sync_data_for_category(user_id, category):
     category_skill_generator = CategorySkillGenerator()
-    skill_stat = category_skill_generator.generate_skill(category['solved_stat']['difficulty_wise_count'])
+    factor = float(category.get('factor', 1))
+    skill_stat = category_skill_generator.generate_skill(category['solved_stat']['difficulty_wise_count'], factor)
 
     dependent_skill_level = []
     dependent_categories = find_category_dependency_list(category['category_id'])
@@ -202,9 +229,12 @@ def generate_sync_data_for_category(user_id, category):
     cat_score = category_score_generator.generate_score(dependent_skill_level, skill_stat['level'])
     skill_obj = Skill()
 
+    category_percentage = float(category.get('score_percentage', 100))
+
     data = {
         'relevant_score': cat_score['score'],
         'skill_value': skill_stat['skill'],
+        'skill_value_by_percentage': float(skill_stat['skill'])*category_percentage/100.0,
         'skill_level': skill_stat['level'],
         'skill_title': skill_obj.get_skill_title(skill_stat['skill']),
         'solve_count': category['solved_stat']['total_count'],
@@ -221,6 +251,7 @@ def sync_category_score_for_user(user_id):
         if category['category_root'] == 'root':
             continue
         data = generate_sync_data_for_category(user_id, category)
+        print('after sync data: ', data)
         add_user_category_data(user_id, category['category_id'], data)
 
 
@@ -253,6 +284,21 @@ def sync_problem_score_for_user(user_id):
     for problem in problem_list:
         data = generate_sync_data_for_problem(user_id, problem)
         add_user_problem_status(user_id, problem['id'], data)
+
+
+def sync_overall_stat_for_user(user_id):
+    app.logger.debug(f'sync_overall_stat_for_user, user: {user_id}')
+    solve_count = get_solved_problem_count_for_user(user_id)
+    skill_value = generate_skill_value_for_user(user_id)
+    skill_obj = Skill()
+    skill_title = skill_obj.get_skill_title(skill_value)
+    user_data = {
+        'skill_value': int(skill_value),
+        'solve_count': int(solve_count),
+        'skill_title': skill_title,
+    }
+    app.logger.debug('User final stat to update: ' + json.dumps(user_data))
+    update_user_details(user_id, user_data)
 
 
 def sync_problem_score_for_team(team_id):
@@ -311,5 +357,5 @@ def sync_root_category_score_for_team(team_id):
     root_solved_count = root_category_solved_count_by_solved_problem_list(solved_problems)
     category_list = search_categories({'category_root': 'root'}, 0, 100)
     for category in category_list:
-        data = generate_sync_data_for_root_category(category, root_solved_count)
+        data = generate_sync_data_for_root_category(team_id, category, root_solved_count)
         add_user_category_data(team_id, category['category_id'], data)

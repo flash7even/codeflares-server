@@ -107,6 +107,39 @@ def get_user_details(user_id):
         raise e
 
 
+def update_user_details(user_id, user_data):
+    try:
+        app.logger.info('update_user_details called ' + str(user_id))
+        ignore_fields = ['username', 'password']
+        rs = requests.session()
+
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_user, _es_type, user_id)
+        app.logger.debug('Elasticsearch query : ' + str(search_url))
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        app.logger.debug('Elasticsearch response :' + str(response))
+
+        if 'found' in response:
+            if response['found']:
+                user = response['_source']
+                for key in user_data:
+                    if key not in ignore_fields and user_data[key]:
+                        user[key] = user_data[key]
+
+                app.logger.debug('Elasticsearch query : ' + str(search_url))
+                response = rs.put(url=search_url, json=user, headers=_http_headers).json()
+                app.logger.debug('Elasticsearch response :' + str(response))
+                if 'result' in response:
+                    app.logger.info('Update user API completed')
+                    return response['result']
+            app.logger.info('User not found')
+            return 'not found'
+        app.logger.error('Elasticsearch down')
+        return response
+
+    except Exception as e:
+        return {'message': str(e)}
+
+
 def get_user_details_public(user_id):
     try:
         rs = requests.session()
@@ -225,11 +258,6 @@ def search_user(param, from_val, to_val):
             for hit in response['hits']['hits']:
                 user = hit['_source']
                 user['id'] = hit['_id']
-
-                user['rating'] = 1988
-                user['title'] = 'Candidate Master'
-                user['max_rating'] = 1988
-                user['solve_count'] = 890
                 user['follower'] = 921
                 user['following'] = 530
                 user['rating_history'] = get_user_rating_history(user['id'])

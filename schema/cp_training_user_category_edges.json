@@ -13,6 +13,9 @@
     "skill_value": {
       "type": "float"
     },
+    "skill_value_by_percentage": {
+      "type": "float"
+    },
     "skill_level": {
       "type": "float"
     },
