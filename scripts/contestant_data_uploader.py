@@ -112,7 +112,7 @@ team_list = [
 
 ADMIN_USER = 'flash_7'
 ADMIN_PASSWORD = '123456'
-login_api = "http://localhost:5056/training/auth/login"
+login_api = "http://localhost:5056/api/auth/login"
 
 
 def get_access_token():
@@ -131,7 +131,7 @@ def add_single_team(data):
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token}'
     }
-    s_url = "http://localhost:5056/training/team/"
+    s_url = "http://localhost:5056/api/team/"
     response = rs.post(url=s_url, json=data, headers=auth_headers).json()
     logger.info(response)
 
@@ -144,7 +144,7 @@ def add_teams():
 
 def add_single_user(data):
     logger.info('add_single_user: ' + json.dumps(data))
-    s_url = "http://localhost:5056/training/user/"
+    s_url = "http://localhost:5056/api/user/"
     response = rs.post(url=s_url, json=data, headers=_http_headers).json()
     logger.info(response)
 

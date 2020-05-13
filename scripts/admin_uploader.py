@@ -40,7 +40,7 @@ user_list = [
 
 def add_single_user(data):
     logger.info('add_single_user: ' + json.dumps(data))
-    s_url = "http://localhost:5056/training/user/"
+    s_url = "http://localhost:5056/api/user/"
     response = rs.post(url=s_url, json=data, headers=_http_headers).json()
     logger.info(response)
 

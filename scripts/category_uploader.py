@@ -35,7 +35,7 @@ def capitalize_text(name):
 
 
 def add_category(data):
-    url = "http://localhost:5056/training/category/"
+    url = "http://localhost:5056/api/category/"
     response = rs.post(url=url, json=data, headers=_http_headers).json()
     logger.debug('response: ' + json.dumps(response))
 

@@ -27,7 +27,7 @@ def check_existance(problem_id, oj_name):
     json_data = {}
     json_data["problem_id"] = problem_id
     json_data["oj_name"] = oj_name
-    s_url = "http://localhost:5056/training/problem/search/0"
+    s_url = "http://localhost:5056/api/problem/search/0"
     response = rs.post(url=s_url, json=json_data, headers=_http_headers).json()
     if 'problem_list' in response:
         problem_list = response['problem_list']
@@ -40,7 +40,7 @@ def add_problem_list(data):
     if check_existance(data['problem_id'], data['oj_name']):
         logger.error('PROBLEM ALREADY EXISTS: ' + json.dumps(data))
         return
-    url = "http://localhost:5056/training/problem/"
+    url = "http://localhost:5056/api/problem/"
     response = rs.post(url=url, json=data, headers=_http_headers).json()
     logger.debug('response: ' + json.dumps(response))
 

@@ -25,7 +25,7 @@ ES_HOST = 'localhost:9200'
 
 
 def add_category_dependency(data):
-    url = "http://localhost:5056/training/category/dependency"
+    url = "http://localhost:5056/api/category/dependency"
     response = rs.post(url=url, json=data, headers=_http_headers).json()
     logger.debug('response: ' + json.dumps(response))
 

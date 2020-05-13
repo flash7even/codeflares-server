@@ -152,6 +152,8 @@ class CreateClassroomTask(Resource):
         rs = requests.session()
         data = request.get_json()
 
+        print('data: ',data)
+
         data['created_at'] = int(time.time())
         data['updated_at'] = int(time.time())
 
