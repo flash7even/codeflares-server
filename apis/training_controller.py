@@ -143,6 +143,17 @@ class TeamTrainingModel(Resource):
             user_public_info['status'] = 'pending'
             for f in user_public_info:
                 member[f] = user_public_info[f]
-            member_stat.append(skill_list)
+            store = {
+                'user_handle': member['user_handle'],
+                'skill_list': skill_list
+            }
+            member_stat.append(store)
         team_details['member_stat'] = member_stat
+
+        category_list = []
+        for cat in member_stat[0]['skill_list']:
+            category_list.append(cat['category_info'])
+
+        team_details['category_list'] = category_list
+
         return team_details
