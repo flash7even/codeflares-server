@@ -1,0 +1,41 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "classroom_id": {
+      "type": "keyword"
+    },
+    "class_title": {
+      "type": "keyword"
+    },
+    "class_description": {
+      "type": "keyword"
+    },
+    "class_moderator_id": {
+      "type": "keyword"
+    },
+    "class_time": {
+      "type": "date"
+    },
+    "class_duration": {
+      "type": "long"
+    },
+    "resource_link": {
+      "type": "keyword"
+    },
+    "status": {
+      "type": "keyword"
+    },
+    "created_at": {
+      "type": "long"
+    },
+    "created_by": {
+      "type": "keyword"
+    },
+    "updated_at": {
+      "type": "long"
+    },
+    "updated_by": {
+      "type": "keyword"
+    }
+  }
+}

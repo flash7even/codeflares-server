@@ -1,0 +1,35 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "classroom_id": {
+      "type": "keyword"
+    },
+    "task_title": {
+      "type": "keyword"
+    },
+    "task_description": {
+      "type": "keyword"
+    },
+    "task_added_by": {
+      "type": "keyword"
+    },
+    "deadline": {
+      "type": "date"
+    },
+    "status": {
+      "type": "keyword"
+    },
+    "created_at": {
+      "type": "long"
+    },
+    "created_by": {
+      "type": "keyword"
+    },
+    "updated_at": {
+      "type": "long"
+    },
+    "updated_by": {
+      "type": "keyword"
+    }
+  }
+}
