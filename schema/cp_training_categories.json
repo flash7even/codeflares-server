@@ -19,6 +19,15 @@
     "category_difficulty": {
       "type": "float"
     },
+    "factor": {
+      "type": "float"
+    },
+    "score_percentage": {
+      "type": "float"
+    },
+    "short_name": {
+      "type": "keyword"
+    },
     "category_importance": {
       "type": "float"
     },
