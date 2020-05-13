@@ -1,0 +1,10 @@
+category_root,category_name,short_name,category_difficulty,category_importance,factor,score_percentage
+miscellaneous,basic_backtracking,,3.5,10,1,20
+miscellaneous,recursion,,3,10,1,20
+miscellaneous,binary_search,,4,10,1,20
+miscellaneous,two_pointer,,3.5,8,1,11
+miscellaneous,sliding_window,,3.5,8,1,6
+miscellaneous,ternary_search,,4.5,9,1.15,15
+miscellaneous,meet_in_the_middle,,5,7,2,5
+miscellaneous,josephus_problem,,6,5,2.5,3
+sum,,,,,,100

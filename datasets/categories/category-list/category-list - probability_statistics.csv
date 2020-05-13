@@ -1,0 +1,4 @@
+category_root,category_name,short_name,category_difficulty,category_importance,factor,score_percentage
+probability_statistics,basic_probability,,3.5,7,1,50
+probability_statistics,expected_value,,6,7,1.5,50
+sum,,,,,,100

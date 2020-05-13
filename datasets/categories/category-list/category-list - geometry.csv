@@ -1,0 +1,14 @@
+category_root,category_name,short_name,category_difficulty,category_importance,factor,score_percentage
+geometry,basic_vector_geometry,,2,9,1,17
+geometry,shape_area,,3,8,2,7
+geometry,point_segment_distance,,3.5,7,3,5
+geometry,picks_theorem,,3,5,2,5
+geometry,segment_segment_intersection,,4,8,2,8
+geometry,closest_pair_of_points,,5.5,4,2,3
+geometry,shape_intersection,,5,4,1,4
+geometry,convex_hull,,6,9,1.15,17
+geometry,point_inside_polygon,,5.5,6,1.5,5
+geometry,line_sweep,,7,5,2.5,8
+geometry,rotating_callipers,,8,5,2.5,11
+geometry,shape_rotation,,7.5,2,2,10
+sum,,,,,,100

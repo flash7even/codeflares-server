@@ -1,0 +1,8 @@
+category_root,category_name,short_name,category_difficulty,category_importance,factor,score_percentage
+game_theory,nim,,2,5,1,26
+game_theory,misere_nim,,3,2,2,8
+game_theory,bogus_nim,,3,2,2,8
+game_theory,staircase_nim,,3.5,2,2,8
+game_theory,grundy_number ,,6,5,1.5,30
+game_theory,hackenbush,,8,2,3,20
+sum,,,,,,100

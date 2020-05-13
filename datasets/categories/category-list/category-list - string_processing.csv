@@ -1,0 +1,8 @@
+category_root,category_name,short_name,category_difficulty,category_importance,factor,score_percentage
+string_processing,hashing,,4,10,1,20
+string_processing,z_algorithm,,5.5,6,2,12
+string_processing,kmp,,6,7,1.5,20
+string_processing,manachers_algorithm,,7.5,5,1.5,11
+string_processing,aho_corasick,,8.5,6,2,15
+string_processing,suffix_array,,8,8,2,22
+sum,,,,,,100

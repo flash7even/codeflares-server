@@ -1,0 +1,6 @@
+category_root,category_name,short_name,category_difficulty,category_importance,factor,score_percentage
+greedy,basic_greedy_knowledge,,4,6,1,25
+greedy,interval_scheduling,,3,6,2,35
+greedy,job_sequencing_problem,,3,4,2,25
+greedy,stable_marriage,,4,2,2,15
+sum,,,,,,100

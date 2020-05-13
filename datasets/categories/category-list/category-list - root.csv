@@ -1,0 +1,15 @@
+category_root,category_name,short_name,category_difficulty,category_importance,factor,score_percentage
+root,base,Base,2.4,10,1,10
+root,combinatorics,Combinatorics,5,6,1,8
+root,data_structure,DS,6,9,1,12
+root,dynamic_programming,DP,6,8,1,10
+root,game_theory,Game Theory,3.5,3,1,2
+root,geometry,Geo,7,5,1,7
+root,graph,Graph,5,8,1,10
+root,greedy,Greedy,3.4,7,1,7
+root,mathematics,Math,8,4.5,1,5
+root,miscellaneous,Misc,6,6.5,1,7
+root,number_theory,NT,5.5,8.5,1,10
+root,probability_statistics,Probability,5,3,1,3.5
+root,string_processing,String,6.5,6.5,1,8.5
+sum,,,,,,100
