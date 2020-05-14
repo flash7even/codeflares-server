@@ -17,7 +17,7 @@
       "type": "date"
     },
     "class_duration": {
-      "type": "long"
+      "type": "text"
     },
     "resource_link": {
       "type": "keyword"
