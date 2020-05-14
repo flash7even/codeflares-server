@@ -17,6 +17,7 @@ from .team_controller import api as team_ns
 from extensions.flask_redis import redis_store
 from .classroom_class_controller import api as classroom_class_ns
 from .classroom_task_controller import api as classroom_task_ns
+from .problem_status_controller import api as problem_status_ns
 
 blueprint = Blueprint('api', Config.APPNAME, url_prefix='/api')
 
@@ -34,6 +35,7 @@ api.add_namespace(train_ns, path='/training')
 api.add_namespace(team_ns, path='/team')
 api.add_namespace(classroom_class_ns, path='/classroom/class')
 api.add_namespace(classroom_task_ns, path='/classroom/task')
+api.add_namespace(problem_status_ns, path='/problem/status')
 
 
 def create_app(instance_name):
