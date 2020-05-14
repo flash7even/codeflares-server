@@ -12,7 +12,7 @@ from core.category_services import search_categories, find_category_dependency_l
 from core.problem_services import get_problem_details, find_problems_for_user_by_status_filtered, available_problems_for_user, \
     find_problem_dependency_list, add_user_problem_status, get_solved_problem_count_for_user
 from core.user_model_sync_services import add_user_category_data, get_user_category_data
-from core.team_services import get_team_details
+from core.team_services import get_team_details, update_team_details
 from core.user_services import get_user_details_by_handle_name, update_user_details
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -359,3 +359,37 @@ def sync_root_category_score_for_team(team_id):
     for category in category_list:
         data = generate_sync_data_for_root_category(team_id, category, root_solved_count)
         add_user_category_data(team_id, category['category_id'], data)
+
+
+def sync_overall_stat_for_team(team_id):
+    app.logger.debug(f'sync_overall_stat_for_team, team: {team_id}')
+    team_details = get_team_details(team_id)
+    mark_problem = {}
+    solve_count = 0
+    for member in team_details['member_list']:
+        user_details = get_user_details_by_handle_name(member['user_handle'])
+        app.logger.debug(f'member details: {json.dumps(user_details)}')
+        if user_details is None:
+            continue
+        user_id = user_details['id']
+        problem_list = find_problems_for_user_by_status_filtered(['SOLVED'], user_id)
+        app.logger.debug(f'problem list collected, count: {len(problem_list)}')
+        for problem in problem_list:
+            if problem not in mark_problem:
+                mark_problem[problem] = 1
+                solve_count += 1
+
+    app.logger.debug(f'solve_count: {solve_count}')
+
+    skill_value = generate_skill_value_for_user(team_id)
+    app.logger.debug(f'skill_value: {skill_value}')
+    skill_obj = Skill()
+    skill_title = skill_obj.get_skill_title(skill_value)
+    app.logger.debug(f'skill_title: {skill_title}')
+    skill_data = {
+        'skill_value': int(skill_value),
+        'solve_count': int(solve_count),
+        'skill_title': skill_title,
+    }
+    app.logger.debug('Team final stat to update: ' + json.dumps(skill_data))
+    update_team_details(team_id, skill_data)

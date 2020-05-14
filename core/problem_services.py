@@ -76,8 +76,10 @@ def find_problems_for_user_by_status_filtered(status, user_id, heavy=False):
 
         query_json = {'query': {'bool': {'must': must}}}
         query_json['size'] = _es_max_solved_problem
+        print('query_json: ', query_json)
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        print('response: ', response)
 
         problem_list = []
         if 'hits' in response:

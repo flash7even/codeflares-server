@@ -69,6 +69,34 @@ def get_team_rating_history(team_id):
     ]
 
 
+def update_team_details(team_id, post_data):
+    try:
+        app.logger.info('Update team_details method called')
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_team, _es_type, team_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                for key, value in post_data.items():
+                    data[key] = value
+                data['updated_at'] = int(time.time())
+                response = rs.put(url=search_url, json=data, headers=_http_headers).json()
+                if 'result' in response:
+                    app.logger.info('Update team_details method completed')
+                    return response['result']
+                else:
+                    app.logger.error('Elasticsearch down, response: ' + str(response))
+                    return response
+            app.logger.warning('Team not found')
+            return {'message': 'not found'}
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        return response
+
+    except Exception as e:
+        raise e
+
+
 def get_team_details(team_id):
     print('get_team_details: ', team_id)
     try:
@@ -82,10 +110,6 @@ def get_team_details(team_id):
                 data = response['_source']
                 data['id'] = response['_id']
                 data['member_list'] = get_all_users_from_team(team_id)
-                data['rating'] = 1988
-                data['title'] = 'Candidate Master'
-                data['max_rating'] = 1988
-                data['solve_count'] = 890
                 data['follower'] = 921
                 data['following'] = 530
                 data['rating_history'] = get_team_rating_history(team_id)

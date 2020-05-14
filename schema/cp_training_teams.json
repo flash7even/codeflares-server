@@ -19,6 +19,15 @@
     "team_type": {
       "type": "keyword"
     },
+    "skill_value": {
+      "type": "float"
+    },
+    "solve_count": {
+      "type": "long"
+    },
+    "skill_title": {
+      "type": "keyword"
+    },
     "created_at": {
       "type": "long"
     },

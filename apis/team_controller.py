@@ -16,7 +16,7 @@ from core.team_services import add_team_member, delete_team_member, \
     delete_all_users_from_team, get_all_users_from_team,\
     search_teams_for_user, get_team_details, update_team_member, search_teams, get_rating_history_codeforces
 
-from core.training_model_services import sync_problem_score_for_team, sync_category_score_for_team, sync_root_category_score_for_team
+from core.training_model_services import sync_problem_score_for_team, sync_category_score_for_team, sync_root_category_score_for_team, sync_overall_stat_for_team
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -313,9 +313,14 @@ class Sync(Resource):
     def put(self, team_id):
         app.logger.info('Sync team training model API called, id: ' + str(team_id))
         try:
+            app.logger.debug('sync sync_category_score_for_team')
             sync_category_score_for_team(team_id)
+            app.logger.debug('sync sync_problem_score_for_team')
             sync_problem_score_for_team(team_id)
+            app.logger.debug('sync sync_root_category_score_for_team')
             sync_root_category_score_for_team(team_id)
+            app.logger.debug('sync sync_overall_stat_for_team')
+            sync_overall_stat_for_team(team_id)
             return {'message': 'success'}, 200
         except Exception as e:
             return {'message': str(e)}, 500
