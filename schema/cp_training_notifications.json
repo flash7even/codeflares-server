@@ -4,14 +4,17 @@
     "user_id": {
       "type": "keyword"
     },
-    "invitation_sent_by": {
+    "sender_id": {
       "type": "keyword"
     },
-    "invitation_type": {
+    "notification_type": {
       "type": "keyword"
     },
-    "invitation_text": {
+    "notification_text": {
       "type": "text"
+    },
+    "redirect_url": {
+      "type": "keyword"
     },
     "status": {
       "type": "keyword"
