@@ -124,6 +124,7 @@ def get_problem_details(problem_id):
         if 'found' in response:
             if response['found']:
                 data = response['_source']
+                data['id'] = response['_id']
                 return data
         return None
     except Exception as e:
