@@ -12,7 +12,7 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('user_notification', description='Namespace for user_notification service')
 
-from core.notification_services import search_notification
+from core.notification_services import search_notification, update_notification
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -77,6 +77,38 @@ def handle_failed_user_claims_verification(e):
     return {'message': 'User claims verification failed'}, 400
 
 
+@api.route('/read/single/<string:notification_id>')
+class UpdateNotification(Resource):
+
+    @api.doc('update user_notification')
+    def put(self, notification_id):
+        try:
+            app.logger.info('Update notification api called')
+            data = {
+                'status': 'READ'
+            }
+            update_notification(notification_id, data)
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/read/all/<string:user_id>')
+class UpdateAllNotification(Resource):
+
+    @api.doc('update all user_notification based on post parameters')
+    def put(self, user_id):
+        try:
+            app.logger.info('Update all notification api called')
+            unread_list = search_notification({'status': "UNREAD", 'user_id': user_id}, _es_size)
+            for notification in unread_list:
+                data = {
+                    'status': 'READ'
+                }
+                update_notification(notification['id'], data)
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
 @api.route('/search/<string:user_id>')
 class SearchUserNotification(Resource):
 
@@ -84,11 +116,16 @@ class SearchUserNotification(Resource):
     def post(self, user_id):
         try:
             app.logger.info('UserNotification search api called')
-            unread_list = search_notification({'status': "UNREAD", 'user_id': user_id})
-            read_list = search_notification({'status': "READ", 'user_id': user_id})
-            return {
-                'unread_list': unread_list,
-                'read_list': read_list,
+            data = request.get_json()
+            size = data.get('size', _es_size)
+            unread_list = search_notification({'status': "UNREAD", 'user_id': user_id}, size)
+            notification_list = search_notification({'user_id': user_id}, size)
+            response = {
+                'notification_list': notification_list,
+                'unread_length': len(unread_list)
             }
+            if len(unread_list) > 0:
+                response['UNREAD'] = True
+            return response
         except Exception as e:
             return {'message': str(e)}, 500

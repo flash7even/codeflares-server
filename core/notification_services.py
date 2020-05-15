@@ -61,7 +61,7 @@ def update_notification(notification_id, data):
         return {'message': str(e)}
 
 
-def search_notification(param):
+def search_notification(param, size):
     try:
         app.logger.info('search_task_lists method called')
         rs = requests.session()
@@ -79,7 +79,7 @@ def search_notification(param):
         if len(must) > 0:
             query_json = {'query': {'bool': {'must': must}}}
 
-        query_json['size'] = _es_size
+        query_json['size'] = size
         query_json['sort'] = [{'created_at': {'order': 'desc'}}]
 
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_user_user_notification, _es_type)
@@ -94,6 +94,18 @@ def search_notification(param):
                 if data['sender_id'] != 'System':
                     user_details = get_user_details(data['sender_id'])
                     data['sender_id_handle'] = user_details['username']
+                else:
+                    data['sender_id_handle'] = 'System'
+
+                if 'notification_text' in data:
+                    data['notification_text'] = data['notification_text'] + ' ' + data['sender_id_handle']
+
+                if 'created_at' in data:
+                    data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
+
+                if 'status' in data and data['status'] == UNREAD:
+                    data[UNREAD] = True
+
                 item_list.append(data)
         return item_list
 

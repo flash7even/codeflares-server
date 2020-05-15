@@ -11,7 +11,7 @@ from models.problem_score_model import ProblemScoreGenerator
 from core.category_services import search_categories, find_category_dependency_list, get_category_details
 from core.problem_services import get_problem_details, find_problems_for_user_by_status_filtered, available_problems_for_user, \
     find_problem_dependency_list, add_user_problem_status, get_solved_problem_count_for_user
-from core.user_model_sync_services import add_user_category_data, get_user_category_data
+from core.user_category_edge_services import add_user_category_data, get_user_category_data
 from core.team_services import get_team_details, update_team_details
 from core.user_services import get_user_details_by_handle_name, update_user_details
 

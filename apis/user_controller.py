@@ -9,8 +9,7 @@ from jwt.exceptions import *
 from commons.jwt_helpers import access_required
 
 from core.user_services import synch_user_problem, search_user, get_user_details, get_user_rating_history
-from core.training_model_services import sync_problem_score_for_user, sync_category_score_for_user,\
-    sync_root_category_score_for_user, sync_overall_stat_for_user
+from core.sync_services import user_problem_data_sync, user_training_model_sync
 
 api = Namespace('user', description='user related services')
 
@@ -224,7 +223,7 @@ class Sync(Resource):
     def put(self, user_id):
         app.logger.info('Sync user API called, id: ' + str(user_id))
         try:
-            synch_user_problem(user_id)
+            user_problem_data_sync(user_id)
             return {'message': 'success'}, 200
         except Exception as e:
             return {'message': str(e)}, 500
@@ -238,14 +237,8 @@ class Sync(Resource):
     def put(self, user_id):
         app.logger.info('Sync user training model API called, id: ' + str(user_id))
         try:
-            sync_category_score_for_user(user_id)
-            app.logger.info('sync_category_score_for_user done')
-            sync_problem_score_for_user(user_id)
-            app.logger.info('sync_problem_score_for_user done')
-            sync_root_category_score_for_user(user_id)
-            app.logger.info('sync_root_category_score_for_user done')
-            sync_overall_stat_for_user(user_id)
-            app.logger.info('sync_overall_stat_for_user done')
+            user_training_model_sync(user_id)
+            app.logger.info('user_training_model_sync done')
             return {'message': 'success'}, 200
         except Exception as e:
             return {'message': str(e)}, 500

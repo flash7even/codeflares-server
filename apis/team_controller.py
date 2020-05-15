@@ -16,7 +16,9 @@ from core.team_services import add_team_member, delete_team_member, \
     delete_all_users_from_team, get_all_users_from_team,\
     search_teams_for_user, get_team_details, update_team_member, search_teams, get_rating_history_codeforces
 
-from core.training_model_services import sync_problem_score_for_team, sync_category_score_for_team, sync_root_category_score_for_team, sync_overall_stat_for_team
+from core.sync_services import team_training_model_sync
+from core.user_services import get_user_details_by_handle_name
+from core.notification_services import add_notification
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -181,11 +183,13 @@ class CreateTeam(Resource):
 
             if 'result' in response and response['result'] == 'created':
                 for member in member_list:
+                    member_details = get_user_details_by_handle_name(member['user_handle'])
 
                     edge = {
                         'team_id': response['_id'],
                         'team_type': data['team_type'],
                         'user_handle': member['user_handle'],
+                        'user_id': member_details['id'],
                         'remarks': member.get('remarks', None),
                         'status': 'confirmed'
                     }
@@ -196,6 +200,28 @@ class CreateTeam(Resource):
                         team_lead = member
 
                     add_team_member(edge)
+
+                    notification_data = {
+                        'user_id': member_details['id'],
+                        'sender_id': current_user,
+                        'notification_type': 'Team Invitation',
+                        'redirect_url': '/team/list/',
+                        'notification_text': 'You have been invited to join a team by',
+                        'status': 'UNREAD',
+                    }
+
+                    if data['team_type'] == 'classroom':
+                        notification_data = {
+                            'user_id': member_details['id'],
+                            'sender_id': current_user,
+                            'notification_type': 'Classroom Invitation',
+                            'redirect_url': '/classroom/list/',
+                            'notification_text': 'You have been invited to join a classroom by',
+                            'status': 'UNREAD',
+                        }
+
+                    add_notification(notification_data)
+
                 app.logger.info('Create team method completed')
                 return response['_id'], 201
             app.logger.error('Elasticsearch down, response: ' + str(response))
@@ -313,14 +339,7 @@ class Sync(Resource):
     def put(self, team_id):
         app.logger.info('Sync team training model API called, id: ' + str(team_id))
         try:
-            app.logger.debug('sync sync_category_score_for_team')
-            sync_category_score_for_team(team_id)
-            app.logger.debug('sync sync_problem_score_for_team')
-            sync_problem_score_for_team(team_id)
-            app.logger.debug('sync sync_root_category_score_for_team')
-            sync_root_category_score_for_team(team_id)
-            app.logger.debug('sync sync_overall_stat_for_team')
-            sync_overall_stat_for_team(team_id)
-            return {'message': 'success'}, 200
+            app.logger.debug('team_training_model_sync')
+            team_training_model_sync(team_id)
         except Exception as e:
             return {'message': str(e)}, 500

@@ -18,7 +18,7 @@ from extensions.flask_redis import redis_store
 from .classroom_class_controller import api as classroom_class_ns
 from .classroom_task_controller import api as classroom_task_ns
 from .problem_status_controller import api as problem_status_ns
-from .notificstion_controller import api as notify_ns
+from .notification_controller import api as notify_ns
 
 blueprint = Blueprint('api', Config.APPNAME, url_prefix='/api')
 
