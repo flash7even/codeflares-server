@@ -4,7 +4,13 @@
     "problem_id": {
       "type": "keyword"
     },
+    "problem_difficulty": {
+      "type": "float"
+    },
     "category_id": {
+      "type": "keyword"
+    },
+    "category_root": {
       "type": "keyword"
     },
     "dependency_factor": {

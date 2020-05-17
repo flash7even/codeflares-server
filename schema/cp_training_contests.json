@@ -13,6 +13,12 @@
     "contest_type": {
       "type": "keyword"
     },
+    "contest_level": {
+      "type": "keyword"
+    },
+    "problem_count": {
+      "type": "long"
+    },
     "description": {
       "type": "text"
     },

@@ -13,7 +13,7 @@ from commons.jwt_helpers import access_required
 api = Namespace('problem', description='Namespace for problem service')
 
 from core.problem_services import add_problem_category_dependency, search_problems, add_user_problem_status
-from core.category_services import get_category_id_from_name
+from core.category_services import get_category_id_from_name, get_category_details
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -181,10 +181,14 @@ class CreateProblem(Resource):
                     category_id = cat.get('category_id', None)
                     if category_id is None:
                         category_id = get_category_id_from_name(cat['category_name'])
+
+                    category_details = get_category_details(category_id)
                     edge = {
                         'problem_id': response['_id'],
                         'category_id': category_id,
-                        'dependency_factor': cat['factor']
+                        'dependency_factor': cat['factor'],
+                        'category_root': category_details['category_root'],
+                        'problem_difficulty': data['problem_difficulty'],
                     }
                     add_problem_category_dependency(edge)
                 app.logger.info('Create problem api completed')
