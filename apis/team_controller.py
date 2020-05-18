@@ -22,7 +22,7 @@ from core.notification_services import add_notification
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index = 'cp_training_teams'
+_es_index = 'cfs_teams'
 _es_type = '_doc'
 _es_size = 100
 

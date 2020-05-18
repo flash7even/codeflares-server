@@ -16,7 +16,7 @@ from core.problem_services import add_user_problem_status, find_problems_for_use
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_user_user_problem = 'cp_training_user_user_problem_edges'
+_es_user_user_problem = 'cfs_user_user_problem_edges'
 _es_type = '_doc'
 _es_size = 500
 

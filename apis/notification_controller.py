@@ -16,7 +16,7 @@ from core.notification_services import search_notification, update_notification
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_user_user_notification = 'cp_training_notifications'
+_es_user_user_notification = 'cfs_notifications'
 _es_type = '_doc'
 _es_size = 500
 

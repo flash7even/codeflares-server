@@ -5,9 +5,9 @@ from flask import current_app as app
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index_category = 'cp_training_categories'
-_es_index_category_dependency = 'cp_training_category_dependencies'
-_es_index_category_problem = 'cp_training_problem_category_edges'
+_es_index_category = 'cfs_categories'
+_es_index_category_dependency = 'cfs_category_dependencies'
+_es_index_category_problem = 'cfs_problem_category_edges'
 _es_type = '_doc'
 _es_size = 500
 _bulk_size = 25

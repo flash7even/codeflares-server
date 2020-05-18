@@ -7,8 +7,8 @@ from core.user_services import get_user_details
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index_classroom_tasks = 'cp_training_classroom_tasks'
-_es_index_classroom_classes = 'cp_training_classroom_classes'
+_es_index_classroom_tasks = 'cfs_classroom_tasks'
+_es_index_classroom_classes = 'cfs_classroom_classes'
 
 _es_type = '_doc'
 _es_size = 100

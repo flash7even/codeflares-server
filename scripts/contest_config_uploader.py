@@ -29,7 +29,7 @@ _http_headers = {'Content-Type': 'application/json'}
 
 ES_HOST = 'localhost:9200'
 
-_es_index = 'cp_training_contest_configs'
+_es_index = 'cfs_contest_configs'
 _es_type = '_doc'
 
 

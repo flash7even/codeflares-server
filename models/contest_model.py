@@ -9,7 +9,7 @@ from core.problem_services import search_problem_list_simplified
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index_contest = 'cp_training_contests'
+_es_index_contest = 'cfs_contests'
 
 _es_type = '_doc'
 _es_size = 100

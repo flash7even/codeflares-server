@@ -5,7 +5,7 @@ from flask import current_app as app
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index_user_category = 'cp_training_user_category_edges'
+_es_index_user_category = 'cfs_user_category_edges'
 _es_type = '_doc'
 _es_size = 500
 

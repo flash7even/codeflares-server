@@ -15,7 +15,7 @@ from extensions.flask_redis import redis_store
 api = Namespace('auth', description='auth related services')
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index = 'cp_training_users'
+_es_index = 'cfs_users'
 _es_type = '_doc'
 
 @api.errorhandler(NoAuthorizationError)

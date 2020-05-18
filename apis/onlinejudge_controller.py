@@ -14,7 +14,7 @@ api = Namespace('onlinejudge', description='Namespace for onlinejudge service')
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index = 'cp_training_online_judges'
+_es_index = 'cfs_online_judges'
 _es_type = '_doc'
 _es_size = 100
 

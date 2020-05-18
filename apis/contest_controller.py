@@ -16,7 +16,7 @@ from core.contest_services import create_contest, create_problem_set, search_con
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index = 'cp_training_contests'
+_es_index = 'cfs_contests'
 _es_type = '_doc'
 _es_size = 500
 

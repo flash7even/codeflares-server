@@ -7,9 +7,9 @@ _http_headers = {'Content-Type': 'application/json'}
 
 from core.category_services import get_category_details
 
-_es_index_problem_category = 'cp_training_problem_category_edges'
-_es_index_problem_user = 'cp_training_user_problem_edges'
-_es_index_problem = 'cp_training_problems'
+_es_index_problem_category = 'cfs_problem_category_edges'
+_es_index_problem_user = 'cfs_user_problem_edges'
+_es_index_problem = 'cfs_problems'
 _es_type = '_doc'
 _es_size = 100
 _es_max_solved_problem = 1000

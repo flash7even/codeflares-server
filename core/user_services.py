@@ -15,7 +15,7 @@ from core.problem_services import search_problems
 _http_headers = {'Content-Type': 'application/json'}
 
 
-_es_index_user = 'cp_training_users'
+_es_index_user = 'cfs_users'
 _es_type = '_doc'
 _es_size = 500
 

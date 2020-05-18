@@ -17,7 +17,7 @@ from core.training_model_services import category_wise_problem_solve_for_users
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index = 'cp_training_categories'
+_es_index = 'cfs_categories'
 _es_type = '_doc'
 _es_size = 500
 

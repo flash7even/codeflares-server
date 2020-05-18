@@ -17,7 +17,7 @@ from core.category_services import get_category_id_from_name, get_category_detai
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index = 'cp_training_problems'
+_es_index = 'cfs_problems'
 _es_type = '_doc'
 _es_size = 500
 

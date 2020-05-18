@@ -18,10 +18,10 @@ from core.user_services import get_user_details_by_handle_name, update_user_deta
 _http_headers = {'Content-Type': 'application/json'}
 
 
-_es_index_problem_category = 'cp_training_problem_category_edges'
-_es_index_problem_user = 'cp_training_user_problem_edges'
-_es_index_user_category = 'cp_training_user_category_edges'
-_es_index_problem = 'cp_training_problems'
+_es_index_problem_category = 'cfs_problem_category_edges'
+_es_index_problem_user = 'cfs_user_problem_edges'
+_es_index_user_category = 'cfs_user_category_edges'
+_es_index_problem = 'cfs_problems'
 _es_type = '_doc'
 _es_size = 500
 _es_max_solved_problem = 1000

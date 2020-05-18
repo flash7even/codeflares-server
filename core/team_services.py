@@ -10,8 +10,8 @@ from core.user_services import search_user
 from scrappers.codeforces_scrapper import CodeforcesScrapper
 from core.classroom_services import search_task_lists, search_class_lists
 
-_es_index_user_team_edge = 'cp_training_user_team_edges'
-_es_index_team = 'cp_training_teams'
+_es_index_user_team_edge = 'cfs_user_team_edges'
+_es_index_team = 'cfs_teams'
 _es_type = '_doc'
 _es_size = 100
 

@@ -10,9 +10,9 @@ from models.contest_model import ContestModel
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index_contest = 'cp_training_contests'
-_es_index_contest_configs = 'cp_training_contest_configs'
-_es_index_contest_problem_edges = 'cp_training_contest_problem_edges'
+_es_index_contest = 'cfs_contests'
+_es_index_contest_configs = 'cfs_contest_configs'
+_es_index_contest_problem_edges = 'cfs_contest_problem_edges'
 
 _es_type = '_doc'
 _es_size = 100

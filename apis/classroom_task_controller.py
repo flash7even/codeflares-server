@@ -16,7 +16,7 @@ api = Namespace('classroom_task', description='Namespace for classroom_task serv
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index_classroom_tasks = 'cp_training_classroom_tasks'
+_es_index_classroom_tasks = 'cfs_classroom_tasks'
 _es_type = '_doc'
 _es_size = 100
 

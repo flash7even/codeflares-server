@@ -15,7 +15,7 @@ api = Namespace('user', description='user related services')
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index = 'cp_training_users'
+_es_index = 'cfs_users'
 _es_type = '_doc'
 _es_size = 100
 
