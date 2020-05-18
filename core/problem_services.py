@@ -96,6 +96,17 @@ def find_problems_for_user_by_status_filtered(status, user_id, heavy=False):
         raise e
 
 
+def find_problems_by_status_filtered_for_user_list(status, user_list, heavy=False):
+    try:
+        data_list = []
+        for user_id in user_list:
+            item_list = find_problems_for_user_by_status_filtered(status, user_id, heavy)
+            data_list = data_list + item_list
+        return data_list
+    except Exception as e:
+        raise e
+
+
 def available_problems_for_user(user_id):
     try:
         app.logger.info('available_problems_for_user method called')
@@ -262,3 +273,51 @@ def search_problems(param, from_value, size_value, heavy = False):
     except Exception as e:
         raise e
 
+
+def search_problem_list_simplified(param, sort_by = 'problem_difficulty', sort_order = 'asc'):
+    try:
+        query_json = {'query': {'match_all': {}}}
+        rs = requests.session()
+
+        must = []
+        keyword_fields = ['category_root']
+
+        minimum_difficulty = 0
+        maximum_difficulty = 100
+
+        if 'minimum_difficulty' in param and param['minimum_difficulty']:
+            minimum_difficulty = int(param['minimum_difficulty'])
+
+        if 'maximum_difficulty' in param and param['maximum_difficulty']:
+            maximum_difficulty = int(param['maximum_difficulty'])
+
+        param.pop('minimum_difficulty', None)
+        param.pop('maximum_difficulty', None)
+
+        for f in param:
+            if f in keyword_fields:
+                if param[f]:
+                    must.append({'term': {f: param[f]}})
+            else:
+                if param[f]:
+                    must.append({'match': {f: param[f]}})
+
+        must.append({"range": {"problem_difficulty": {"gte": minimum_difficulty, "lte": maximum_difficulty}}})
+
+        if len(must) > 0:
+            query_json = {'query': {'bool': {'must': must}}}
+
+        query_json['size'] = _es_size
+        query_json['sort'] = [{sort_by: {'order': sort_order}}]
+
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_category, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        item_list = []
+
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                data = hit['_source']
+                item_list.append(data['problem_id'])
+        return item_list
+    except Exception as e:
+        raise e

@@ -3,15 +3,16 @@ import json
 import requests
 from flask import current_app as app
 import random
-import math
 
-from core.user_services import get_user_details
-
-from core.category_services import search_categories
+from core.problem_services import find_problems_by_status_filtered_for_user_list, get_problem_details
+from core.team_services import get_team_details
+from models.contest_model import ContestModel
 
 _http_headers = {'Content-Type': 'application/json'}
 
 _es_index_contest = 'cp_training_contests'
+_es_index_contest_configs = 'cp_training_contest_configs'
+_es_index_contest_problem_edges = 'cp_training_contest_problem_edges'
 
 _es_type = '_doc'
 _es_size = 100
@@ -24,7 +25,6 @@ def create_contest(data):
         data['updated_at'] = int(time.time())
         post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index_contest, _es_type)
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
-
         if 'result' in response and response['result'] == 'created':
             return response['_id']
         raise Exception('ES Down')
@@ -32,74 +32,74 @@ def create_contest(data):
         raise e
 
 
-def create_problem_set(data, contest_id):
+def add_problem_for_contest(problem_id, contest_id):
     try:
-        contest_level = data['contest_level']
-        problem_count = data['problem_count']
-        category_params = []
-        category_map = {}
-
-        param_list = data.get('param_list', [])
-        for param in param_list:
-            category_name = param['category_name']
-            if category_name in category_map:
-                continue
-
-            pdata = {
-                'category_name': category_name,
-                'minimum_difficulty': param.get('minimum_difficulty', 0),
-                'maximum_difficulty': param.get('maximum_difficulty', 0),
-                'minimum_problem': param.get('minimum_problem', 0),
-                'maximum_problem': param.get('maximum_problem', 0),
-            }
-
-            if pdata['minimum_difficulty'] > pdata['maximum_difficulty']:
-                raise Exception('Invalid data provided')
-            if pdata['minimum_problem'] > pdata['maximum_problem']:
-                raise Exception('Invalid data provided')
-
-            category_map[category_name] = 1
-            category_params.append(pdata)
-
-        category_by_level = find_category_configs(contest_level)
-        for cat in category_by_level:
-            category_name = cat['category_name']
-            if category_name in category_map:
-                continue
-            pdata = {
-                'category_name': category_name,
-                'minimum_difficulty': cat.get('minimum_difficulty', 0),
-                'maximum_difficulty': cat.get('maximum_difficulty', 0),
-                'minimum_problem': cat.get('minimum_problem', 0),
-                'maximum_problem': cat.get('maximum_problem', 0),
-            }
-            category_map[category_name] = 1
-            category_params.append(pdata)
-
+        rs = requests.session()
+        data = {
+            'problem_id': problem_id,
+            'contest_id': contest_id,
+            'created_at': int(time.time()),
+            'updated_at': int(time.time())
+        }
+        post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index_contest_problem_edges, _es_type)
+        response = rs.post(url=post_url, json=data, headers=_http_headers).json()
+        if 'result' in response and response['result'] == 'created':
+            return response['_id']
+        raise Exception('ES Down')
     except Exception as e:
         raise e
 
 
-def generate_contest(contest_id, problem_count, contest_level, category_params):
-    for category in category_params:
-        pnum = random.randint(category['minimum_problem'], category['maximum_problem'])
-        pnum = min(pnum, problem_count)
-        minimum_difficulty = category['minimum_difficulty']
-        maximum_difficulty = category['maximum_difficulty']
-        mid_difficulty = int(math.ceil((minimum_difficulty + maximum_difficulty)/2))
+def find_problem_set_for_contest(contest_id):
+    try:
+        rs = requests.session()
+        query_json = {'query': {'bool': {'must': [{'term': {'contest_id': contest_id}}]}}}
+        query_json['size'] = _es_size
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_contest_problem_edges, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        item_list = []
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                data = hit['_source']
+                problem_details = get_problem_details(data['problem_id'])
+                item_list.append(problem_details)
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        return item_list
+    except Exception as e:
+        raise e
 
-        while pnum > 0:
-            prob = random.randint(1, 100)
-            if prob > 50: # Select upper half difficulty
-                pass
+
+def create_problem_set(data, contest_id):
+    try:
+        contest_type = data['contest_type']
+        user_list = []
+        if contest_type != 'individual':
+            team_details = get_team_details(data['contest_ref_id'])
+            for member in team_details['member_list']:
+                user_list.append(member['id'])
+        else:
+            user_list.append(data['contest_ref_id'])
+        solved_problem_list = find_problems_by_status_filtered_for_user_list(['SOLVED'], user_list)
+        print('solved_problem_list done')
+        print('solved_problem_list length: ', len(solved_problem_list))
+        param_list = data.get('param_list', [])
+        category_configs_by_level = find_contest_configs(data['contest_level'])
+        print('category_configs_by_level done: ', category_configs_by_level)
+        contest_mdoel = ContestModel()
+        problem_set = contest_mdoel.create_problem_set_for_contest(param_list, category_configs_by_level, data['problem_count'], solved_problem_list)
+        for problem in problem_set:
+            add_problem_for_contest(problem, contest_id)
+        return problem_set
+    except Exception as e:
+        raise e
 
 
-def find_category_configs(contest_level):
+def find_contest_configs(contest_level):
     try:
         rs = requests.session()
         query_json = {'query': {'bool': {'must': {'term': {'contest_level': contest_level}}}}}
         query_json['size'] = _es_size
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_contest, _es_type)
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_contest_configs, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
         item_list = []
         if 'hits' in response:

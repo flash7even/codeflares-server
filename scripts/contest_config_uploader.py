@@ -60,12 +60,12 @@ def upload_configs(full_filepath):
             cnt_range = cnt_range.split('-')
 
             cat_level_data = {
-                'contest_level': 'level_' + level,
+                'contest_level': int(x),
                 'category_name': str(category_name),
-                'min_difficulty': float(dif_range[0]),
-                'max_difficulty': float(dif_range[1]),
-                'min_count': int(cnt_range[0]),
-                'max_count': int(cnt_range[1]),
+                'minimum_difficulty': float(dif_range[0]),
+                'maximum_difficulty': float(dif_range[1]),
+                'minimum_problem': int(cnt_range[0]),
+                'maximum_problem': int(cnt_range[1]),
             }
             post_data(cat_level_data)
 

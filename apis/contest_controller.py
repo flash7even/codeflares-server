@@ -12,11 +12,11 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('contest', description='Namespace for contest service')
 
-from core.contest_services import create_contest, create_problem_set, search_contests
+from core.contest_services import create_contest, create_problem_set, search_contests, find_problem_set_for_contest
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index = 'cp_training_categories'
+_es_index = 'cp_training_contests'
 _es_type = '_doc'
 _es_size = 500
 
@@ -92,6 +92,7 @@ class ContestByID(Resource):
                 if response['found']:
                     data = response['_source']
                     data['id'] = response['_id']
+                    data['problem_set'] = find_problem_set_for_contest(contest_id)
                     app.logger.info('Get contest_details api completed')
                     return data, 200
                 app.logger.warning('Contest not found')
@@ -101,7 +102,6 @@ class ContestByID(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
 
-    @access_required(access="ALL")
     @api.doc('update contest by id')
     def put(self, contest_id):
         try:
@@ -132,7 +132,6 @@ class ContestByID(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
 
-    @access_required(access="ALL")
     @api.doc('delete contest by id')
     def delete(self, contest_id):
         try:
@@ -156,7 +155,6 @@ class ContestByID(Resource):
 @api.route('/')
 class CreateContest(Resource):
 
-    #@access_required(access="ALL")
     @api.doc('create contest')
     def post(self):
         try:
@@ -173,7 +171,8 @@ class CreateContest(Resource):
                 contest_data[f] = data[f]
 
             contest_id = create_contest(contest_data)
-            create_problem_set(data, contest_id)
+            problem_set = create_problem_set(data, contest_id)
+            return contest_id
         except Exception as e:
             return {'message': str(e)}, 500
 
