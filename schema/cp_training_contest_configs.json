@@ -2,21 +2,21 @@
   "dynamic": "strict",
   "properties": {
     "contest_level": {
-      "type": "keyword"
+      "type": "long"
     },
     "category_name": {
       "type": "keyword"
     },
-    "min_difficulty": {
+    "minimum_difficulty": {
       "type": "float"
     },
-    "max_difficulty": {
+    "maximum_difficulty": {
       "type": "float"
     },
-    "min_count": {
+    "minimum_problem": {
       "type": "long"
     },
-    "max_count": {
+    "maximum_problem": {
       "type": "long"
     }
   }
