@@ -1,0 +1,23 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "contest_level": {
+      "type": "keyword"
+    },
+    "category_name": {
+      "type": "keyword"
+    },
+    "min_difficulty": {
+      "type": "float"
+    },
+    "max_difficulty": {
+      "type": "float"
+    },
+    "min_count": {
+      "type": "long"
+    },
+    "max_count": {
+      "type": "long"
+    }
+  }
+}
