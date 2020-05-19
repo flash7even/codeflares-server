@@ -7,6 +7,7 @@ import random
 from core.problem_services import find_problems_by_status_filtered_for_user_list, get_problem_details, search_problems
 from core.team_services import get_team_details
 from models.contest_model import ContestModel
+from core.user_services import get_user_details
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -201,6 +202,8 @@ def search_contests(param, from_value, size_value):
             for hit in response['hits']['hits']:
                 data = hit['_source']
                 data['id'] = hit['_id']
+                setter_data = get_user_details(data['setter_id'])
+                data['setter_handle'] = setter_data['username']
                 item_list.append(data)
             app.logger.info('Contest search method completed')
             return item_list
