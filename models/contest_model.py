@@ -22,10 +22,10 @@ class ContestModel:
             category_name = cat['category_name']
             data = {
                 'category_name': category_name,
-                'minimum_difficulty': cat.get('minimum_difficulty', 0),
-                'maximum_difficulty': cat.get('maximum_difficulty', 0),
-                'minimum_problem': cat.get('minimum_problem', 0),
-                'maximum_problem': cat.get('maximum_problem', 0),
+                'minimum_difficulty': float(cat.get('minimum_difficulty', 0)),
+                'maximum_difficulty': float(cat.get('maximum_difficulty', 0)),
+                'minimum_problem': int(cat.get('minimum_problem', 0)),
+                'maximum_problem': int(cat.get('maximum_problem', 0)),
             }
             if data['minimum_difficulty'] > data['maximum_difficulty'] or data['minimum_problem'] > data['maximum_problem']:
                 raise Exception('Invalid data provided')

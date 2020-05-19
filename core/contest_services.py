@@ -4,7 +4,7 @@ import requests
 from flask import current_app as app
 import random
 
-from core.problem_services import find_problems_by_status_filtered_for_user_list, get_problem_details
+from core.problem_services import find_problems_by_status_filtered_for_user_list, get_problem_details, search_problems
 from core.team_services import get_team_details
 from models.contest_model import ContestModel
 
@@ -69,6 +69,19 @@ def find_problem_set_for_contest(contest_id):
         raise e
 
 
+def delete_problem_set_for_contest(contest_id):
+    try:
+        rs = requests.session()
+        query_json = {'query': {'bool': {'must': [{'term': {'contest_id': contest_id}}]}}}
+        search_url = 'http://{}/{}/{}/_delete_by_query'.format(app.config['ES_HOST'], _es_index_contest_problem_edges, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        if 'deleted' in response:
+            return {'message': 'success'}
+        raise Exception('ES Down')
+    except Exception as e:
+        raise e
+
+
 def create_problem_set(data, contest_id):
     try:
         contest_type = data['contest_type']
@@ -108,6 +121,33 @@ def find_contest_configs(contest_level):
                 data['id'] = hit['_id']
                 item_list.append(data)
         return item_list
+    except Exception as e:
+        raise e
+
+
+def reupload_problem_set_for_contest(contest_id, problem_list):
+    app.logger.info('reupload_problem_set_for_contest called')
+    app.logger.info('problem_list: ' + json.dumps(problem_list))
+    try:
+        problem_id_list = []
+        for problem in problem_list:
+            param = {
+                'oj_name': problem['oj_name'],
+                'problem_id': problem['problem_id']
+            }
+            found_list = search_problems(param, 0, 1)
+            app.logger.info('found list: ' + json.dumps(found_list))
+            if len(found_list) == 0:
+                raise Exception('Problem not found')
+            problem_id = found_list[0]['id']
+            problem_id_list.append(problem_id)
+
+        delete_problem_set_for_contest(contest_id)
+        app.logger.info('old problem_list deleted')
+        app.logger.info('final problem list: ' + json.dumps(problem_id_list))
+
+        for problem in problem_id_list:
+            add_problem_for_contest(problem, contest_id)
     except Exception as e:
         raise e
 

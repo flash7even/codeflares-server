@@ -1,5 +1,5 @@
 import time
-
+import json
 import requests
 from flask import current_app as app
 from flask import request
@@ -12,7 +12,7 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('contest', description='Namespace for contest service')
 
-from core.contest_services import create_contest, create_problem_set, search_contests, find_problem_set_for_contest
+from core.contest_services import create_contest, create_problem_set, search_contests, find_problem_set_for_contest, reupload_problem_set_for_contest
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -20,6 +20,8 @@ _es_index = 'cfs_contests'
 _es_type = '_doc'
 _es_size = 500
 
+mandatory_fields = ['contest_name', 'setter_id', 'contest_ref_id', 'contest_type', 'contest_level',
+                    'problem_count', 'description', 'start_date', 'end_date']
 
 @api.errorhandler(NoAuthorizationError)
 def handle_auth_error(e):
@@ -109,6 +111,11 @@ class ContestByID(Resource):
             rs = requests.session()
             post_data = request.get_json()
 
+            app.logger.debug('post_data for contest update: ' + json.dumps(post_data))
+
+            if 'problem_list' in post_data:
+                reupload_problem_set_for_contest(contest_id, post_data['problem_list'])
+
             search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, contest_id)
             response = rs.get(url=search_url, headers=_http_headers).json()
             print(response)
@@ -116,7 +123,8 @@ class ContestByID(Resource):
                 if response['found']:
                     data = response['_source']
                     for key, value in post_data.items():
-                        data[key] = value
+                        if key in mandatory_fields:
+                            data[key] = value
                     data['updated_at'] = int(time.time())
                     response = rs.put(url=search_url, json=data, headers=_http_headers).json()
                     if 'result' in response:
@@ -161,15 +169,13 @@ class CreateContest(Resource):
             app.logger.info('Create contest api called')
             data = request.get_json()
 
-            mandatory_fields = ['contest_name', 'setter_id', 'contest_ref_id', 'contest_type', 'contest_level',
-                                'problem_count', 'description', 'start_date', 'end_date']
-
             contest_data = {}
             for f in mandatory_fields:
                 if f not in data:
                     return {'message': 'bad request'}, 409
                 contest_data[f] = data[f]
 
+            contest_data['status'] = 'pending'
             contest_id = create_contest(contest_data)
             problem_set = create_problem_set(data, contest_id)
             return contest_id

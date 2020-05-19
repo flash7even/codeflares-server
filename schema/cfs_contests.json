@@ -28,6 +28,9 @@
     "end_date": {
       "type": "date"
     },
+    "status": {
+      "type": "keyword"
+    },
     "created_at": {
       "type": "long"
     },
