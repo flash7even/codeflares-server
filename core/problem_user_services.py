@@ -159,20 +159,3 @@ def add_user_problem_status(user_id, problem_id, data):
         raise Exception('Internal server error')
     except Exception as e:
         raise Exception('Internal server error')
-
-
-def get_solved_count_per_category_for_user(param):
-    try:
-        rs = requests.session()
-        must = []
-        for f in param:
-            must.append({'term': {f: param[f]}},)
-        query_json = {'query': {'bool': {'must': must}}}
-        query_json['size'] = 0
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
-        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        if 'hits' in response:
-            return response['hits']['total']['value']
-        return 0
-    except Exception as e:
-        raise e
