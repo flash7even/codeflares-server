@@ -5,7 +5,7 @@ from flask import current_app as app
 import random
 import math
 
-from core.problem_services import search_problem_list_simplified
+from core.problem_category_services import search_problem_list_simplified
 
 _http_headers = {'Content-Type': 'application/json'}
 

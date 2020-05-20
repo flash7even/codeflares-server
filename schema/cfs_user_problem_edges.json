@@ -10,6 +10,12 @@
     "relevant_score": {
       "type": "float"
     },
+    "category_name": {
+      "type": "keyword"
+    },
+    "category_root": {
+      "type": "keyword"
+    },
     "status": {
       "type": "keyword"
     },

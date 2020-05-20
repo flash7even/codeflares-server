@@ -10,6 +10,9 @@
     "category_id": {
       "type": "keyword"
     },
+    "category_name": {
+      "type": "keyword"
+    },
     "category_root": {
       "type": "keyword"
     },

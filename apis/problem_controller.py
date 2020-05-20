@@ -12,7 +12,9 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('problem', description='Namespace for problem service')
 
-from core.problem_services import add_problem_category_dependency, search_problems, add_user_problem_status
+from core.problem_services import search_problems
+from core.problem_user_services import add_user_problem_status
+from core.problem_category_services import add_problem_category_dependency
 from core.category_services import get_category_id_from_name, get_category_details
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -188,6 +190,7 @@ class CreateProblem(Resource):
                         'category_id': category_id,
                         'dependency_factor': cat['factor'],
                         'category_root': category_details['category_root'],
+                        'category_name': category_details['category_name'],
                         'problem_difficulty': data['problem_difficulty'],
                     }
                     add_problem_category_dependency(edge)

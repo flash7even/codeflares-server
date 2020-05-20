@@ -5,6 +5,9 @@ from flask import current_app as app
 
 _http_headers = {'Content-Type': 'application/json'}
 
+from core.problem_category_services import get_problem_count_for_category
+from core.problem_user_services import get_solved_count_per_category_for_user
+
 _es_index_category = 'cfs_categories'
 _es_index_category_dependency = 'cfs_category_dependencies'
 _es_index_category_problem = 'cfs_problem_category_edges'
@@ -21,7 +24,6 @@ def get_category_details(cat_id):
         if 'found' in response:
             if response['found']:
                 data = response['_source']
-                #app.logger.info('Get category_details method completed')
                 return data
         return None
     except Exception as e:
@@ -100,6 +102,8 @@ def search_categories(param, from_value, size_value, heavy = False):
 
         must = []
         keyword_fields = ['category_title', 'category_root']
+        user_id = param.get('user_id', None)
+        param.pop('user_id', None)
 
         minimum_difficulty = 0
         maximum_difficulty = 100
@@ -142,9 +146,22 @@ def search_categories(param, from_value, size_value, heavy = False):
             for hit in response['hits']['hits']:
                 category = hit['_source']
                 category['category_id'] = hit['_id']
-                category['problem_count'] = 100
+                category['problem_count'] = 0
+                category['solve_count'] = 0
+                if category['category_root'] == 'root':
+                    category['problem_count'] = get_problem_count_for_category({'category_root': 'root'})
+                else:
+                    category['problem_count'] = get_problem_count_for_category({'category_name': category['category_name']})
+
+                if user_id:
+                    if category['category_root'] == 'root':
+                        category['solve_count'] = get_solved_count_per_category_for_user({'category_root': 'root', 'user_id': user_id, 'status': 'SOLVED'})
+                    else:
+                        category['solve_count'] = get_solved_count_per_category_for_user({'category_name': category['category_name'], 'user_id': user_id, 'status': 'SOLVED'})
+
                 if heavy:
                     category['category_dependency_list'] = find_category_dependency_list(category['category_id'])
+
                 item_list.append(category)
             app.logger.info('Category search method completed')
             return item_list

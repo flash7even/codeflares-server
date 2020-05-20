@@ -9,7 +9,7 @@ from scrappers.uva_scrapper import UvaScrapper
 from scrappers.codechef_scrapper import CodechefScrapper
 from scrappers.loj_scrapper import LightOJScrapper
 
-from core.problem_services import add_user_problem_status
+from core.problem_user_services import add_user_problem_status
 from core.problem_services import search_problems
 
 _http_headers = {'Content-Type': 'application/json'}
