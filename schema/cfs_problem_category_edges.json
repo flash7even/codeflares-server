@@ -4,6 +4,9 @@
     "problem_id": {
       "type": "keyword"
     },
+    "problem_name": {
+      "type": "text"
+    },
     "problem_difficulty": {
       "type": "float"
     },

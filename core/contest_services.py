@@ -4,8 +4,7 @@ import requests
 from flask import current_app as app
 import random
 
-from core.problem_services import get_problem_details, search_problems
-from core.problem_user_services import find_problems_by_status_filtered_for_user_list
+from core.problem_services import get_problem_details, search_problems, find_problems_by_status_filtered_for_user_list
 from core.team_services import get_team_details
 from models.contest_model import ContestModel
 from core.user_services import get_user_details

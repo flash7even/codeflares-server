@@ -12,7 +12,7 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('user_problem', description='Namespace for user_problem service')
 
-from core.problem_user_services import find_problems_for_user_by_status_filtered, add_user_problem_status
+from core.problem_services import find_problems_for_user_by_status_filtered, add_user_problem_status
 
 _http_headers = {'Content-Type': 'application/json'}
 

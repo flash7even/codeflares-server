@@ -111,6 +111,8 @@ def search_problem_list_simplified(param, sort_by = 'problem_difficulty', sort_o
         query_json['size'] = _es_size
         query_json['sort'] = [{sort_by: {'order': sort_order}}]
 
+        print('query_json: ', json.dumps(query_json))
+
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_category, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
         item_list = []
@@ -119,6 +121,8 @@ def search_problem_list_simplified(param, sort_by = 'problem_difficulty', sort_o
             for hit in response['hits']['hits']:
                 data = hit['_source']
                 item_list.append(data['problem_id'])
+
+        print('item_list: ', item_list)
         return item_list
     except Exception as e:
         raise e

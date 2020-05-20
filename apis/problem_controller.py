@@ -186,6 +186,7 @@ class CreateProblem(Resource):
                     category_details = get_category_details(category_id)
                     edge = {
                         'problem_id': response['_id'],
+                        'problem_name': data['problem_name'],
                         'category_id': category_id,
                         'dependency_factor': cat['factor'],
                         'category_root': category_details['category_root'],
