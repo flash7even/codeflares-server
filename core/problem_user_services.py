@@ -1,9 +1,8 @@
 import time
-import json
 import requests
 from flask import current_app as app
 
-from core.problem_services import get_problem_details, search_problems
+from core.problem_services import get_problem_details, search_problems, get_user_problem_status
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -18,28 +17,6 @@ SOLVED = 'SOLVED'
 UNSOLVED = 'UNSOLVED'
 SOLVE_LATER = 'SOLVE_LATER'
 FLAGGED = 'FLAGGED'
-
-
-def get_user_problem_status(user_id, problem_id):
-    try:
-        rs = requests.session()
-        must = [
-            {'term': {'user_id': user_id}},
-            {'term': {'problem_id': problem_id}}
-        ]
-        query_json = {'query': {'bool': {'must': must}}}
-        query_json['size'] = 1
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
-        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        if 'hits' in response:
-            for hit in response['hits']['hits']:
-                edge = hit['_source']
-                edge['id'] = hit['_id']
-                return edge
-        return None
-
-    except Exception as e:
-        raise e
 
 
 def get_solved_problem_count_for_user(user_id):

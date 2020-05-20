@@ -75,12 +75,13 @@ def find_problem_dependency_list(problem_id):
 
 
 def search_problem_list_simplified(param, sort_by = 'problem_difficulty', sort_order = 'asc'):
+    print('search_problem_list_simplified called: ', param)
     try:
         query_json = {'query': {'match_all': {}}}
         rs = requests.session()
 
         must = []
-        keyword_fields = ['category_root']
+        keyword_fields = ['problem_id', 'problem_difficulty', 'category_id', 'category_name', 'category_root']
 
         minimum_difficulty = 0
         maximum_difficulty = 100
@@ -124,6 +125,7 @@ def search_problem_list_simplified(param, sort_by = 'problem_difficulty', sort_o
 
 
 def get_problem_count_for_category(param):
+    app.logger.info(f'get_problem_count_for_category called: {json.dumps(param)}')
     try:
         rs = requests.session()
         must = []
@@ -131,8 +133,10 @@ def get_problem_count_for_category(param):
             must.append({'term': {f: param[f]}},)
         query_json = {'query': {'bool': {'must': must}}}
         query_json['size'] = 0
+        app.logger.debug(f'query_json: {json.dumps(query_json)}')
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_category, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        app.logger.debug(f'response: {json.dumps(response)}')
         if 'hits' in response:
             return response['hits']['total']['value']
         return 0

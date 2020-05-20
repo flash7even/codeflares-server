@@ -1,7 +1,7 @@
 import requests
 from flask import current_app as app
 
-from core.problem_category_services import find_problem_dependency_list
+from core.problem_category_services import find_problem_dependency_list, search_problem_list_simplified
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -86,5 +86,51 @@ def search_problems(param, from_value, size_value, heavy = False):
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return item_list
+    except Exception as e:
+        raise e
+
+
+def search_problems_by_category(param, heavy = False):
+    user_id = param.get('user_id', None)
+    param.pop('user_id', None)
+    try:
+        problem_list = search_problem_list_simplified(param)
+        item_list = []
+        for problem_id in problem_list:
+            problem_details = get_problem_details(problem_id)
+            problem_details['solved'] = 'no'
+            if user_id:
+                edge = get_user_problem_status(user_id, problem_id)
+                print('EDGE: ', edge)
+                if edge and edge['status'] == SOLVED:
+                    problem_details['solved'] = 'yes'
+
+            if heavy:
+                dependency_list = find_problem_dependency_list(problem_id)
+                problem_details['category_dependency_list'] = dependency_list
+            item_list.append(problem_details)
+        return item_list
+    except Exception as e:
+        raise e
+
+
+def get_user_problem_status(user_id, problem_id):
+    try:
+        rs = requests.session()
+        must = [
+            {'term': {'user_id': user_id}},
+            {'term': {'problem_id': problem_id}}
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = 1
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                edge = hit['_source']
+                edge['id'] = hit['_id']
+                return edge
+        return None
+
     except Exception as e:
         raise e

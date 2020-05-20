@@ -12,8 +12,7 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('problem', description='Namespace for problem service')
 
-from core.problem_services import search_problems
-from core.problem_user_services import add_user_problem_status
+from core.problem_services import search_problems, search_problems_by_category
 from core.problem_category_services import add_problem_category_dependency
 from core.category_services import get_category_id_from_name, get_category_details
 
@@ -211,7 +210,7 @@ class SearchProblem(Resource):
         try:
             app.logger.info('Problem search api called')
             param = request.get_json()
-            result = search_problems(param, page*_es_size, _es_size)
+            result = search_problems_by_category(param, heavy=True)
             app.logger.info('Problem search api completed')
             return {
                 "problem_list": result

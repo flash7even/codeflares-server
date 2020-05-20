@@ -103,6 +103,7 @@ def search_categories(param, from_value, size_value, heavy = False):
         must = []
         keyword_fields = ['category_title', 'category_root']
         user_id = param.get('user_id', None)
+        print('search_categories: body: ', param)
         param.pop('user_id', None)
 
         minimum_difficulty = 0
@@ -141,6 +142,7 @@ def search_categories(param, from_value, size_value, heavy = False):
         print('query_json: ', json.dumps(query_json))
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_category, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        # print('response: ', response)
         item_list = []
         if 'hits' in response:
             for hit in response['hits']['hits']:
@@ -149,7 +151,7 @@ def search_categories(param, from_value, size_value, heavy = False):
                 category['problem_count'] = 0
                 category['solve_count'] = 0
                 if category['category_root'] == 'root':
-                    category['problem_count'] = get_problem_count_for_category({'category_root': 'root'})
+                    category['problem_count'] = get_problem_count_for_category({'category_root': category['category_name']})
                 else:
                     category['problem_count'] = get_problem_count_for_category({'category_name': category['category_name']})
 

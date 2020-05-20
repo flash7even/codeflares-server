@@ -207,7 +207,8 @@ def sync_root_category_score_for_user(user_id):
     app.logger.debug(f'sync_root_category_score_for_user called for user_id: {user_id}')
     solved_problems = find_problems_for_user_by_status_filtered(['SOLVED'], user_id)
     root_solved_count = root_category_solved_count_by_solved_problem_list(solved_problems)
-    category_list = search_categories({'category_root': 'root'}, 0, 100)
+    app.logger.info('root_solved_count: ' + json.dumps(root_solved_count))
+    category_list = search_categories({'category_root': 'root'}, 0, _es_size)
     for category in category_list:
         data = generate_sync_data_for_root_category(user_id, category, root_solved_count)
         add_user_category_data(user_id, category['category_id'], data)
