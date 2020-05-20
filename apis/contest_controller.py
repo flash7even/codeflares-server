@@ -13,6 +13,7 @@ from commons.jwt_helpers import access_required
 api = Namespace('contest', description='Namespace for contest service')
 
 from core.contest_services import create_contest, create_problem_set, search_contests, find_problem_set_for_contest, reupload_problem_set_for_contest
+from core.user_services import get_user_details
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -94,6 +95,8 @@ class ContestByID(Resource):
                 if response['found']:
                     data = response['_source']
                     data['id'] = response['_id']
+                    setter_data = get_user_details(data['setter_id'])
+                    data['setter_handle'] = setter_data['username']
                     data['problem_set'] = find_problem_set_for_contest(contest_id)
                     app.logger.info('Get contest_details api completed')
                     return data, 200
