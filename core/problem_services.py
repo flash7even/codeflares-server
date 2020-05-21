@@ -205,6 +205,10 @@ def find_problems_for_user_by_status_filtered(status, user_id, heavy=False):
                 if heavy:
                     problem = get_problem_details(edge['problem_id'])
                     problem['user_status'] = edge['status']
+                    if problem['user_status'] == FLAGGED:
+                        problem['user_status_title'] = 'Blacklisted'
+                    if problem['user_status'] == SOLVE_LATER:
+                        problem['user_status_title'] = 'Flagged for 3 Days'
                     problem_list.append(problem)
                 else:
                     problem_list.append(edge['problem_id'])
