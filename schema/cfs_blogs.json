@@ -1,0 +1,32 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "blog_title": {
+      "type": "keyword"
+    },
+    "blog_writer": {
+      "type": "keyword"
+    },
+    "blog_topic": {
+      "type": "keyword"
+    },
+    "blog_text": {
+      "type": "text"
+    },
+    "status": {
+      "type": "keyword"
+    },
+    "created_at": {
+      "type": "long"
+    },
+    "created_by": {
+      "type": "keyword"
+    },
+    "updated_at": {
+      "type": "long"
+    },
+    "updated_by": {
+      "type": "keyword"
+    }
+  }
+}
