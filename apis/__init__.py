@@ -6,7 +6,9 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_restplus import Api
 
+from extensions.flask_redis import redis_store
 from config import Config, instances
+
 from .auth_controller import api as auth_ns
 from .category_controller import api as cat_ns
 from .problem_controller import api as prob_ns
@@ -14,7 +16,6 @@ from .onlinejudge_controller import api as oj_ns
 from .user_controller import api as user_ns
 from .training_controller import api as train_ns
 from .team_controller import api as team_ns
-from extensions.flask_redis import redis_store
 from .classroom_class_controller import api as classroom_class_ns
 from .classroom_task_controller import api as classroom_task_ns
 from .problem_status_controller import api as problem_status_ns
