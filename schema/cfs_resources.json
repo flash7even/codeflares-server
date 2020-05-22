@@ -1,0 +1,35 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "resource_ref_id": {
+      "type": "keyword"
+    },
+    "resource_type": {
+      "type": "keyword"
+    },
+    "resource_title": {
+      "type": "keyword"
+    },
+    "resource_body": {
+      "type": "text"
+    },
+    "resource_writer": {
+      "type": "keyword"
+    },
+    "resource_owner": {
+      "type": "keyword"
+    },
+    "created_at": {
+      "type": "long"
+    },
+    "created_by": {
+      "type": "keyword"
+    },
+    "updated_at": {
+      "type": "long"
+    },
+    "updated_by": {
+      "type": "keyword"
+    }
+  }
+}

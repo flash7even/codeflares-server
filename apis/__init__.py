@@ -23,6 +23,7 @@ from .contest_controller import api as contest_ns
 from .blog_controller import api as blog_ns
 from .comment_controller import api as comment_ns
 from .vote_controller import api as vote_ns
+from .resource_controller import api as resource_ns
 
 blueprint = Blueprint('api', Config.APPNAME, url_prefix='/api')
 
@@ -46,6 +47,7 @@ api.add_namespace(contest_ns, path='/contest')
 api.add_namespace(blog_ns, path='/blog')
 api.add_namespace(comment_ns, path='/comment')
 api.add_namespace(vote_ns, path='/vote')
+api.add_namespace(resource_ns, path='/resource')
 
 
 def create_app(instance_name):
