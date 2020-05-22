@@ -6,6 +6,8 @@ import random
 
 from core.user_services import get_user_details
 
+from core.vote_services import get_vote_count_list
+
 _http_headers = {'Content-Type': 'application/json'}
 
 _es_index_comment = 'cfs_comments'
@@ -34,10 +36,28 @@ def dfs_comment_tree(cur_node_id):
                     user_details = get_user_details(data['comment_writer'])
                     data['comment_writer_handle'] = user_details['username']
                 data['comment_id'] = hit['_id']
+                data['vote_count'] = get_vote_count_list(data['comment_id'])
                 child_list = dfs_comment_tree(data['comment_id'])
                 data['comment_list'] = child_list
                 comment_list.append(data)
             return comment_list
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        raise Exception('Internal server error')
+    except Exception as e:
+        raise e
+
+
+def get_comment_count(blog_id):
+    try:
+        app.logger.info('search_teams_for_user called')
+        rs = requests.session()
+        must = [{'term': {'comment_ref_id': blog_id}}]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = 0
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_comment, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        if 'hits' in response:
+            return response['hits']['total']['value']
         app.logger.error('Elasticsearch down, response: ' + str(response))
         raise Exception('Internal server error')
     except Exception as e:
