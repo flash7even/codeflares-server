@@ -333,12 +333,15 @@ def search_teams_for_user(user_handle, param):
         print('response: ', json.dumps(response))
         if 'hits' in response:
             item_list = []
+            rank = 1
             for hit in response['hits']['hits']:
                 team_edge = hit['_source']
                 print('Search details for: ', json.dumps(team_edge))
                 team = get_team_details(team_edge['team_id'])
                 print('Found Details')
                 team['status'] = team_edge.get('status', 'pending')
+                team['rank'] = rank
+                rank += 1
                 item_list.append(team)
             print('item_list', json.dumps(item_list))
             app.logger.info('Team search method completed')
