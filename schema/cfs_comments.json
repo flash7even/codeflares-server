@@ -13,6 +13,9 @@
     "comment_parent_id": {
       "type": "keyword"
     },
+    "comment_writer": {
+      "type": "keyword"
+    },
     "status": {
       "type": "keyword"
     },

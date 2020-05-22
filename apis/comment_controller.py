@@ -10,14 +10,13 @@ from flask_jwt_extended import jwt_required
 from jwt.exceptions import *
 from commons.jwt_helpers import access_required
 
-api = Namespace('blog', description='Namespace for blog service')
+api = Namespace('comment', description='Namespace for comment service')
 
 from core.user_services import get_user_details
-from core.comment_services import get_comment_list
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index = 'cfs_blogs'
+_es_index = 'cfs_comments'
 _es_type = '_doc'
 _es_size = 100
 
@@ -78,40 +77,39 @@ def handle_failed_user_claims_verification(e):
     return {'message': 'User claims verification failed'}, 400
 
 
-@api.route('/<string:blog_id>')
-class BlogByID(Resource):
+@api.route('/<string:comment_id>')
+class CommentByID(Resource):
 
-    @api.doc('get blog details by id')
-    def get(self, blog_id):
-        app.logger.info('Get blog_details method called')
+    @api.doc('get comment details by id')
+    def get(self, comment_id):
+        app.logger.info('Get comment_details method called')
         rs = requests.session()
-        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, blog_id)
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, comment_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
         print(response)
         if 'found' in response:
             if response['found']:
                 data = response['_source']
                 data['id'] = response['_id']
-                data['blog_id'] = response['_id']
+                data['comment_id'] = response['_id']
                 data['updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['updated_at']))
-                user_details = get_user_details(data['blog_writer'])
-                data['blog_writer_handle'] = user_details['username']
-                data['comment_list'] = get_comment_list(data['blog_id'])
-                app.logger.info('Get blog_details method completed')
+                user_details = get_user_details(data['comment_writer'])
+                data['comment_writer_handle'] = user_details['username']
+                app.logger.info('Get comment_details method completed')
                 return data, 200
-            app.logger.warning('Blog not found')
+            app.logger.warning('Comment not found')
             return {'found': response['found']}, 404
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
     @access_required(access="ALL")
-    @api.doc('update blog by id')
-    def put(self, blog_id):
-        app.logger.info('Update blog_details method called')
+    @api.doc('update comment by id')
+    def put(self, comment_id):
+        app.logger.info('Update comment_details method called')
         rs = requests.session()
         post_data = request.get_json()
 
-        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, blog_id)
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, comment_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
         print(response)
         if 'found' in response:
@@ -122,27 +120,27 @@ class BlogByID(Resource):
                 data['updated_at'] = int(time.time())
                 response = rs.put(url=search_url, json=data, headers=_http_headers).json()
                 if 'result' in response:
-                    app.logger.info('Update blog_details method completed')
+                    app.logger.info('Update comment_details method completed')
                     return response['result'], 200
                 else:
                     app.logger.error('Elasticsearch down, response: ' + str(response))
                     return response, 500
-            app.logger.warning('Blog not found')
+            app.logger.warning('Comment not found')
             return {'message': 'not found'}, 404
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
     @access_required(access="ALL")
-    @api.doc('delete blog by id')
-    def delete(self, blog_id):
-        app.logger.info('Delete blog_details method called')
+    @api.doc('delete comment by id')
+    def delete(self, comment_id):
+        app.logger.info('Delete comment_details method called')
         rs = requests.session()
-        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, blog_id)
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, comment_id)
         response = rs.delete(url=search_url, headers=_http_headers).json()
         print(response)
         if 'result' in response:
             if response['result'] == 'deleted':
-                app.logger.info('Delete blog_details method completed')
+                app.logger.info('Delete comment_details method completed')
                 return response['result'], 200
             else:
                 return response['result'], 400
@@ -151,24 +149,25 @@ class BlogByID(Resource):
 
 
 @api.route('/')
-class CreateBlog(Resource):
+class CreateComment(Resource):
 
     @access_required(access="ALL")
-    @api.doc('create blog')
+    @api.doc('create comment')
     def post(self):
-        app.logger.info('Create blog method called')
+        app.logger.info('Create comment method called')
         rs = requests.session()
         data = request.get_json()
+        print('comment data: ', data)
 
         data['created_at'] = int(time.time())
         data['updated_at'] = int(time.time())
 
         post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
-        print(response)
+        print('response: ', response)
 
         if 'result' in response and response['result'] == 'created':
-            app.logger.info('Create blog method completed')
+            app.logger.info('Create comment method completed')
             return response['_id'], 201
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
@@ -176,17 +175,17 @@ class CreateBlog(Resource):
 
 @api.route('/search', defaults={'page': 0})
 @api.route('/search/<int:page>')
-class SearchBlog(Resource):
+class SearchComment(Resource):
 
-    @api.doc('search blog based on post parameters')
+    @api.doc('search comment based on post parameters')
     def post(self, page=0):
-        app.logger.info('Blog search method called')
+        app.logger.info('Comment search method called')
         rs = requests.session()
         param = request.get_json()
         query_json = {'query': {'match_all': {}}}
 
         must = []
-        keyword_fields = ['blog_title', 'blog_root']
+        keyword_fields = ['comment_title', 'comment_root']
 
         for f in param:
             if f in keyword_fields:
@@ -205,19 +204,18 @@ class SearchBlog(Resource):
         if 'hits' in response:
             item_list = []
             for hit in response['hits']['hits']:
-                blog = hit['_source']
-                blog['id'] = hit['_id']
-                blog['blog_id'] = hit['_id']
-                blog['updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(blog['updated_at']))
-                blog['comment_list'] = get_comment_list(blog['blog_id'])
-                if 'blog_writer' in blog:
-                    user_details = get_user_details(blog['blog_writer'])
-                    blog['blog_writer_handle'] = user_details['username']
-                item_list.append(blog)
+                comment = hit['_source']
+                comment['id'] = hit['_id']
+                comment['comment_id'] = hit['_id']
+                comment['updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(comment['updated_at']))
+                if 'comment_writer' in comment:
+                    user_details = get_user_details(comment['comment_writer'])
+                    comment['comment_writer_handle'] = user_details['username']
+                item_list.append(comment)
             print(item_list)
-            app.logger.info('Blog search method completed')
+            app.logger.info('Comment search method completed')
             return {
-                'blog_list': item_list
+                'comment_list': item_list
             }
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return {'message': 'internal server error'}, 500
