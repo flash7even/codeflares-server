@@ -32,6 +32,7 @@ def add_resources(data):
 
 
 def search_resource(param, from_val, size):
+    print('\n\nsearch_resource called: ', param)
     try:
         app.logger.info('search_task_lists method called')
         rs = requests.session()
@@ -55,6 +56,7 @@ def search_resource(param, from_val, size):
 
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_resource, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        print('response: ', response)
         item_list = []
         if 'hits' in response:
             for hit in response['hits']['hits']:
@@ -62,10 +64,11 @@ def search_resource(param, from_val, size):
                 data['id'] = hit['_id']
                 user_details = get_user_details(data['resource_writer'])
                 data['resource_writer_handle'] = user_details['username']
-                data['resource_id'] = response['_id']
+                data['resource_id'] = hit['_id']
                 data['updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['updated_at']))
                 data['vote_count'] = get_vote_count_list(data['resource_id'])
                 item_list.append(data)
+        print('item_list: ', item_list)
         return item_list
 
     except Exception as e:
