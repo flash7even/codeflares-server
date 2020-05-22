@@ -22,6 +22,7 @@ from .notification_controller import api as notify_ns
 from .contest_controller import api as contest_ns
 from .blog_controller import api as blog_ns
 from .comment_controller import api as comment_ns
+from .vote_controller import api as vote_ns
 
 blueprint = Blueprint('api', Config.APPNAME, url_prefix='/api')
 
@@ -44,6 +45,7 @@ api.add_namespace(notify_ns, path='/notification')
 api.add_namespace(contest_ns, path='/contest')
 api.add_namespace(blog_ns, path='/blog')
 api.add_namespace(comment_ns, path='/comment')
+api.add_namespace(vote_ns, path='/vote')
 
 
 def create_app(instance_name):

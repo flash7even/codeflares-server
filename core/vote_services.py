@@ -63,7 +63,7 @@ def search_votes(param):
         raise e
 
 
-def get_vote_list(vote_ref_id):
+def get_vote_count_list(vote_ref_id):
     try:
         like_count = get_vote_count(vote_ref_id, LIKE)
         dislike_count = get_vote_count(vote_ref_id, DISLIKE)

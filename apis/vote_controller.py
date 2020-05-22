@@ -1,5 +1,5 @@
 import time
-
+import json
 import requests
 from flask import current_app as app
 from flask import request
@@ -94,6 +94,8 @@ class CreateVote(Resource):
                 if f not in mandatory_fields:
                     return {'message': 'bad request'}, 400
             response = add_vote(data)
+            app.logger.debug('VOTE DATA: ' + json.dumps(data))
+            app.logger.debug('VOTE RESPONSE: ' + json.dumps(response))
             return response
         except Exception as e:
             raise e
