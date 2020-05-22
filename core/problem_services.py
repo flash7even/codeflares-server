@@ -4,6 +4,8 @@ import requests
 from flask import current_app as app
 
 from core.problem_category_services import find_problem_dependency_list, search_problem_list_simplified
+from core.comment_services import get_comment_list
+from core.resource_services import search_resource
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -46,6 +48,8 @@ def get_problem_details(problem_id):
         if 'found' in response:
             if response['found']:
                 data = response['_source']
+                data['comment_list'] = get_comment_list(response['_id'])
+                data['resource_list'] = search_resource({'resource_ref_id': response['_id']}, 0, _es_size)
                 data['id'] = response['_id']
                 return data
         return None

@@ -3,7 +3,7 @@ import json
 import requests
 from flask import current_app as app
 
-from core.user_services import synch_user_problem
+from core.problem_user_services import synch_user_problem
 from core.training_model_services import sync_category_score_for_user, sync_problem_score_for_user, \
     sync_root_category_score_for_user, sync_overall_stat_for_user
 

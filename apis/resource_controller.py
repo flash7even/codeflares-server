@@ -12,8 +12,9 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('resource', description='Namespace for resource service')
 
+from core.resource_services import add_resources, search_resource
+
 from core.user_services import get_user_details
-from core.comment_services import get_comment_list, get_comment_count
 from core.vote_services import get_vote_count_list
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -157,22 +158,14 @@ class CreateResource(Resource):
     @access_required(access="ALL")
     @api.doc('create resource')
     def post(self):
-        app.logger.info('Create resource method called')
-        rs = requests.session()
-        data = request.get_json()
-
-        data['created_at'] = int(time.time())
-        data['updated_at'] = int(time.time())
-
-        post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
-        response = rs.post(url=post_url, json=data, headers=_http_headers).json()
-        print(response)
-
-        if 'result' in response and response['result'] == 'created':
-            app.logger.info('Create resource method completed')
-            return response['_id'], 201
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return response, 500
+        try:
+            app.logger.info('Create resource method called')
+            rs = requests.session()
+            data = request.get_json()
+            response = add_resources(data)
+            return response
+        except Exception as e:
+            return {'message': str(e)}, 500
 
 
 @api.route('/search', defaults={'page': 0})
@@ -181,44 +174,14 @@ class SearchResource(Resource):
 
     @api.doc('search resource based on post parameters')
     def post(self, page=0):
-        app.logger.info('Resource search method called')
-        rs = requests.session()
-        param = request.get_json()
-        query_json = {'query': {'match_all': {}}}
-
-        must = []
-        keyword_fields = ['resource_title', 'resource_root']
-
-        for f in param:
-            if f in keyword_fields:
-                must.append({'term': {f: param[f]}})
-            else:
-                must.append({'match': {f: param[f]}})
-
-        if len(must) > 0:
-            query_json = {'query': {'bool': {'must': must}}}
-
-        query_json['from'] = page*_es_size
-        query_json['size'] = _es_size
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
-        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        print(response)
-        if 'hits' in response:
-            item_list = []
-            for hit in response['hits']['hits']:
-                resource = hit['_source']
-                resource['id'] = hit['_id']
-                resource['resource_id'] = hit['_id']
-                resource['updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(resource['updated_at']))
-                resource['vote_count'] = get_vote_count_list(resource['resource_id'])
-                if 'resource_writer' in resource:
-                    user_details = get_user_details(resource['resource_writer'])
-                    resource['resource_writer_handle'] = user_details['username']
-                item_list.append(resource)
-            print(item_list)
-            app.logger.info('Resource search method completed')
+        try:
+            app.logger.info('Resource search method called')
+            rs = requests.session()
+            param = request.get_json()
+            resource_list = search_resource(param, 0, _es_size)
             return {
-                'resource_list': item_list
+                'resource_list': resource_list
             }
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return {'message': 'internal server error'}, 500
+
+        except Exception as e:
+            return {'message': str(e)}, 500

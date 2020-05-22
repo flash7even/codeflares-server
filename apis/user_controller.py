@@ -8,7 +8,8 @@ from flask_jwt_extended.exceptions import *
 from jwt.exceptions import *
 from commons.jwt_helpers import access_required
 
-from core.user_services import synch_user_problem, search_user, get_user_details, get_user_rating_history
+from core.user_services import search_user, get_user_details, get_user_rating_history
+from core.problem_user_services import synch_user_problem
 from core.sync_services import user_problem_data_sync, user_training_model_sync
 
 api = Namespace('user', description='user related services')

@@ -12,7 +12,7 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('problem', description='Namespace for problem service')
 
-from core.problem_services import search_problems, search_problems_by_category
+from core.problem_services import search_problems, search_problems_by_category, get_problem_details
 from core.problem_category_services import add_problem_category_dependency
 from core.category_services import get_category_id_from_name, get_category_details
 
@@ -86,20 +86,8 @@ class ProblemByID(Resource):
     def get(self, problem_id):
         try:
             app.logger.info('Get problem_details api called')
-            rs = requests.session()
-            search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
-            response = rs.get(url=search_url, headers=_http_headers).json()
-            print(response)
-            if 'found' in response:
-                if response['found']:
-                    data = response['_source']
-                    data['id'] = response['_id']
-                    app.logger.info('Get problem_details api completed')
-                    return data, 200
-                app.logger.warning('Problem not found')
-                return {'found': response['found']}, 404
-            app.logger.error('Elasticsearch down, response: ' + str(response))
-            return response, 500
+            response = get_problem_details(problem_id)
+            return response
         except Exception as e:
             return {'message': str(e)}, 500
 
