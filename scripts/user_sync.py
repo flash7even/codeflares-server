@@ -77,7 +77,7 @@ def sync_all_users():
     user_list = get_all_users()
     for user in user_list:
         user_id = user['id']
-        problem_sync(user_id)
+        # problem_sync(user_id)
         training_model_sync(user_id)
 
 

@@ -215,6 +215,42 @@ class SearchUser(Resource):
             return {'message': str(e)}, 500
 
 
+@api.route('/search/skilled', defaults={'page': 0})
+@api.route('/search/skilled/<int:page>')
+class SearchUser(Resource):
+
+    @api.doc('search users based on post parameters')
+    def post(self, page=0):
+        app.logger.info('Search user API called')
+        try:
+            param = request.get_json()
+            user_list = search_user(param, page*_es_size, _es_size, sort_by='skill_value', sort_order='desc')
+            return {
+                'user_list': user_list
+            }
+
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/search/solved-count', defaults={'page': 0})
+@api.route('/search/solved-count/<int:page>')
+class SearchUser(Resource):
+
+    @api.doc('search users based on post parameters')
+    def post(self, page=0):
+        app.logger.info('Search user API called')
+        try:
+            param = request.get_json()
+            user_list = search_user(param, page*_es_size, _es_size, sort_by='solve_count', sort_order='desc')
+            return {
+                'user_list': user_list
+            }
+
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
 @api.route('/sync/<string:user_id>')
 class Sync(Resource):
 

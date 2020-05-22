@@ -230,7 +230,7 @@ def synch_user_problem(user_id):
         raise e
 
 
-def search_user(param, from_val, to_val):
+def search_user(param, from_val, to_val, sort_by = 'updated_at', sort_order = 'desc'):
     try:
         must = []
 
@@ -246,6 +246,7 @@ def search_user(param, from_val, to_val):
                 must.append({'term': {k: param[k]}})
 
         query_json = {'query': {'bool': {'must': must}}}
+        query_json['sort'] = [{sort_by: {'order': sort_order}}]
 
         query_json['from'] = from_val
         query_json['size'] = to_val
@@ -254,12 +255,15 @@ def search_user(param, from_val, to_val):
 
         if 'hits' in response:
             data = []
+            rank = 1
             for hit in response['hits']['hits']:
                 user = hit['_source']
                 user['id'] = hit['_id']
                 user['follower'] = 921
                 user['following'] = 530
                 user['rating_history'] = get_user_rating_history(user['id'])
+                user['rank'] = rank
+                rank += 1
 
                 data.append(user)
             app.logger.info('Search user API completed')
