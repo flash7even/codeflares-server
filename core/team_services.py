@@ -6,7 +6,7 @@ from flask import current_app as app
 
 _http_headers = {'Content-Type': 'application/json'}
 
-from core.user_services import search_user
+from core.user_services import search_user, get_user_details
 from scrappers.codeforces_scrapper import CodeforcesScrapper
 from core.classroom_services import search_task_lists, search_class_lists
 
@@ -115,6 +115,8 @@ def get_team_details(team_id):
                 data['rating_history'] = get_team_rating_history(team_id)
                 data['task_list'] = search_task_lists({'classroom_id': team_id}, 0, 3)
                 data['class_list'] = search_class_lists({'classroom_id': team_id}, 0, 3)
+                user_details = get_user_details(data['team_leader_id'])
+                data['team_leader_handle'] = user_details['username']
                 return data
             app.logger.warning('Team not found')
             raise Exception('Team not found')
