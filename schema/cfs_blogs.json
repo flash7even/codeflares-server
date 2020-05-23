@@ -10,6 +10,12 @@
     "blog_topic": {
       "type": "keyword"
     },
+    "blog_type": {
+      "type": "keyword"
+    },
+    "blog_ref_id": {
+      "type": "keyword"
+    },
     "blog_text": {
       "type": "text"
     },

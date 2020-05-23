@@ -189,7 +189,7 @@ class SearchBlog(Resource):
         query_json = {'query': {'match_all': {}}}
 
         must = []
-        keyword_fields = ['blog_title', 'blog_root']
+        keyword_fields = ['blog_title', 'blog_root', 'blog_type', 'blog_ref_id']
 
         for f in param:
             if f in keyword_fields:
