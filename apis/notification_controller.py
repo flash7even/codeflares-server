@@ -119,10 +119,11 @@ class SearchUserNotification(Resource):
             data = request.get_json()
             size = data.get('size', _es_size)
             unread_list = search_notification({'status': "UNREAD", 'user_id': user_id}, size)
+            unread_list_all = search_notification({'status': "UNREAD", 'user_id': user_id}, _es_size)
             notification_list = search_notification({'user_id': user_id}, size)
             response = {
                 'notification_list': notification_list,
-                'unread_length': len(unread_list)
+                'unread_length': len(unread_list_all)
             }
             if len(unread_list) > 0:
                 response['UNREAD'] = True
