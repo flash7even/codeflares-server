@@ -7,6 +7,9 @@ _http_headers = {'Content-Type': 'application/json'}
 
 from core.problem_category_services import get_problem_count_for_category
 from core.user_category_edge_services import get_user_category_data
+from core.comment_services import get_comment_list, get_comment_count
+from core.resource_services import search_resource
+from core.vote_services import get_vote_count_list
 
 _es_index_category = 'cfs_categories'
 _es_index_category_dependency = 'cfs_category_dependencies'
@@ -24,6 +27,16 @@ def get_category_details(cat_id):
         if 'found' in response:
             if response['found']:
                 data = response['_source']
+                data['category_id'] = response['_id']
+                data['comment_list'] = get_comment_list(response['_id'])
+                data['vote_count'] = get_vote_count_list(response['_id'])
+                data['comment_count'] = get_comment_count(response['_id'])
+                data['resource_list'] = search_resource({'resource_ref_id': response['_id']}, 0, _es_size)
+                data['problem_count'] = 0
+                if data['category_root'] == 'root':
+                    data['problem_count'] = get_problem_count_for_category({'category_root': data['category_name']})
+                else:
+                    data['problem_count'] = get_problem_count_for_category({'category_name': data['category_name']})
                 return data
         return None
     except Exception as e:

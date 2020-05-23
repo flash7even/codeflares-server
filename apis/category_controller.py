@@ -12,7 +12,7 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('category', description='Namespace for category service')
 
-from core.category_services import add_category_category_dependency, get_category_id_from_name, search_categories
+from core.category_services import add_category_category_dependency, get_category_id_from_name, search_categories, get_category_details
 from core.training_model_services import category_wise_problem_solve_for_users
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -85,20 +85,8 @@ class CategoryByID(Resource):
     def get(self, category_id):
         try:
             app.logger.info('Get category_details api called')
-            rs = requests.session()
-            search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, category_id)
-            response = rs.get(url=search_url, headers=_http_headers).json()
-            print(response)
-            if 'found' in response:
-                if response['found']:
-                    data = response['_source']
-                    data['id'] = response['_id']
-                    app.logger.info('Get category_details api completed')
-                    return data, 200
-                app.logger.warning('Category not found')
-                return {'found': response['found']}, 404
-            app.logger.error('Elasticsearch down, response: ' + str(response))
-            return response, 500
+            data = get_category_details(category_id)
+            return data
         except Exception as e:
             return {'message': str(e)}, 500
 

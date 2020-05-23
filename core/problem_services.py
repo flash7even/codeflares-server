@@ -54,7 +54,6 @@ def get_problem_details(problem_id):
                 data['vote_count'] = get_vote_count_list(response['_id'])
                 data['comment_count'] = get_comment_count(response['_id'])
                 data['resource_list'] = search_resource({'resource_ref_id': response['_id']}, 0, _es_size)
-                data['id'] = response['_id']
                 return data
         return None
     except Exception as e:

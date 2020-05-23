@@ -99,3 +99,4 @@ class CreateVote(Resource):
             return response
         except Exception as e:
             raise e
+
