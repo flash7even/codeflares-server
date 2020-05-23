@@ -41,7 +41,7 @@ def get_solved_count_for_problem(problem_id):
         raise e
 
 
-def get_problem_details(problem_id):
+def get_problem_details(problem_id, user_id = None):
     try:
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_problem, _es_type, problem_id)
@@ -52,8 +52,12 @@ def get_problem_details(problem_id):
                 data['id'] = response['_id']
                 data['comment_list'] = get_comment_list(response['_id'])
                 data['vote_count'] = get_vote_count_list(response['_id'])
+                data['solve_count'] = get_solved_count_for_problem(response['_id'])
                 data['comment_count'] = get_comment_count(response['_id'])
                 data['resource_list'] = search_resource({'resource_ref_id': response['_id']}, 0, _es_size)
+                if user_id:
+                    edge = get_user_problem_status(user_id, problem_id)
+                    data['user_status'] = edge['status']
                 return data
         return None
     except Exception as e:

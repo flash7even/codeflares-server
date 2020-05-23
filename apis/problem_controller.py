@@ -224,3 +224,16 @@ class SearchProblem(Resource):
             }
         except Exception as e:
             return {'message': str(e)}, 500
+
+
+@api.route('/<string:problem_id>/<string:user_id>')
+class UserProblemByID(Resource):
+
+    @api.doc('get problem details by id')
+    def get(self, problem_id, user_id):
+        try:
+            app.logger.info('Get problem_details api called')
+            response = get_problem_details(problem_id, user_id)
+            return response
+        except Exception as e:
+            return {'message': str(e)}, 500
