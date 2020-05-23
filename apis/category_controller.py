@@ -267,3 +267,16 @@ class CategoryWiseSolvedUser(Resource):
             }
         except Exception as e:
             return {'message': str(e)}, 500
+
+
+@api.route('/<string:category_id>/<string:user_id>')
+class UserCategoryByID(Resource):
+
+    @api.doc('get category details by id')
+    def get(self, category_id, user_id):
+        try:
+            app.logger.info('Get category_details api called')
+            data = get_category_details(category_id, user_id)
+            return data
+        except Exception as e:
+            return {'message': str(e)}, 500

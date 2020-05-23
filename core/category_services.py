@@ -19,7 +19,7 @@ _es_size = 500
 _bulk_size = 25
 
 
-def get_category_details(cat_id):
+def get_category_details(cat_id, user_id = None):
     try:
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_category, _es_type, cat_id)
@@ -37,6 +37,11 @@ def get_category_details(cat_id):
                     data['problem_count'] = get_problem_count_for_category({'category_root': data['category_name']})
                 else:
                     data['problem_count'] = get_problem_count_for_category({'category_name': data['category_name']})
+
+                if user_id:
+                    cat_info = get_user_category_data(user_id, data['category_id'])
+                    data['skill_value'] = "{:.2f}".format(float(cat_info['skill_value']))
+                    data['skill_title'] = cat_info['skill_title']
                 return data
         return None
     except Exception as e:
