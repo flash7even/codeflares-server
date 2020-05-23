@@ -9,6 +9,8 @@ _http_headers = {'Content-Type': 'application/json'}
 from core.user_services import search_user, get_user_details
 from scrappers.codeforces_scrapper import CodeforcesScrapper
 from core.classroom_services import search_task_lists, search_class_lists
+from core.user_services import get_user_details_by_handle_name
+from core.notification_services import add_notification
 
 _es_index_user_team_edge = 'cfs_user_team_edges'
 _es_index_team = 'cfs_teams'
@@ -67,6 +69,54 @@ def get_team_rating_history(team_id):
             "rating": 2070
         }
     ]
+
+
+def add_team_members_bulk(member_list, team_id, team_type, logged_in_user):
+    try:
+        team_lead = None
+        for member in member_list:
+            member_details = get_user_details_by_handle_name(member['user_handle'])
+
+            edge = {
+                'team_id': team_id,
+                'team_type': team_type,
+                'user_handle': member['user_handle'],
+                'user_id': member_details['id'],
+                'remarks': member.get('remarks', None),
+                'status': 'confirmed'
+            }
+
+            if team_lead is not None:
+                edge['status'] = 'pending'
+            else:
+                team_lead = member
+
+            add_team_member(edge)
+
+            notification_data = {
+                'user_id': member_details['id'],
+                'sender_id': logged_in_user,
+                'notification_type': 'Team Invitation',
+                'redirect_url': '/team/list/',
+                'notification_text': 'You have been invited to join a team by',
+                'status': 'UNREAD',
+            }
+
+            if team_type == 'classroom':
+                notification_data = {
+                    'user_id': member_details['id'],
+                    'sender_id': logged_in_user,
+                    'notification_type': 'Classroom Invitation',
+                    'redirect_url': '/classroom/list/',
+                    'notification_text': 'You have been invited to join a classroom by',
+                    'status': 'UNREAD',
+                }
+
+            add_notification(notification_data)
+
+    except Exception as e:
+        raise e
+
 
 
 def update_team_details(team_id, post_data):

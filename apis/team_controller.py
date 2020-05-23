@@ -1,5 +1,5 @@
 import time
-
+import json
 import requests
 from flask import current_app as app
 from flask import request
@@ -14,7 +14,7 @@ api = Namespace('team', description='Namespace for team service')
 
 from core.team_services import add_team_member, delete_team_member, \
     delete_all_users_from_team, get_all_users_from_team,\
-    search_teams_for_user, get_team_details, update_team_member, search_teams, get_rating_history_codeforces
+    search_teams_for_user, get_team_details, update_team_member, search_teams, get_rating_history_codeforces, add_team_members_bulk
 
 from core.sync_services import team_training_model_sync
 from core.user_services import get_user_details_by_handle_name
@@ -102,8 +102,14 @@ class TeamByID(Resource):
     def put(self, team_id):
         try:
             app.logger.info('Update team_details method called')
+            current_user = get_jwt_identity().get('id')
             rs = requests.session()
             post_data = request.get_json()
+            app.logger.info('Update team_details post_data: ' + json.dumps(post_data))
+            member_list = []
+            if 'member_list' in post_data:
+                member_list = post_data['member_list']
+                post_data.pop('member_list', None)
 
             search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, team_id)
             response = rs.get(url=search_url, headers=_http_headers).json()
@@ -115,6 +121,7 @@ class TeamByID(Resource):
                     data['updated_at'] = int(time.time())
                     response = rs.put(url=search_url, json=data, headers=_http_headers).json()
                     if 'result' in response:
+                        add_team_members_bulk(member_list, team_id, data['team_type'], current_user)
                         app.logger.info('Update team_details method completed')
                         return response['result'], 200
                     else:
@@ -158,9 +165,6 @@ class CreateTeam(Resource):
     def post(self):
         try:
             app.logger.info('Create team method called')
-
-            print('identity: ', get_jwt_identity())
-
             current_user = get_jwt_identity().get('id')
             print('current_user: ', current_user)
             rs = requests.session()
@@ -179,49 +183,8 @@ class CreateTeam(Resource):
             post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
             response = rs.post(url=post_url, json=data, headers=_http_headers).json()
 
-            team_lead = None
-
             if 'result' in response and response['result'] == 'created':
-                for member in member_list:
-                    member_details = get_user_details_by_handle_name(member['user_handle'])
-
-                    edge = {
-                        'team_id': response['_id'],
-                        'team_type': data['team_type'],
-                        'user_handle': member['user_handle'],
-                        'user_id': member_details['id'],
-                        'remarks': member.get('remarks', None),
-                        'status': 'confirmed'
-                    }
-
-                    if team_lead is not None:
-                        edge['status'] = 'pending'
-                    else:
-                        team_lead = member
-
-                    add_team_member(edge)
-
-                    notification_data = {
-                        'user_id': member_details['id'],
-                        'sender_id': current_user,
-                        'notification_type': 'Team Invitation',
-                        'redirect_url': '/team/list/',
-                        'notification_text': 'You have been invited to join a team by',
-                        'status': 'UNREAD',
-                    }
-
-                    if data['team_type'] == 'classroom':
-                        notification_data = {
-                            'user_id': member_details['id'],
-                            'sender_id': current_user,
-                            'notification_type': 'Classroom Invitation',
-                            'redirect_url': '/classroom/list/',
-                            'notification_text': 'You have been invited to join a classroom by',
-                            'status': 'UNREAD',
-                        }
-
-                    add_notification(notification_data)
-
+                add_team_members_bulk(member_list, response['_id'], data['team_type'], current_user)
                 app.logger.info('Create team method completed')
                 return response['_id'], 201
             app.logger.error('Elasticsearch down, response: ' + str(response))
