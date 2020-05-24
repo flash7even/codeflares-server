@@ -1,0 +1,23 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "user_id": {
+      "type": "keyword"
+    },
+    "followed_by": {
+      "type": "keyword"
+    },
+    "created_at": {
+      "type": "long"
+    },
+    "created_by": {
+      "type": "keyword"
+    },
+    "updated_at": {
+      "type": "long"
+    },
+    "updated_by": {
+      "type": "keyword"
+    }
+  }
+}
