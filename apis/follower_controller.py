@@ -82,12 +82,17 @@ class UserFollow(Resource):
     @access_required(access="ALL")
     @api.doc('update user_follower')
     def put(self, user_id):
+        app.logger.info('Follow api called')
+        print('user_id: ', user_id)
         current_user = get_jwt_identity().get('id')
         rs = requests.session()
         data = {
             'user_id': user_id,
             'followed_by': current_user
         }
+
+        print('data: ', data)
+
         data['created_at'] = int(time.time())
         data['updated_at'] = int(time.time())
 
@@ -146,4 +151,3 @@ class FollowStatus(Resource):
             }
 
         return response, 500
-

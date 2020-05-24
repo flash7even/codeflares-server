@@ -1,6 +1,8 @@
 import requests
 from flask import current_app as app
 
+from core.follower_services import get_follow_stat
+
 _http_headers = {'Content-Type': 'application/json'}
 
 _es_index_user = 'cfs_users'
@@ -88,6 +90,8 @@ def get_user_details(user_id):
         if 'found' in response:
             if response['found']:
                 data = response['_source']
+                data['id'] = response['_id']
+                data['follow_stat'] = get_follow_stat(user_id)
                 app.logger.info('Get user_details method completed')
                 return data
         raise Exception('User not found')
@@ -137,6 +141,7 @@ def get_user_details_public(user_id):
         if 'found' in response:
             if response['found']:
                 data = response['_source']
+                data['follow_stat'] = get_follow_stat(user_id)
                 public_data = {}
                 for f in public_fields:
                     public_data[f] = data.get(f, None)
@@ -149,6 +154,7 @@ def get_user_details_public(user_id):
 
 
 def search_user(param, from_val, to_val, sort_by = 'updated_at', sort_order = 'desc'):
+    app.logger.info('search_user called')
     try:
         must = []
 
@@ -170,6 +176,7 @@ def search_user(param, from_val, to_val, sort_by = 'updated_at', sort_order = 'd
         query_json['size'] = to_val
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user, _es_type)
         response = requests.session().post(url=search_url, json=query_json, headers=_http_headers).json()
+        print(response)
 
         if 'hits' in response:
             data = []
@@ -177,12 +184,11 @@ def search_user(param, from_val, to_val, sort_by = 'updated_at', sort_order = 'd
             for hit in response['hits']['hits']:
                 user = hit['_source']
                 user['id'] = hit['_id']
-                user['follower'] = 921
-                user['following'] = 530
+                follow_stat = get_follow_stat(user['id'])
+                user['follow_stat'] = follow_stat
                 user['rating_history'] = get_user_rating_history(user['id'])
                 user['rank'] = rank
                 rank += 1
-
                 data.append(user)
             app.logger.info('Search user API completed')
             return data

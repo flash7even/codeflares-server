@@ -1,5 +1,5 @@
 from hashlib import md5
-
+import time
 import requests, json
 from flask import current_app as app, request
 from flask_restplus import Resource, Namespace
@@ -161,6 +161,8 @@ class CreateUser(Resource):
         app.logger.info('Create user API called')
         rs = requests.session()
         data = request.get_json()
+        data['created_at'] = int(time.time())
+        data['updated_at'] = int(time.time())
 
         try:
             user_data = self.__validate_json(data)
@@ -201,7 +203,6 @@ class CreateUser(Resource):
 @api.route('/search/<int:page>')
 class SearchUser(Resource):
 
-    @access_required(access="ALL")
     @api.doc('search users based on post parameters')
     def post(self, page=0):
         app.logger.info('Search user API called')
