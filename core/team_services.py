@@ -11,6 +11,7 @@ from scrappers.codeforces_scrapper import CodeforcesScrapper
 from core.classroom_services import search_task_lists, search_class_lists
 from core.user_services import get_user_details_by_handle_name
 from core.notification_services import add_notification
+from core.follower_services import get_follow_stat
 
 _es_index_user_team_edge = 'cfs_user_team_edges'
 _es_index_team = 'cfs_teams'
@@ -160,13 +161,13 @@ def get_team_details(team_id):
                 data = response['_source']
                 data['id'] = response['_id']
                 data['member_list'] = get_all_users_from_team(team_id)
-                data['follower'] = 921
-                data['following'] = 530
                 data['rating_history'] = get_team_rating_history(team_id)
                 data['task_list'] = search_task_lists({'classroom_id': team_id}, 0, 3)
                 data['class_list'] = search_class_lists({'classroom_id': team_id}, 0, 3)
                 user_details = get_user_details(data['team_leader_id'])
                 data['team_leader_handle'] = user_details['username']
+                data['follow_stat'] = get_follow_stat(data['id'])
+                data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(data['created_at']))
                 return data
             app.logger.warning('Team not found')
             raise Exception('Team not found')
