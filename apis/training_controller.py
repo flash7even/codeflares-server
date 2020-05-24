@@ -121,7 +121,6 @@ class TeamTrainingModel(Resource):
         team_details['category_stat'] = categories
         team_details['category_skill_list'] = category_skill_list
         team_details['root_category_skill_list'] = root_category_skill_list
-        team_details['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(team_details['created_at']))
         return team_details
 
 
@@ -156,6 +155,5 @@ class TeamTrainingModel(Resource):
             category_list.append(cat['category_info'])
 
         team_details['category_list'] = category_list
-        team_details['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(team_details['created_at']))
 
         return team_details
