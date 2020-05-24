@@ -118,3 +118,32 @@ class UserUnfollow(Resource):
         url = 'http://{}/{}/{}/_delete_by_query'.format(app.config['ES_HOST'], _es_index_followers, _es_type)
         response = rs.post(url=url, json=query_json, headers=_http_headers).json()
         return response, 200
+
+
+@api.route('/status/<string:user_id>')
+class FollowStatus(Resource):
+
+    @access_required(access="ALL")
+    @api.doc('Get user_follower')
+    def get(self, user_id):
+        current_user = get_jwt_identity().get('id')
+        rs = requests.session()
+        must = [
+            {'term': {'user_id': user_id}},
+            {'term': {'followed_by': current_user}},
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_followers, _es_type)
+        response = rs.post(url=url, json=query_json, headers=_http_headers).json()
+
+        if 'hits' in response:
+            if response['hits']['total']['value'] > 0:
+                return {
+                    'status': 'following'
+                }
+            return {
+                'status': 'unknown'
+            }
+
+        return response, 500
+
