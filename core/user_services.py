@@ -1,6 +1,6 @@
 import requests
 from flask import current_app as app
-
+import time
 from core.follower_services import get_follow_stat
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -75,6 +75,7 @@ def get_user_details_by_handle_name(username):
             for hit in response['hits']['hits']:
                 user = hit['_source']
                 user['id'] = hit['_id']
+                user['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(user['created_at']))
                 return user
         return None
     except Exception as e:
@@ -92,6 +93,7 @@ def get_user_details(user_id):
                 data = response['_source']
                 data['id'] = response['_id']
                 data['follow_stat'] = get_follow_stat(user_id)
+                data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
                 app.logger.info('Get user_details method completed')
                 return data
         raise Exception('User not found')
@@ -142,6 +144,7 @@ def get_user_details_public(user_id):
             if response['found']:
                 data = response['_source']
                 data['follow_stat'] = get_follow_stat(user_id)
+                data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
                 public_data = {}
                 for f in public_fields:
                     public_data[f] = data.get(f, None)
@@ -188,6 +191,7 @@ def search_user(param, from_val, to_val, sort_by = 'updated_at', sort_order = 'd
                 user['follow_stat'] = follow_stat
                 user['rating_history'] = get_user_rating_history(user['id'])
                 user['rank'] = rank
+                user['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(user['created_at']))
                 rank += 1
                 data.append(user)
             app.logger.info('Search user API completed')

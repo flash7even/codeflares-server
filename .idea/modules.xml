@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/cp-training.iml" filepath="$PROJECT_DIR$/.idea/cp-training.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/codeflares-server.iml" filepath="$PROJECT_DIR$/.idea/codeflares-server.iml" />
     </modules>
   </component>
 </project>
