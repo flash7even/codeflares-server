@@ -226,7 +226,9 @@ class SearchUser(Resource):
         app.logger.info('Search user API called')
         try:
             param = request.get_json()
-            user_list = search_user(param, page*_es_size, _es_size, sort_by='skill_value', sort_order='desc')
+            size = param.get('size', _es_size)
+            param.pop('size', None)
+            user_list = search_user(param, page*size, size, sort_by='skill_value', sort_order='desc')
             return {
                 'user_list': user_list
             }
@@ -244,7 +246,9 @@ class SearchUser(Resource):
         app.logger.info('Search user API called')
         try:
             param = request.get_json()
-            user_list = search_user(param, page*_es_size, _es_size, sort_by='solve_count', sort_order='desc')
+            size = param.get('size', _es_size)
+            param.pop('size', None)
+            user_list = search_user(param, page*size, size, sort_by='solve_count', sort_order='desc')
             return {
                 'user_list': user_list
             }
