@@ -119,7 +119,7 @@ class ContestModel:
             if len(selected_problems) == needed_problem:
                 return selected_problems
 
-            # NOW SELECT THE PROBLEMS IN COMPLETE RANDOM ORDER
+            # NOW SELECT THE PROBLEMS IN COMPLETED RANDOM ORDER
             problem_list = search_problem_list_simplified({})
             problem_list = [item for item in problem_list if item not in black_listed]
             selected_problems = self.add_problem_from_chosen_list(selected_problems, problem_list, needed_problem-len(selected_problems))

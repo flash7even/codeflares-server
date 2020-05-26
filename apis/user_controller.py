@@ -11,6 +11,7 @@ from commons.jwt_helpers import access_required
 from core.user_services import search_user, get_user_details, get_user_rating_history
 from core.problem_user_services import synch_user_problem
 from core.sync_services import user_problem_data_sync, user_training_model_sync
+from core.job_services import add_pending_job
 
 api = Namespace('user', description='user related services')
 
@@ -265,7 +266,7 @@ class Sync(Resource):
     def put(self, user_id):
         app.logger.info('Sync user API called, id: ' + str(user_id))
         try:
-            user_problem_data_sync(user_id)
+            add_pending_job(user_id, 'USER_SYNC')
             return {'message': 'success'}, 200
         except Exception as e:
             return {'message': str(e)}, 500

@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import time
+import json
 import unittest
 from logging.handlers import TimedRotatingFileHandler
 
@@ -10,15 +11,35 @@ from flask_script import Manager
 
 from apis import Config, create_app
 
+from core.job_services import search_jobs, update_pending_job
+from core.job_services import COMPLETED, PROCESSING, PENDING
+from core.sync_services import user_problem_data_sync, user_training_model_sync, team_training_model_sync
+
 
 def db_job():
     curtime = int(time.time())
     with app.app_context():
-        app.logger.info('Run scheduling task to update status field at: ' + str(curtime))
+        app.logger.info('RUN CRON JOB FOR SYNCING DATA AT: ' + str(curtime))
+        while(1):
+            pending_job_list = search_jobs(PENDING, 1)
+            if len(pending_job_list) == 0:
+                break
+            cur_job = pending_job_list[0]
+            app.logger.debug('PROCESS JOB: ' + json.dumps(cur_job))
+            update_pending_job(cur_job['id'], PROCESSING)
+            if cur_job['job_type'] == 'USER_SYNC':
+                user_problem_data_sync(cur_job['job_ref_id'])
+                user_training_model_sync(cur_job['job_ref_id'])
+            else:
+                team_training_model_sync(cur_job['job_ref_id'])
+                team_training_model_sync(cur_job['job_ref_id'])
+
+            update_pending_job(cur_job['id'], COMPLETED)
+            app.logger.debug('COMPLETED JOB: ' + json.dumps(cur_job))
 
 
 cron_job = BackgroundScheduler(daemon=True)
-cron_job.add_job(db_job, 'cron', hour=0, minute=5, second=0)
+cron_job.add_job(db_job, 'interval', seconds=45)
 cron_job.start()
 
 app = create_app(os.getenv('FLASK_ENV', 'development'))

@@ -30,7 +30,7 @@ def get_user_rating_history(user_id):
             "date": {
                 "year": 2013, "month": 5, "day": 8
             },
-            "rating": 1780
+            "rating": 1590
         },
         {
             "date": {
@@ -48,7 +48,7 @@ def get_user_rating_history(user_id):
             "date": {
                 "year": 2014, "month": 2, "day": 6
             },
-            "rating": 1730
+            "rating": 1866
         },
         {
             "date": {
@@ -61,6 +61,30 @@ def get_user_rating_history(user_id):
                 "year": 2014, "month": 4, "day": 22
             },
             "rating": 2070
+        },
+        {
+            "date": {
+                "year": 2014, "month": 5, "day": 11
+            },
+            "rating": 2143
+        },
+        {
+            "date": {
+                "year": 2014, "month": 5, "day": 19
+            },
+            "rating": 2250
+        },
+        {
+            "date": {
+                "year": 2014, "month": 6, "day": 5
+            },
+            "rating": 2290
+        },
+        {
+            "date": {
+                "year": 2014, "month": 6, "day": 22
+            },
+            "rating": 2335
         }
     ]
 

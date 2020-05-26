@@ -13,12 +13,10 @@ from commons.jwt_helpers import access_required
 api = Namespace('team', description='Namespace for team service')
 
 from core.team_services import add_team_member, delete_team_member, \
-    delete_all_users_from_team, get_all_users_from_team,\
+    delete_all_users_from_team,\
     search_teams_for_user, get_team_details, update_team_member, search_teams, get_rating_history_codeforces, add_team_members_bulk
 
-from core.sync_services import team_training_model_sync
-from core.user_services import get_user_details_by_handle_name
-from core.notification_services import add_notification
+from core.job_services import add_pending_job
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -294,7 +292,7 @@ class RatingHistoryOnlineJudge(Resource):
             return {'message': str(e)}, 500
 
 
-@api.route('/sync/training-model/<string:team_id>')
+@api.route('/sync/<string:team_id>')
 class Sync(Resource):
 
     @access_required(access="ALL")
@@ -303,6 +301,6 @@ class Sync(Resource):
         app.logger.info('Sync team training model API called, id: ' + str(team_id))
         try:
             app.logger.debug('team_training_model_sync')
-            team_training_model_sync(team_id)
+            add_pending_job(team_id, 'TEAM_SYNC')
         except Exception as e:
             return {'message': str(e)}, 500
