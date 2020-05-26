@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import json
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.firefox.options import Options
 
 login_url = 'http://www.lightoj.com/login_main.php'
 user_details_url = 'http://www.lightoj.com/volume_userstat.php?user_id='
@@ -15,7 +16,9 @@ class LightOJScrapper:
 
     def get_user_info(self, username):
         try:
-            driver = webdriver.Firefox()
+            options = Options()
+            options.headless = True
+            driver = webdriver.Firefox(options=options)
             driver.get(login_url)
 
             elem = driver.find_element_by_name("myuserid")
