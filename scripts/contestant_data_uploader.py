@@ -113,15 +113,15 @@ user_list = [
     {
         "id": "107",
         "data": {
-          "username" : "kimbbakar",
+          "username" : "discofighter47",
           "full_name" : "Chowdhury Osman",
-          "email" : "kimbbakar@gmail.com",
+          "email" : "discofighter47@gmail.com",
           "password" : "123456",
-          "codeforces_handle" : "kimbbakar",
-          "codechef_handle" : "kimbbakar",
-          "spoj_handle" : "kimbbakar",
-          "uva_handle" : "kimbbakar",
-          "lightoj_handle" : "9021",
+          "codeforces_handle" : "DiscoFighter47",
+          "codechef_handle" : "discofighter47",
+          "spoj_handle" : "discofighter47",
+          "uva_handle" : "DiscoFighter47",
+          "lightoj_handle" : "30174",
           "user_role" : "admin"
         }
     },
