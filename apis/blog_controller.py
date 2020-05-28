@@ -202,6 +202,7 @@ class SearchBlog(Resource):
 
         query_json['from'] = page*_es_size
         query_json['size'] = _es_size
+        query_json['sort'] = [{'updated_at': {'order': 'desc'}}]
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
         print(response)
