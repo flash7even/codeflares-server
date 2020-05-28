@@ -1,0 +1,29 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "user_name": {
+      "type": "keyword"
+    },
+    "user_email": {
+      "type": "keyword"
+    },
+    "topic_name": {
+      "type": "keyword"
+    },
+    "description": {
+      "type": "keyword"
+    },
+    "created_at": {
+      "type": "long"
+    },
+    "created_by": {
+      "type": "keyword"
+    },
+    "updated_at": {
+      "type": "long"
+    },
+    "updated_by": {
+      "type": "keyword"
+    }
+  }
+}

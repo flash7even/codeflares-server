@@ -26,6 +26,7 @@ from .comment_controller import api as comment_ns
 from .vote_controller import api as vote_ns
 from .resource_controller import api as resource_ns
 from .follower_controller import api as follower_ns
+from .contact_us_controller import api as contact_us_ns
 
 blueprint = Blueprint('api', Config.APPNAME, url_prefix='/api')
 
@@ -51,6 +52,7 @@ api.add_namespace(comment_ns, path='/comment')
 api.add_namespace(vote_ns, path='/vote')
 api.add_namespace(resource_ns, path='/resource')
 api.add_namespace(follower_ns, path='/follower')
+api.add_namespace(contact_us_ns, path='/contact/us')
 
 
 def create_app(instance_name):
