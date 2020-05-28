@@ -32,7 +32,7 @@ user_list = [
           "spoj_handle" : "forthright48",
           "uva_handle" : "forthright48",
           "lightoj_handle" : "3158",
-          "user_role" : "contestant"
+          "user_role" : "admin"
         }
     },
     {
@@ -47,7 +47,7 @@ user_list = [
           "spoj_handle" : "labib666",
           "uva_handle" : "Labib666",
           "lightoj_handle" : "3278",
-          "user_role" : "contestant"
+          "user_role" : "admin"
         }
     },
     {
@@ -62,7 +62,127 @@ user_list = [
           "spoj_handle" : "hasib",
           "uva_handle" : "php",
           "lightoj_handle" : "4144",
-          "user_role" : "contestant"
+          "user_role" : "admin"
+        }
+    },
+    {
+        "id": "104",
+        "data": {
+          "username" : "96koushikroy",
+          "full_name" : "Koushik Roy",
+          "email" : "96koushikroy@gmail.com",
+          "password" : "123456",
+          "codeforces_handle" : "96koushikroy",
+          "codechef_handle" : "koushikroy96",
+          "spoj_handle" : "koushikroy96",
+          "uva_handle" : "96koushikroy",
+          "lightoj_handle" : "27704",
+          "user_role" : "admin"
+        }
+    },
+    {
+        "id": "105",
+        "data": {
+          "username" : "aminul",
+          "full_name" : "Aminul Haq",
+          "email" : "aminul@gmail.com",
+          "password" : "123456",
+          "codeforces_handle" : "aminul",
+          "codechef_handle" : "aminul_haq",
+          "spoj_handle" : "aminul",
+          "uva_handle" : "Aminul.Haq",
+          "lightoj_handle" : "23051",
+          "user_role" : "admin"
+        }
+    },
+    {
+        "id": "106",
+        "data": {
+          "username" : "kimbbakar",
+          "full_name" : "Chowdhury Osman",
+          "email" : "kimbbakar@gmail.com",
+          "password" : "123456",
+          "codeforces_handle" : "kimbbakar",
+          "codechef_handle" : "kimbbakar",
+          "spoj_handle" : "kimbbakar",
+          "uva_handle" : "kimbbakar",
+          "lightoj_handle" : "9021",
+          "user_role" : "admin"
+        }
+    },
+    {
+        "id": "107",
+        "data": {
+          "username" : "kimbbakar",
+          "full_name" : "Chowdhury Osman",
+          "email" : "kimbbakar@gmail.com",
+          "password" : "123456",
+          "codeforces_handle" : "kimbbakar",
+          "codechef_handle" : "kimbbakar",
+          "spoj_handle" : "kimbbakar",
+          "uva_handle" : "kimbbakar",
+          "lightoj_handle" : "9021",
+          "user_role" : "admin"
+        }
+    },
+    {
+        "id": "108",
+        "data": {
+          "username" : "anirudha_ani",
+          "full_name" : "Anirudha Ani",
+          "email" : "anirudha_ani@gmail.com",
+          "password" : "123456",
+          "codeforces_handle" : "anirudha",
+          "codechef_handle" : "anirudha_ani",
+          "spoj_handle" : "anirudha_ani",
+          "uva_handle" : "anirudha_paul",
+          "lightoj_handle" : "15329",
+          "user_role" : "admin"
+        }
+    },
+    {
+        "id": "109",
+        "data": {
+          "username" : "nur_islam",
+          "full_name" : "Nur Islam",
+          "email" : "nur_islam@gmail.com",
+          "password" : "123456",
+          "codeforces_handle" : "nur_islam",
+          "codechef_handle" : "nurislam",
+          "spoj_handle" : "nurislam",
+          "uva_handle" : "nur_islam",
+          "lightoj_handle" : "23006",
+          "user_role" : "admin"
+        }
+    },
+    {
+        "id": "110",
+        "data": {
+          "username" : "Sherlock221b",
+          "full_name" : "Imran Hasan",
+          "email" : "sherlock221b@gmail.com",
+          "password" : "123456",
+          "codeforces_handle" : "Sherlock221b",
+          "codechef_handle" : "imran221b",
+          "spoj_handle" : "Sherlock221b",
+          "uva_handle" : "Sherlock221b",
+          "lightoj_handle" : "8211",
+          "user_role" : "admin"
+        }
+    },
+    {
+        "id": "111",
+        "data": {
+          "username" : "Alvee9",
+          "full_name" : "Alvee Imam",
+          "email" : "alvee9@gmail.com",
+          "password" : "123456",
+          "codeforces_handle" : "Alvee9",
+          "codechef_handle" : "Alvee9",
+          "spoj_handle" : "alvee9",
+          "uva_handle" : "Alvee",
+          "lightoj_handle" : "28734",
+          "user_role" : "admin"
         }
     }
 ]

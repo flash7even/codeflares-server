@@ -32,7 +32,7 @@ user_list = [
           "spoj_handle" : "tarango_khan",
           "uva_handle" : "flash_7",
           "lightoj_handle" : "14826",
-          "user_role" : "contestant"
+          "user_role" : "admin"
         }
     }
 ]
