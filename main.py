@@ -32,14 +32,13 @@ def db_job():
                 user_training_model_sync(cur_job['job_ref_id'])
             else:
                 team_training_model_sync(cur_job['job_ref_id'])
-                team_training_model_sync(cur_job['job_ref_id'])
 
             update_pending_job(cur_job['id'], COMPLETED)
             app.logger.debug('COMPLETED JOB: ' + json.dumps(cur_job))
 
 
 cron_job = BackgroundScheduler(daemon=True)
-cron_job.add_job(db_job, 'interval', seconds=3600)
+cron_job.add_job(db_job, 'interval', seconds=60)
 cron_job.start()
 
 app = create_app(os.getenv('FLASK_ENV', 'development'))

@@ -113,7 +113,6 @@ def search_problems(param, from_value, size_value, heavy = False):
                     data['category_dependency_list'] = dependency_list['dependency_list']
                     data['category_list_light'] = dependency_list['light_data']
                 item_list.append(data)
-            app.logger.info('Problem search method completed')
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return item_list
@@ -190,7 +189,6 @@ def get_solved_problem_count_for_user(user_id):
 
 def find_problems_for_user_by_status_filtered(status, user_id, heavy=False):
     try:
-        app.logger.info('find_solved_problems_of_user method called')
         rs = requests.session()
 
         should = []
@@ -241,7 +239,6 @@ def find_problems_by_status_filtered_for_user_list(status, user_list, heavy=Fals
 
 def available_problems_for_user(user_id):
     try:
-        app.logger.info('available_problems_for_user method called')
         problem_list = search_problems({}, 0, _es_size)
         print('problem_list found')
         available_list = []
@@ -261,7 +258,6 @@ def available_problems_for_user(user_id):
 
 def add_user_problem_status(user_id, problem_id, data):
     try:
-        app.logger.info('add_user_problem_status method called')
         rs = requests.session()
         edge = get_user_problem_status(user_id, problem_id)
 
@@ -286,7 +282,6 @@ def add_user_problem_status(user_id, problem_id, data):
         response = rs.put(url=url, json=edge, headers=_http_headers).json()
 
         if 'result' in response:
-            app.logger.info('add_user_problem_status method completed')
             return response['result']
         raise Exception('Internal server error')
     except Exception as e:

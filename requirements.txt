@@ -16,6 +16,7 @@ Flask-Cors==3.0.7
 Flask-JWT-Extended==3.20.0
 flask-restplus==0.12.1
 Flask-Script==2.0.6
+gunicorn==20.0.4
 idna==2.8
 image==1.5.27
 isort==4.3.15

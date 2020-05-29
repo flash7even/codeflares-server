@@ -14,3 +14,4 @@ redis-py-cluster
 beautifulsoup4
 pyppeteer
 selenium
+gunicorn

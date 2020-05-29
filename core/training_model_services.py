@@ -49,11 +49,13 @@ def generate_skill_value_for_user(user_id):
 
     search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user_category, _es_type)
     response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+    app.logger.info('generate_skill_value_for_user response: ' + str(response))
 
     if 'aggregations' not in response:
         raise Exception('Internal server error')
 
     skill_value = response['aggregations']['skill_value_by_percentage']['value']
+    app.logger.info('skill_value found: ' + str(skill_value))
     return skill_value
 
 
@@ -244,6 +246,7 @@ def generate_sync_data_for_category(user_id, category):
         'solve_count': category['solved_stat']['total_count'],
         'category_root': category['category_root'],
     }
+
     return data
 
 
@@ -288,6 +291,7 @@ def sync_problem_score_for_user(user_id):
     for problem in problem_list:
         data = generate_sync_data_for_problem(user_id, problem)
         add_user_problem_status(user_id, problem['id'], data)
+
 
 
 def sync_overall_stat_for_user(user_id):

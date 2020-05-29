@@ -29,7 +29,6 @@ def sync_problems(user_id, problem_list, oj_name):
 
 
 def synch_user_problem(user_id):
-    app.logger.info('synch_user_problem called: ' + str(user_id))
     try:
         uva = UvaScrapper()
         codeforces = CodeforcesScrapper()

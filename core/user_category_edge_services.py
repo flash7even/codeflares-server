@@ -58,7 +58,6 @@ def add_user_category_data(user_id, category_id, data):
         response = rs.put(url=url, json=edge, headers=_http_headers).json()
 
         if 'result' in response:
-            # app.logger.info('add_user_category_data method completed')
             return response['result']
 
         raise Exception('Internal server error')

@@ -69,7 +69,6 @@ def get_category_id_from_name(category_name):
 
 def add_category_category_dependency(data):
     try:
-        app.logger.info('add_category_category_dependency method called')
         rs = requests.session()
 
         data['created_at'] = int(time.time())
@@ -79,7 +78,6 @@ def add_category_category_dependency(data):
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
 
         if 'result' in response and response['result'] == 'created':
-            app.logger.info('add_category_category_dependency method completed')
             return response['_id'], 201
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
@@ -180,7 +178,6 @@ def search_categories(param, from_value, size_value, heavy = False):
                     category['category_dependency_list'] = find_category_dependency_list(category['category_id'])
 
                 item_list.append(category)
-            app.logger.info('Category search method completed')
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return item_list

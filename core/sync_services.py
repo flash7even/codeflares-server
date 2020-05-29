@@ -33,13 +33,20 @@ def user_problem_data_sync(user_id):
 
 def user_training_model_sync(user_id):
     app.logger.info(f'user_training_model_sync service called for user: {user_id}')
-    sync_category_score_for_user(user_id)
+    for count in range(0, 4):
+        sync_category_score_for_user(user_id)
+    # NEED TO FIX THIS LATER, MIGHT NEED TO APPLY RECURSION IN A DAG.
+    # THE CATEGORY DEPENDENCY LIST MUST FORM A DAG. NEED TO WRITE SCRIPT TO VERIFY.
+
     app.logger.info('sync_category_score_for_user done')
     sync_problem_score_for_user(user_id)
+
     app.logger.info('sync_problem_score_for_user done')
     sync_root_category_score_for_user(user_id)
+
     app.logger.info('sync_root_category_score_for_user done')
     sync_overall_stat_for_user(user_id)
+
     app.logger.info('sync_overall_stat_for_user done')
 
     notification_data = {

@@ -118,7 +118,6 @@ def get_user_details(user_id):
                 data['id'] = response['_id']
                 data['follow_stat'] = get_follow_stat(user_id)
                 data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
-                app.logger.info('Get user_details method completed')
                 return data
         raise Exception('User not found')
     except Exception as e:
@@ -127,14 +126,11 @@ def get_user_details(user_id):
 
 def update_user_details(user_id, user_data):
     try:
-        app.logger.info('update_user_details called ' + str(user_id))
         ignore_fields = ['username', 'password']
         rs = requests.session()
 
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_user, _es_type, user_id)
-        app.logger.debug('Elasticsearch query : ' + str(search_url))
         response = rs.get(url=search_url, headers=_http_headers).json()
-        app.logger.debug('Elasticsearch response :' + str(response))
 
         if 'found' in response:
             if response['found']:
@@ -143,11 +139,8 @@ def update_user_details(user_id, user_data):
                     if key not in ignore_fields and user_data[key]:
                         user[key] = user_data[key]
 
-                app.logger.debug('Elasticsearch query : ' + str(search_url))
                 response = rs.put(url=search_url, json=user, headers=_http_headers).json()
-                app.logger.debug('Elasticsearch response :' + str(response))
                 if 'result' in response:
-                    app.logger.info('Update user API completed')
                     return response['result']
             app.logger.info('User not found')
             return 'not found'
@@ -173,7 +166,6 @@ def get_user_details_public(user_id):
                 for f in public_fields:
                     public_data[f] = data.get(f, None)
                 public_data['id'] = user_id
-                app.logger.info('Get user_details method completed')
                 return public_data
         raise Exception('User not found')
     except Exception as e:
@@ -181,7 +173,6 @@ def get_user_details_public(user_id):
 
 
 def search_user(param, from_val, to_val, sort_by = 'updated_at', sort_order = 'desc'):
-    app.logger.info('search_user called')
     try:
         must = []
 
@@ -218,7 +209,6 @@ def search_user(param, from_val, to_val, sort_by = 'updated_at', sort_order = 'd
                 user['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(user['created_at']))
                 rank += 1
                 data.append(user)
-            app.logger.info('Search user API completed')
             return data
         app.logger.error('Elasticsearch down, response : ' + str(response))
         raise Exception('Internal server error')

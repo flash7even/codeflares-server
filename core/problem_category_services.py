@@ -35,7 +35,6 @@ def get_category_details(cat_id):
 
 def add_problem_category_dependency(data):
     try:
-        app.logger.info('add_problem_category_dependency method called')
         rs = requests.session()
 
         data['created_at'] = int(time.time())
@@ -45,7 +44,6 @@ def add_problem_category_dependency(data):
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
 
         if 'result' in response and response['result'] == 'created':
-            app.logger.info('add_problem_category_dependency method completed')
             return response['_id'], 201
         app.logger.error('Elasticsearch down, response: ' + str(response))
         raise Exception('Internal server error')
@@ -129,7 +127,6 @@ def search_problem_list_simplified(param, sort_by = 'problem_difficulty', sort_o
 
 
 def get_problem_count_for_category(param):
-    app.logger.info(f'get_problem_count_for_category called: {json.dumps(param)}')
     try:
         rs = requests.session()
         must = []
@@ -137,10 +134,8 @@ def get_problem_count_for_category(param):
             must.append({'term': {f: param[f]}},)
         query_json = {'query': {'bool': {'must': must}}}
         query_json['size'] = 0
-        app.logger.debug(f'query_json: {json.dumps(query_json)}')
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_category, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        app.logger.debug(f'response: {json.dumps(response)}')
         if 'hits' in response:
             return response['hits']['total']['value']
         return 0
