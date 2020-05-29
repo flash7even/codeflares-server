@@ -9,6 +9,8 @@
  - Team Training Model
  - Automated Training Contest Generator
  - Classroom Based Training
+ - Learning Resources
+ - Blogs
  
 ### Algorithm Database
 We have a collection of algorithms that most of the contestants use frequently in problem solving. All these algorithms are divided into two levels. The top level is called the root level which contains the root level categories and all the algorithms are divided into these root level categories.
@@ -46,9 +48,27 @@ Our team skill generator model is similar to the Individual Skill Generator mode
 Our team training model is similar to the Individual Training Model. Here, it just considers all the solved problems combinedly by all the team members.
 
 ### Automated Training Contest Generator
-We also have a automated training contest generator for your practice. You can generate a contest for your individual practice, team practice or even as the classroom training contest considering only the unsolved problems for the target audience.
+We also have a automated training contest generator for your practice. You can generate a contest for your individual practice, team practice or even for the classroom training purposes.
 
 How this works?
 
 1. You can generate a completely automated training contest for your practice. You can make a request from our *Training Contest -> Create Training Contest* page providing the required information. We create a automated cpntest for you using our randomized algorithm model following ACM ICPC problem structure.
-2. You can also request for a customized contest. For example you want a problem set where at least 5 problems must be from data structure with difficulty range(7 - 10) and 3 problems from geometry with difficulty range(4-6). You can select these options in the create training contest page. We'll then create a contest for you following the rules you inserted.
+2. You can also request for a customized contest adding custom filters. For example, let's say you want a problem set where at least 5 problems must be from ***Data Structure*** with difficulty range **(7 - 10)** and 3 problems from ***Geometry*** with difficulty range **(4 - 6)**. Add these options in the filter option in the **create training contest** page. After you send your request, we'll create a contest for you satisfying the the filters you inserted.
+
+Note: We generate the contests considering only the unsolved problems. For example, if you create a contest for a team, then we only consider those problems which are not solved by any of the team members.
+
+### Classroom Based Training
+Classroom Based Training is mainly focused on a group of contestants who want to learn and practice together under a moderator. The person who creates the classroom becomes the moderator and has all the controls over the features like adding and removing members.
+
+Classroom Features?
+1. Create tasks for classrooom members
+2. Make class schedules
+3. Compares between the skill level of the classroom members
+4. Set training contests for practice
+5. Classroom discussion
+
+### Learning Resources
+Each problem and algorithm has a separate page where you can discuss about that particular problem or algorithm. There are also some statistics and resources list that will help the contestants. You can contribute there by sharing your knowledge and resources about that problem or algorithm.
+
+### Blogs
+Blog is a feature where you can share your knowledge and thoughts about anything related to competitive programming. You can also publicly discuss with each other about different problems and algorithms. The feature is still in the initial stage. We'll improve and add more features in the blogs later on.
