@@ -11,7 +11,7 @@
 1. Classroom Based Training
 1. Learning Resources
 1. Blog
- 
+
 #### Algorithm Database
 We have a collection of algorithms that most of the contestants use frequently in problem solving.
 All these algorithms are divided into two levels. The first level is called the **root level** which contains only
