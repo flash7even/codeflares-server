@@ -91,11 +91,12 @@ class UpdateJob(Resource):
             return {'message': str(e)}, 500
 
 
-@api.route('/search')
+@api.route('/search', defaults={'page': 0})
+@api.route('/search/<int:page>')
 class SearchJob(Resource):
 
     @api.doc('search job based on post parameters')
-    def post(self, user_id):
+    def post(self, page = 0):
         try:
             app.logger.info('UserJob search api called')
             param = request.get_json()

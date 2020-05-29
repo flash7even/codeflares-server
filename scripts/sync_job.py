@@ -38,6 +38,7 @@ job_url = "http://localhost:5056/api/job/"
 
 
 def get_access_token():
+    global rs
     login_data = {
         "username": ADMIN_USER,
         "password": ADMIN_PASSWORD
@@ -47,6 +48,7 @@ def get_access_token():
 
 
 def get_header():
+    global rs
     global access_token
     if access_token is None:
         access_token = get_access_token()
@@ -58,49 +60,62 @@ def get_header():
 
 
 def user_problem_sync(user_id):
-    logging.debug('user_problem_sync called for: ' + str(user_id))
+    global rs
+    auth_header = get_header()
+    logger.debug('user_problem_sync called for: ' + str(user_id))
     url = user_probem_sync_api + user_id
-    response = rs.put(url=url, json={}, headers=get_header()).json()
-    logging.debug('response: ' + str(response))
+    response = rs.put(url=url, json={}, headers=auth_header).json()
+    logger.debug('response: ' + str(response))
 
 
 def user_training_model_sync(user_id):
-    logging.debug('user_training_model_sync called for: ' + str(user_id))
+    global rs
+    auth_header = get_header()
+    logger.debug('user_training_model_sync called for: ' + str(user_id))
     url = user_training_model_sync_api + user_id
-    response = rs.put(url=url, json={}, headers=get_header()).json()
-    logging.debug('response: ' + str(response))
+    response = rs.put(url=url, json={}, headers=auth_header).json()
+    logger.debug('response: ' + str(response))
 
 
 def team_training_model_sync(team_id):
-    logging.debug('team_training_model_sync called for: ' + str(team_id))
+    global rs
+    auth_header = get_header()
+    logger.debug('team_training_model_sync called for: ' + str(team_id))
     url = team_training_model_sync_api + team_id
-    response = rs.put(url=url, json={}, headers=get_header()).json()
-    logging.debug('response: ' + str(response))
+    response = rs.put(url=url, json={}, headers=auth_header).json()
+    logger.debug('response: ' + str(response))
 
 
 def search_job():
-    logging.debug('search_job called')
-    response = rs.post(url=job_search_url, json={'status': 'PENDING'}, headers=get_header()).json()
-    logging.debug('response: ' + str(response))
+    global rs
+    auth_header = get_header()
+    logger.debug('search_job called')
+    print('job_search_url: ', job_search_url)
+    print('auth_header: ', auth_header)
+    response = rs.post(url=job_search_url, json={'status': 'PENDING'}, headers=auth_header).json()
+    logger.debug('response: ' + str(response))
+    print(response)
     return response['job_list']
 
 
 def update_job(job_id, status):
-    logging.debug('update_job called')
+    global rs
+    auth_header = get_header()
+    logger.debug('update_job called')
     url = job_url + job_id
-    response = rs.put(url=url, json={'status': status}, headers=get_header()).json()
-    logging.debug('response: ' + str(response))
+    response = rs.put(url=url, json={'status': status}, headers=auth_header).json()
+    logger.debug('response: ' + str(response))
 
 
 def db_job():
     curtime = int(time.time())
-    logging.info('RUN CRON JOB FOR SYNCING DATA AT: ' + str(curtime))
+    logger.info('RUN CRON JOB FOR SYNCING DATA AT: ' + str(curtime))
     while(1):
         pending_job_list = search_job()
         if len(pending_job_list) == 0:
             break
         cur_job = pending_job_list[0]
-        logging.debug('PROCESS JOB: ' + json.dumps(cur_job))
+        logger.debug('PROCESS JOB: ' + json.dumps(cur_job))
         update_job(cur_job['id'], 'PROCESSING')
         if cur_job['job_type'] == 'USER_SYNC':
             user_problem_sync(cur_job['job_ref_id'])
@@ -109,16 +124,15 @@ def db_job():
             team_training_model_sync(cur_job['job_ref_id'])
 
         update_job(cur_job['id'], 'COMPLETED')
-        logging.debug('COMPLETED JOB: ' + json.dumps(cur_job))
+        logger.debug('COMPLETED JOB: ' + json.dumps(cur_job))
 
 
 cron_job = BackgroundScheduler(daemon=True)
-cron_job.add_job(db_job, 'interval', seconds=30)
+cron_job.add_job(db_job, 'interval', seconds=15)
 cron_job.start()
 
 
 if __name__ == '__main__':
-    logging.info('Sync Job Script successfully started running')
-    print('Sync Job Script successfully started running')
+    logger.info('Sync Job Script successfully started running')
     while(1):
-        x = 1
+        pass

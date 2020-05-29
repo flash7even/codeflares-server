@@ -14,8 +14,9 @@ api = Namespace('team', description='Namespace for team service')
 
 from core.team_services import add_team_member, delete_team_member, \
     delete_all_users_from_team,\
-    search_teams_for_user, get_team_details, update_team_member, search_teams, get_rating_history_codeforces, add_team_members_bulk, team_training_model_sync
+    search_teams_for_user, get_team_details, update_team_member, search_teams, get_rating_history_codeforces, add_team_members_bulk
 
+from core.sync_services import team_training_model_sync
 from core.job_services import add_pending_job
 
 _http_headers = {'Content-Type': 'application/json'}
