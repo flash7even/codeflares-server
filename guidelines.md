@@ -1,3 +1,4 @@
+
 # CodeFlares Features
 
  - Algorithm Database
@@ -45,4 +46,9 @@ Our team skill generator model is similar to the Individual Skill Generator mode
 Our team training model is similar to the Individual Training Model. Here, it just considers all the solved problems combinedly by all the team members.
 
 ### Automated Training Contest Generator
-We also have a automated training contest generator for your practice.
+We also have a automated training contest generator for your practice. You can generate a contest for your individual practice, team practice or even as the classroom training contest considering only the unsolved problems for the target audience.
+
+How this works?
+
+1. You can generate a completely automated training contest for your practice. You can make a request from our *Training Contest -> Create Training Contest* page providing the required information. We create a automated cpntest for you using our randomized algorithm model following ACM ICPC problem structure.
+2. You can also request for a customized contest. For example you want a problem set where at least 5 problems must be from data structure with difficulty range(7 - 10) and 3 problems from geometry with difficulty range(4-6). You can select these options in the create training contest page. We'll then create a contest for you following the rules you inserted.
