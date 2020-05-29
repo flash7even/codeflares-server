@@ -122,7 +122,6 @@ def add_team_members_bulk(member_list, team_id, team_type, logged_in_user):
 
 def update_team_details(team_id, post_data):
     try:
-        app.logger.info('Update team_details method called')
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_team, _es_type, team_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
@@ -134,7 +133,6 @@ def update_team_details(team_id, post_data):
                 data['updated_at'] = int(time.time())
                 response = rs.put(url=search_url, json=data, headers=_http_headers).json()
                 if 'result' in response:
-                    app.logger.info('Update team_details method completed')
                     return response['result']
                 else:
                     app.logger.error('Elasticsearch down, response: ' + str(response))
@@ -244,7 +242,6 @@ def get_user_team_edge(team_id, user_handle):
 
 def add_team_member(data):
     try:
-        app.logger.info('add_team_members method called')
         rs = requests.session()
 
         resp = get_user_team_edge(data['team_id'], data['user_handle'])
@@ -259,7 +256,6 @@ def add_team_member(data):
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
 
         if 'result' in response and response['result'] == 'created':
-            app.logger.info('add_team_members method completed')
             return response
 
         app.logger.error('Elasticsearch down, response: ' + str(response))
@@ -270,7 +266,6 @@ def add_team_member(data):
 
 def update_team_member(data):
     try:
-        app.logger.info('update_team_member method called')
         print('data: ', json.dumps(data))
         rs = requests.session()
 
@@ -287,7 +282,6 @@ def update_team_member(data):
         response = rs.put(url=url, json=resp_data, headers=_http_headers).json()
 
         if 'result' in response:
-            app.logger.info('update_team_member method completed')
             return response
 
         app.logger.error('Elasticsearch down, response: ' + str(response))
@@ -299,7 +293,6 @@ def update_team_member(data):
 
 def delete_team_member(team_id, user_handle):
     try:
-        app.logger.info('delete_team_member method called')
         rs = requests.session()
         resp = get_user_team_edge(team_id, user_handle)
         print('resp: ', resp)
@@ -312,7 +305,6 @@ def delete_team_member(team_id, user_handle):
         print('response: ', response)
 
         if 'result' in response:
-            app.logger.info('delete_team_member method completed')
             return response
 
         app.logger.error('Elasticsearch down, response: ' + str(response))
@@ -354,7 +346,6 @@ def search_teams(param, from_val, size_val):
                 team['member_list'] = member_edge_list
                 item_list.append(team)
             print('item_list', json.dumps(item_list))
-            app.logger.info('Team search method completed')
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
         raise Exception('Internal server error')
@@ -365,7 +356,6 @@ def search_teams(param, from_val, size_val):
 
 def search_teams_for_user(user_handle, param):
     try:
-        app.logger.info('search_teams_for_user called')
         rs = requests.session()
 
         must = []
@@ -397,7 +387,6 @@ def search_teams_for_user(user_handle, param):
                 rank += 1
                 item_list.append(team)
             print('item_list', json.dumps(item_list))
-            app.logger.info('Team search method completed')
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
         raise Exception('Internal server error')

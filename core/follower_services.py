@@ -13,7 +13,6 @@ _es_size = 100
 
 def get_followed_by_count(user_id):
     try:
-        app.logger.info('get_followed_by_count method called')
         rs = requests.session()
         must = [{'term': {'user_id': user_id}}]
         query_json = {'query': {'bool': {'must': must}}}
@@ -30,7 +29,6 @@ def get_followed_by_count(user_id):
 
 def get_following_count(user_id):
     try:
-        app.logger.info('get_following_count method called')
         rs = requests.session()
         must = [{'term': {'followed_by': user_id}}]
         query_json = {'query': {'bool': {'must': must}}}
@@ -47,7 +45,6 @@ def get_following_count(user_id):
 
 def get_follow_stat(user_id):
     try:
-        app.logger.info('get_follow_stat method called')
         following_count = get_following_count(user_id)
         follower_count = get_followed_by_count(user_id)
         data = {

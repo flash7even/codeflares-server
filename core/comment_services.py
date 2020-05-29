@@ -18,7 +18,6 @@ _es_size = 100
 
 def dfs_comment_tree(cur_node_id):
     try:
-        app.logger.info('search_teams_for_user called')
         rs = requests.session()
         must = [{'term': {'comment_parent_id': cur_node_id}}]
         query_json = {'query': {'bool': {'must': must}}}
@@ -49,7 +48,6 @@ def dfs_comment_tree(cur_node_id):
 
 def get_comment_count(blog_id):
     try:
-        app.logger.info('search_teams_for_user called')
         rs = requests.session()
         must = [{'term': {'comment_ref_id': blog_id}}]
         query_json = {'query': {'bool': {'must': must}}}

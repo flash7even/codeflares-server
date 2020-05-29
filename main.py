@@ -37,6 +37,7 @@ def db_job():
             app.logger.debug('COMPLETED JOB: ' + json.dumps(cur_job))
 
 
+
 cron_job = BackgroundScheduler(daemon=True)
 cron_job.add_job(db_job, 'interval', seconds=60)
 cron_job.start()

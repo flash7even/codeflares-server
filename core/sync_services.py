@@ -16,9 +16,7 @@ from core.user_services import get_user_details_by_handle_name
 
 
 def user_problem_data_sync(user_id):
-    app.logger.info(f'user_profile_sync service called for user: {user_id}')
     synch_user_problem(user_id)
-    app.logger.info('synch_user_problem done')
 
     notification_data = {
         'user_id': user_id,

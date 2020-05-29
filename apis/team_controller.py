@@ -14,7 +14,7 @@ api = Namespace('team', description='Namespace for team service')
 
 from core.team_services import add_team_member, delete_team_member, \
     delete_all_users_from_team,\
-    search_teams_for_user, get_team_details, update_team_member, search_teams, get_rating_history_codeforces, add_team_members_bulk
+    search_teams_for_user, get_team_details, update_team_member, search_teams, get_rating_history_codeforces, add_team_members_bulk, team_training_model_sync
 
 from core.job_services import add_pending_job
 
@@ -296,11 +296,25 @@ class RatingHistoryOnlineJudge(Resource):
 class Sync(Resource):
 
     @access_required(access="ALL")
+    @api.doc('Sync team by id')
+    def put(self, team_id):
+        app.logger.info('Sync team API called, id: ' + str(team_id))
+        try:
+            app.logger.debug('team_training_model_sync')
+            add_pending_job(team_id, 'TEAM_SYNC')
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/sync/training-model/<string:team_id>')
+class SyncTrainingModel(Resource):
+
+    @access_required(access="ALL")
     @api.doc('Sync team training model by id')
     def put(self, team_id):
         app.logger.info('Sync team training model API called, id: ' + str(team_id))
         try:
-            app.logger.debug('team_training_model_sync')
-            add_pending_job(team_id, 'TEAM_SYNC')
+            team_training_model_sync(team_id)
+            app.logger.debug('team_training_model_sync done')
         except Exception as e:
             return {'message': str(e)}, 500

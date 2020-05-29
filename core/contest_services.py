@@ -127,8 +127,6 @@ def find_contest_configs(contest_level):
 
 
 def reupload_problem_set_for_contest(contest_id, problem_list):
-    app.logger.info('reupload_problem_set_for_contest called')
-    app.logger.info('problem_list: ' + json.dumps(problem_list))
     try:
         problem_id_list = []
         for problem in problem_list:
@@ -137,15 +135,12 @@ def reupload_problem_set_for_contest(contest_id, problem_list):
                 'problem_id': problem['problem_id']
             }
             found_list = search_problems(param, 0, 1)
-            app.logger.info('found list: ' + json.dumps(found_list))
             if len(found_list) == 0:
                 raise Exception('Problem not found')
             problem_id = found_list[0]['id']
             problem_id_list.append(problem_id)
 
         delete_problem_set_for_contest(contest_id)
-        app.logger.info('old problem_list deleted')
-        app.logger.info('final problem list: ' + json.dumps(problem_id_list))
 
         for problem in problem_id_list:
             add_problem_for_contest(problem, contest_id)
@@ -205,7 +200,6 @@ def search_contests(param, from_value, size_value):
                 setter_data = get_user_details(data['setter_id'])
                 data['setter_handle'] = setter_data['username']
                 item_list.append(data)
-            app.logger.info('Contest search method completed')
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return item_list

@@ -20,7 +20,6 @@ EXPIRED = 'EXPIRED'
 
 def search_task_lists(param, from_val, size_val):
     try:
-        app.logger.info('search_task_lists method called')
         rs = requests.session()
         query_json = {'query': {'match_all': {}}}
 
@@ -57,7 +56,6 @@ def search_task_lists(param, from_val, size_val):
 
 def search_class_lists(param, from_val, size_val):
     try:
-        app.logger.info('search_class_lists method called')
         rs = requests.session()
         query_json = {'query': {'match_all': {}}}
 

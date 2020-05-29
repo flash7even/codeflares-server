@@ -272,8 +272,23 @@ class Sync(Resource):
             return {'message': str(e)}, 500
 
 
+@api.route('/sync/problem-data/<string:user_id>')
+class SyncProblemData(Resource):
+
+    @access_required(access="ALL")
+    @api.doc('Sync user problem data by id')
+    def put(self, user_id):
+        app.logger.info('Sync user problem data API called, id: ' + str(user_id))
+        try:
+            user_problem_data_sync(user_id)
+            app.logger.info('user_problem_data_sync done')
+            return {'message': 'success'}, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
 @api.route('/sync/training-model/<string:user_id>')
-class Sync(Resource):
+class SyncTrainingModel(Resource):
 
     @access_required(access="ALL")
     @api.doc('Sync user training model by id')
@@ -285,3 +300,4 @@ class Sync(Resource):
             return {'message': 'success'}, 200
         except Exception as e:
             return {'message': str(e)}, 500
+

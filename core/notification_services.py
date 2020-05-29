@@ -19,7 +19,6 @@ UNREAD = 'UNREAD'
 
 def add_notification(data):
     try:
-        app.logger.info('add_notification method called')
         rs = requests.session()
         data['created_at'] = int(time.time())
         data['updated_at'] = int(time.time())
@@ -27,7 +26,6 @@ def add_notification(data):
         post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_user_user_notification, _es_type)
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
         if 'result' in response and response['result'] == 'created':
-            app.logger.info('add_notification method completed')
             return response['_id'], 201
         app.logger.error('Elasticsearch down, response: ' + str(response))
         raise Exception('Internal server error')
@@ -37,7 +35,6 @@ def add_notification(data):
 
 def update_notification(notification_id, data):
     try:
-        app.logger.info('update_notification called ' + str(notification_id))
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_user_user_notification, _es_type, notification_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
@@ -48,9 +45,7 @@ def update_notification(notification_id, data):
                 for key in data:
                     es_data[key] = data[key]
                 response = rs.put(url=search_url, json=es_data, headers=_http_headers).json()
-                app.logger.debug('Elasticsearch response :' + str(response))
                 if 'result' in response:
-                    app.logger.info('update_notification completed')
                     return response['result']
             app.logger.info('User not found')
             return {'message': 'Not found'}
@@ -63,7 +58,6 @@ def update_notification(notification_id, data):
 
 def search_notification(param, size):
     try:
-        app.logger.info('search_task_lists method called')
         rs = requests.session()
         query_json = {'query': {'match_all': {}}}
 

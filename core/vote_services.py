@@ -19,7 +19,6 @@ DISLIKE = 'DISLIKE'
 
 def get_vote_count(vote_ref_id, vote_type):
     try:
-        app.logger.info('search_teams_for_user called')
         rs = requests.session()
         must = [
             {'term': {'vote_ref_id': vote_ref_id}},
@@ -40,7 +39,6 @@ def get_vote_count(vote_ref_id, vote_type):
 
 def search_votes(param):
     try:
-        app.logger.info('search_teams_for_user called')
         rs = requests.session()
         must = []
         for f in param:
@@ -78,7 +76,6 @@ def get_vote_count_list(vote_ref_id):
 
 def add_vote(data):
     try:
-        app.logger.info('Create vote method called')
 
         param = {
             'vote_ref_id': data['vote_ref_id'],
@@ -97,7 +94,6 @@ def add_vote(data):
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
 
         if 'result' in response and response['result'] == 'created':
-            app.logger.info('Create vote method completed')
             return {'message': 'success'}
         app.logger.error('Elasticsearch down, response: ' + str(response))
         raise Exception('ES Down')

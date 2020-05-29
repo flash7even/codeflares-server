@@ -32,9 +32,7 @@ def add_resources(data):
 
 
 def search_resource(param, from_val, size):
-    print('\n\nsearch_resource called: ', param)
     try:
-        app.logger.info('search_task_lists method called')
         rs = requests.session()
         query_json = {'query': {'match_all': {}}}
 
