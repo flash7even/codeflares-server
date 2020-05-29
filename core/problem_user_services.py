@@ -9,10 +9,10 @@ from scrappers.spoj_scrapper import SpojScrapper
 from scrappers.uva_scrapper import UvaScrapper
 
 
-def sync_problems(user_id, problem_list):
+def sync_problems(user_id, problem_list, oj_name):
     try:
         for problem in problem_list:
-            problem_db = search_problems({'problem_id': problem}, 0, 1)
+            problem_db = search_problems({'problem_id': problem, 'oj_name': oj_name}, 0, 1)
             if len(problem_db) == 0:
                 continue
             problem_id = problem_db[0]['id']
@@ -46,35 +46,35 @@ def synch_user_problem(user_id):
             print('Codeforces: ', handle)
             if handle:
                 problem_stat = codeforces.get_user_info(handle)
-                sync_problems(user_id, problem_stat['solved_problems'])
+                sync_problems(user_id, problem_stat['solved_problems'], 'codeforces')
 
         if 'codechef' in allowed_judges:
             handle = user_info.get('codechef_handle', None)
             print('codechef: ', handle)
             if handle:
                 problem_stat = codechef.get_user_info(handle)
-                sync_problems(user_id, problem_stat['solved_problems'])
+                sync_problems(user_id, problem_stat['solved_problems'], 'codechef')
 
         if 'uva' in allowed_judges:
             handle = user_info.get('uva_handle', None)
             print('uva: ', handle)
             if handle:
                 problem_stat = uva.get_user_info(handle)
-                sync_problems(user_id, problem_stat['solved_problems'])
+                sync_problems(user_id, problem_stat['solved_problems'], 'uva')
 
         if 'spoj' in allowed_judges:
             handle = user_info.get('spoj_handle', None)
             print('spoj: ', handle)
             if handle:
                 problem_stat = spoj.get_user_info(handle)
-                sync_problems(user_id, problem_stat['solved_problems'])
+                sync_problems(user_id, problem_stat['solved_problems'], 'spoj')
 
         if 'lightoj' in allowed_judges:
             handle = user_info.get('lightoj_handle', None)
             print('lightoj: ', handle)
             if handle:
                 problem_stat = lightoj.get_user_info(handle)
-                sync_problems(user_id, problem_stat['solved_problems'])
+                sync_problems(user_id, problem_stat['solved_problems'], 'lightoj')
 
     except Exception as e:
         raise e

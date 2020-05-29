@@ -1,7 +1,6 @@
 problem_name,problem_id,problem_difficulty,problem_significance,oj_name,source_link,solved_count,category_id_1,category_id_2,category_id_3
 Substring Frequency,1255,5.5,8,lightoj,http://lightoj.com/volume_showproblem.php?problem=1255,1711,"kmp,6.5",,
 Making Huge Palindromes,1258,5.8,7,lightoj,http://lightoj.com/volume_showproblem.php?problem=1258,1126,"kmp,6.5",,
-Unlucky Strings,1268,6.5,7,lightoj,http://lightoj.com/volume_showproblem.php?problem=1268,233,"kmp,6.5",,
 Genes in DNA,1334,6.8,5,lightoj,http://lightoj.com/volume_showproblem.php?problem=1334,245,"kmp,6.5",,
 Melody Comparison,1428,6.5,7,lightoj,http://lightoj.com/volume_showproblem.php?problem=1428,328,"kmp,6.5","suffix_array,7",
 Substring Frequency (II),1427,6.6,8,lightoj,http://lightoj.com/volume_showproblem.php?problem=1427,378,"aho_corasick,9",,

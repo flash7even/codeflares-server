@@ -164,14 +164,18 @@ class CreateProblem(Resource):
 
             post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
             response = rs.post(url=post_url, json=data, headers=_http_headers).json()
+            app.logger.info('Problem Created Successfully')
+            app.logger.info('Now Create Dependency Edges')
 
             if 'result' in response and response['result'] == 'created':
                 for cat in category_dependency_list:
+                    app.logger.debug('Att dependency for: ' + json.dumps(cat))
                     category_id = cat.get('category_id', None)
                     if category_id is None:
                         category_id = get_category_id_from_name(cat['category_name'])
 
                     category_details = get_category_details(category_id)
+                    app.logger.debug('category_details: ' + json.dumps(category_details))
                     edge = {
                         'problem_id': response['_id'],
                         'problem_name': data['problem_name'],
@@ -181,6 +185,7 @@ class CreateProblem(Resource):
                         'category_name': category_details['category_name'],
                         'problem_difficulty': data['problem_difficulty'],
                     }
+                    app.logger.debug('call add_problem_category_dependency')
                     add_problem_category_dependency(edge)
                 app.logger.info('Create problem api completed')
                 return response['_id'], 201
@@ -199,7 +204,25 @@ class SearchProblem(Resource):
         try:
             app.logger.info('Problem search api called')
             param = request.get_json()
-            result = search_problems_by_category(param, heavy=True)
+            result = search_problems_by_category(param, heavy=False)
+            app.logger.info('Problem search api completed')
+            return {
+                "problem_list": result
+            }
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/search/raw', defaults={'page': 0})
+@api.route('/search/raw/<int:page>')
+class SearchRowProblems(Resource):
+
+    @api.doc('search problem based on post parameters')
+    def post(self, page=0):
+        try:
+            app.logger.info('Problem search api called')
+            param = request.get_json()
+            result = search_problems(param, page*_es_size, _es_size)
             app.logger.info('Problem search api completed')
             return {
                 "problem_list": result

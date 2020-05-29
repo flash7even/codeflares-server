@@ -1,5 +1,4 @@
 problem_name,problem_id,problem_difficulty,problem_significance,oj_name,source_link,solved_count,category_id_1,category_id_2,category_id_3
-Country Roads,1002,4.65,5.35,lightoj,http://lightoj.com/volume_showproblem.php?problem=1002,2182,"dijkstra,8.5",,
 Brush (V),1019,4.97,5.03,lightoj,http://lightoj.com/volume_showproblem.php?problem=1019,1784,"dijkstra,8.5",,
 Commandos,1174,5.29,4.71,lightoj,http://lightoj.com/volume_showproblem.php?problem=1174,1710,"dijkstra,8.5","bfs,7.5",
 Not the Best,1099,5.61,4.39,lightoj,http://lightoj.com/volume_showproblem.php?problem=1099,850,"dijkstra,8.5",,
