@@ -48,14 +48,14 @@ def get_all_teams():
     return team_list
 
 
-def training_model_sync(team_id):
+def sync_team_data(team_id):
     logger.info(f'training_model_sync: {team_id}')
     access_token = get_access_token()
     auth_headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token}'
     }
-    url = f'http://localhost:5056/api/team/sync/training-model/{team_id}'
+    url = f'http://localhost:5056/api/team/sync/{team_id}'
     response = rs.put(url=url, json={}, headers=auth_headers).json()
     logger.debug(f'response: {json.dumps(response)}')
 
@@ -65,7 +65,7 @@ def sync_all_teams():
     team_list = get_all_teams()
     for team in team_list:
         team_id = team['id']
-        training_model_sync(team_id)
+        sync_team_data(team_id)
 
 
 if __name__ == '__main__':

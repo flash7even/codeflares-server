@@ -9,6 +9,7 @@ from models.category_score_model import CategoryScoreGenerator
 from models.problem_score_model import ProblemScoreGenerator
 
 from core.category_services import search_categories, find_category_dependency_list, get_category_details
+
 from core.problem_services import get_problem_details, get_solved_problem_count_for_user, \
     find_problems_for_user_by_status_filtered, available_problems_for_user, add_user_problem_status
 from core.problem_category_services import find_problem_dependency_list
@@ -41,21 +42,22 @@ def generate_skill_value_for_user(user_id):
         {'term': {'user_id': user_id}},
     ]
     query_json = {'query': {'bool': {'must': must}}}
-    aggregate = {
-        "skill_value_by_percentage": {"sum": {"field": "skill_value_by_percentage"}}
-    }
-    query_json['aggs'] = aggregate
-    query_json['size'] = 0
+    query_json['size'] = _es_size
 
     app.logger.info('generate_skill_value_for_user query_json: ' + json.dumps(query_json))
     search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user_category, _es_type)
     response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
     app.logger.info('generate_skill_value_for_user response: ' + str(response))
 
-    if 'aggregations' not in response:
+    if 'hits' not in response:
         raise Exception('Internal server error')
 
-    skill_value = response['aggregations']['skill_value_by_percentage']['value']
+    skill_value = 0
+    if 'hits' in response:
+        for hit in response['hits']['hits']:
+            data = hit['_source']
+            skill_value += data['skill_value_by_percentage']
+
     app.logger.info('skill_value found: ' + str(skill_value))
     return skill_value
 
@@ -210,9 +212,15 @@ def sync_root_category_score_for_user(user_id):
     root_solved_count = root_category_solved_count_by_solved_problem_list(solved_problems)
     app.logger.info('root_solved_count: ' + json.dumps(root_solved_count))
     category_list = search_categories({'category_root': 'root'}, 0, _es_size)
+    skill_value = 0
     for category in category_list:
         data = generate_sync_data_for_root_category(user_id, category, root_solved_count)
+        skill_value += data['skill_value_by_percentage']
+        app.logger.debug(f'Insert root category synced data: {json.dumps(data)}')
         add_user_category_data(user_id, category['category_id'], data)
+
+    app.logger.debug(f'sync_root_category_score_for_user completed for user_id: {user_id}')
+    return skill_value
 
 
 def generate_sync_data_for_category(user_id, category):
@@ -291,11 +299,11 @@ def sync_problem_score_for_user(user_id):
         add_user_problem_status(user_id, problem['id'], data)
 
 
-
-def sync_overall_stat_for_user(user_id):
+def sync_overall_stat_for_user(user_id, skill_value = None):
     app.logger.debug(f'sync_overall_stat_for_user, user: {user_id}')
     solve_count = get_solved_problem_count_for_user(user_id)
-    skill_value = generate_skill_value_for_user(user_id)
+    if skill_value is None:
+        skill_value = generate_skill_value_for_user(user_id)
     skill_obj = Skill()
     skill_title = skill_obj.get_skill_title(skill_value)
     user_data = {
@@ -360,12 +368,16 @@ def sync_root_category_score_for_team(team_id):
 
     root_solved_count = root_category_solved_count_by_solved_problem_list(solved_problems)
     category_list = search_categories({'category_root': 'root'}, 0, 100)
+    skill_value = 0
     for category in category_list:
         data = generate_sync_data_for_root_category(team_id, category, root_solved_count)
         add_user_category_data(team_id, category['category_id'], data)
+        skill_value += data['skill_value_by_percentage']
+
+    return skill_value
 
 
-def sync_overall_stat_for_team(team_id):
+def sync_overall_stat_for_team(team_id, skill_value = None):
     app.logger.debug(f'sync_overall_stat_for_team, team: {team_id}')
     team_details = get_team_details(team_id)
     mark_problem = {}
@@ -381,8 +393,8 @@ def sync_overall_stat_for_team(team_id):
                 mark_problem[problem] = 1
                 solve_count += 1
 
-
-    skill_value = generate_skill_value_for_user(team_id)
+    if skill_value is None:
+        skill_value = generate_skill_value_for_user(team_id)
     skill_obj = Skill()
     skill_title = skill_obj.get_skill_title(skill_value)
     skill_data = {

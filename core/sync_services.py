@@ -41,11 +41,10 @@ def user_training_model_sync(user_id):
     sync_problem_score_for_user(user_id)
 
     app.logger.info('sync_problem_score_for_user done')
-    sync_root_category_score_for_user(user_id)
+    skill_value = sync_root_category_score_for_user(user_id)
 
     app.logger.info('sync_root_category_score_for_user done')
-    sync_overall_stat_for_user(user_id)
-    sync_overall_stat_for_user(user_id) # FIXITLATER: NEED TO FIX THIS DOUBLE CALLING LATER.
+    sync_overall_stat_for_user(user_id, skill_value)
 
     app.logger.info('sync_overall_stat_for_user done')
 
@@ -66,9 +65,9 @@ def team_training_model_sync(team_id):
     app.logger.debug('sync sync_problem_score_for_team')
     sync_problem_score_for_team(team_id)
     app.logger.debug('sync sync_root_category_score_for_team')
-    sync_root_category_score_for_team(team_id)
+    skill_value = sync_root_category_score_for_team(team_id)
     app.logger.debug('sync sync_overall_stat_for_team')
-    sync_overall_stat_for_team(team_id)
+    sync_overall_stat_for_team(team_id, skill_value)
 
     team_details = get_team_details(team_id)
     member_list = team_details.get('member_list', [])

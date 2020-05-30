@@ -147,12 +147,10 @@ def update_team_details(team_id, post_data):
 
 
 def get_team_details(team_id):
-    print('get_team_details: ', team_id)
     try:
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_team, _es_type, team_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
-        print('response: ', json.dumps(response))
 
         if 'found' in response:
             if response['found']:
@@ -219,7 +217,6 @@ def get_all_users_from_team(team_id):
 
 def get_user_team_edge(team_id, user_handle):
     try:
-        print('get_user_team_edge: ', team_id, user_handle)
         rs = requests.session()
         must = [
             {'term': {'team_id': team_id}},
@@ -227,11 +224,8 @@ def get_user_team_edge(team_id, user_handle):
         ]
         query_json = {'query': {'bool': {'must': must}}}
         query_json['size'] = 1
-        print('query: ', json.dumps(query_json))
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-
-        print('response: ', json.dumps(response))
 
         if 'hits' in response:
             if response['hits']['total']['value'] > 0:
@@ -266,7 +260,6 @@ def add_team_member(data):
 
 def update_team_member(data):
     try:
-        print('data: ', json.dumps(data))
         rs = requests.session()
 
         resp = get_user_team_edge(data['team_id'], data['user_handle'])
@@ -295,14 +288,12 @@ def delete_team_member(team_id, user_handle):
     try:
         rs = requests.session()
         resp = get_user_team_edge(team_id, user_handle)
-        print('resp: ', resp)
 
         if resp is None:
             raise Exception('Member not found')
 
         url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type, resp['_id'])
         response = rs.delete(url=url, headers=_http_headers).json()
-        print('response: ', response)
 
         if 'result' in response:
             return response
@@ -333,10 +324,8 @@ def search_teams(param, from_val, size_val):
 
         query_json['from'] = from_val
         query_json['size'] = size_val
-        print('query_json: ', json.dumps(query_json))
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_team, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        print('response: ', json.dumps(response))
         if 'hits' in response:
             item_list = []
             for hit in response['hits']['hits']:
@@ -345,7 +334,6 @@ def search_teams(param, from_val, size_val):
                 member_edge_list = get_all_users_from_team(team['id'])
                 team['member_list'] = member_edge_list
                 item_list.append(team)
-            print('item_list', json.dumps(item_list))
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
         raise Exception('Internal server error')
@@ -370,23 +358,18 @@ def search_teams_for_user(user_handle, param):
             {'term': {'status': 'deleted'}}
         ]
 
-        print('query_json: ', json.dumps(query_json))
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user_team_edge, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        print('response: ', json.dumps(response))
         if 'hits' in response:
             item_list = []
             rank = 1
             for hit in response['hits']['hits']:
                 team_edge = hit['_source']
-                print('Search details for: ', json.dumps(team_edge))
                 team = get_team_details(team_edge['team_id'])
-                print('Found Details')
                 team['status'] = team_edge.get('status', 'pending')
                 team['rank'] = rank
                 rank += 1
                 item_list.append(team)
-            print('item_list', json.dumps(item_list))
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
         raise Exception('Internal server error')
@@ -404,12 +387,10 @@ def get_rating_history_codeforces(team_id):
         cf_scrapper = CodeforcesScrapper()
 
         for member in members:
-            print('member details: ', member)
             user_handle = member['user_handle']
             matched_user_list = search_user({'username': user_handle}, 0, 1)
             if len(matched_user_list) > 0:
                 user_details = matched_user_list[0]
-                print('   user details: ', user_details)
                 cf_handle = user_details.get('codeforces_handle', None)
                 if cf_handle:
                     rating_history = cf_scrapper.get_user_rating_history(cf_handle)
@@ -433,14 +414,12 @@ def get_rating_history_codeforces(team_id):
             rating_list = []
 
             for c_idx in range(0, len(history)):
-                contest = history[c_idx]
-                contest_time = contest['ratingUpdateTimeSeconds']
-                effect_end = date_list[len(date_list)-1]
+                effect_end = int(time.time())
                 if c_idx+1 < len(history):
                     effect_end = history[c_idx+1]['ratingUpdateTimeSeconds']
                 while idx < date_list_len:
-                    if date_list[idx] <= effect_end:
-                        rating_list.append({'rating': contest['newRating']})
+                    if date_list[idx] < effect_end:
+                        rating_list.append({'rating': history[c_idx]['newRating']})
                         idx += 1
                     else:
                         break
@@ -452,6 +431,7 @@ def get_rating_history_codeforces(team_id):
             day = datetime.date.fromtimestamp(date_list[date_idx])
 
             data = {
+                'epoc_time': date_list[date_idx],
                 'date': {
                     "year": day.year,
                     "month": day.month,
