@@ -56,7 +56,7 @@ api.add_namespace(resource_ns, path='/resource')
 api.add_namespace(follower_ns, path='/follower')
 api.add_namespace(contact_us_ns, path='/contact/us')
 api.add_namespace(job_ns, path='/job')
-api.add_namespace(rating_controller, path='/rating')
+api.add_namespace(rating_ns, path='/rating')
 
 
 def create_app(instance_name):

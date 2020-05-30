@@ -9,7 +9,7 @@ from jwt.exceptions import *
 from commons.jwt_helpers import access_required
 
 from core.user_services import search_user, get_user_details, get_user_rating_history
-from core.problem_user_services import synch_user_problem
+from core.rating_services import add_user_ratings
 from core.sync_services import user_problem_data_sync, user_training_model_sync
 from core.job_services import add_pending_job
 
@@ -193,6 +193,7 @@ class CreateUser(Resource):
             if 'result' in response:
                 if response['result'] == 'created':
                     app.logger.info('Create user API completed')
+                    add_user_ratings(response['_id'], 0, 0)
                     return response['_id'], 201
             return response, 500
 

@@ -12,7 +12,7 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('rating', description='Namespace for rating service')
 
-from core.rating_services import add_user_ratings, search_user_ratings
+from core.rating_services import add_user_ratings
 
 _http_headers = {'Content-Type': 'application/json'}
 

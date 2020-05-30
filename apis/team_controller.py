@@ -18,6 +18,7 @@ from core.team_services import add_team_member, delete_team_member, \
 
 from core.sync_services import team_training_model_sync
 from core.job_services import add_pending_job
+from core.rating_services import add_user_ratings
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -185,6 +186,7 @@ class CreateTeam(Resource):
             if 'result' in response and response['result'] == 'created':
                 add_team_members_bulk(member_list, response['_id'], data['team_type'], current_user)
                 app.logger.info('Create team method completed')
+                add_user_ratings(response['_id'], 0, 0)
                 return response['_id'], 201
             app.logger.error('Elasticsearch down, response: ' + str(response))
             return response, 500

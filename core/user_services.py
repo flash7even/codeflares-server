@@ -1,7 +1,10 @@
 import requests
 from flask import current_app as app
 import time
+import datetime
 from core.follower_services import get_follow_stat
+
+from core.rating_services import search_user_ratings
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -13,80 +16,21 @@ public_fields = ['username', 'first_name', 'last_name', 'full_name', 'skill_valu
 
 
 def get_user_rating_history(user_id):
-    return [
-        {
-            "date": {
-                "year": 2013, "month": 1, "day": 16
-            },
-            "rating": 1408
-        },
-        {
-            "date": {
-                "year": 2013, "month": 3, "day": 4
-            },
-            "rating": 1520
-        },
-        {
-            "date": {
-                "year": 2013, "month": 5, "day": 8
-            },
-            "rating": 1590
-        },
-        {
-            "date": {
-                "year": 2013, "month": 9, "day": 22
-            },
-            "rating": 1710
-        },
-        {
-            "date": {
-                "year": 2013, "month": 12, "day": 5
-            },
-            "rating": 1812
-        },
-        {
-            "date": {
-                "year": 2014, "month": 2, "day": 6
-            },
-            "rating": 1866
-        },
-        {
-            "date": {
-                "year": 2014, "month": 3, "day": 18
-            },
-            "rating": 1905
-        },
-        {
-            "date": {
-                "year": 2014, "month": 4, "day": 22
-            },
-            "rating": 2070
-        },
-        {
-            "date": {
-                "year": 2014, "month": 5, "day": 11
-            },
-            "rating": 2143
-        },
-        {
-            "date": {
-                "year": 2014, "month": 5, "day": 19
-            },
-            "rating": 2250
-        },
-        {
-            "date": {
-                "year": 2014, "month": 6, "day": 5
-            },
-            "rating": 2290
-        },
-        {
-            "date": {
-                "year": 2014, "month": 6, "day": 22
-            },
-            "rating": 2335
+    rating_list = search_user_ratings(user_id)
+    rating_history = []
+    for rating_data in rating_list:
+        day = datetime.date.fromtimestamp(rating_data['created_at'])
+        data = {
+            'rating': rating_data['skill_value'],
+            'solve_count': rating_data['solve_count'],
+            'date': {
+                "year": day.year,
+                "month": day.month,
+                "day": day.day
+            }
         }
-    ]
+        rating_history.append(data)
+    return rating_history
 
 
 def get_user_details_by_handle_name(username):

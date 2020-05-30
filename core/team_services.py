@@ -12,6 +12,7 @@ from core.classroom_services import search_task_lists, search_class_lists
 from core.user_services import get_user_details_by_handle_name
 from core.notification_services import add_notification
 from core.follower_services import get_follow_stat
+from core.rating_services import search_user_ratings
 
 _es_index_user_team_edge = 'cfs_user_team_edges'
 _es_index_team = 'cfs_teams'
@@ -20,56 +21,21 @@ _es_size = 100
 
 
 def get_team_rating_history(team_id):
-    return [
-        {
-            "date": {
-                "year": 2013, "month": 1, "day": 16
-            },
-            "rating": 1408
-        },
-        {
-            "date": {
-                "year": 2013, "month": 3, "day": 4
-            },
-            "rating": 1520
-        },
-        {
-            "date": {
-                "year": 2013, "month": 5, "day": 8
-            },
-            "rating": 1780
-        },
-        {
-            "date": {
-                "year": 2013, "month": 9, "day": 22
-            },
-            "rating": 1710
-        },
-        {
-            "date": {
-                "year": 2013, "month": 12, "day": 5
-            },
-            "rating": 1812
-        },
-        {
-            "date": {
-                "year": 2014, "month": 2, "day": 6
-            },
-            "rating": 1730
-        },
-        {
-            "date": {
-                "year": 2014, "month": 3, "day": 18
-            },
-            "rating": 1905
-        },
-        {
-            "date": {
-                "year": 2014, "month": 4, "day": 22
-            },
-            "rating": 2070
+    rating_list = search_user_ratings(team_id)
+    rating_history = []
+    for rating_data in rating_list:
+        day = datetime.date.fromtimestamp(rating_data['created_at'])
+        data = {
+            'rating': rating_data['skill_value'],
+            'solve_count': rating_data['solve_count'],
+            'date': {
+                "year": day.year,
+                "month": day.month,
+                "day": day.day
+            }
         }
-    ]
+        rating_history.append(data)
+    return rating_history
 
 
 def add_team_members_bulk(member_list, team_id, team_type, logged_in_user):

@@ -18,7 +18,7 @@ from core.rating_services import add_user_ratings
 
 
 def user_list_sync():
-    user_list = search_user({}, 0, 500)
+    user_list = search_user({'username': 'flash_7'}, 0, 500)
     for user in user_list:
         user_id = user['id']
         user_problem_data_sync(user_id)
@@ -30,7 +30,7 @@ def user_list_sync():
 
 
 def team_list_sync():
-    team_list = search_teams({}, 0, 500)
+    team_list = search_teams({'team_name': 'nsu_vendetta'}, 0, 500)
     for team in team_list:
         team_id = team['id']
         team_training_model_sync(team_id)
