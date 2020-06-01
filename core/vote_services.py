@@ -4,17 +4,61 @@ import requests
 from flask import current_app as app
 import random
 
-from core.user_services import get_user_details
+from core.user_services import add_contribution
 
 _http_headers = {'Content-Type': 'application/json'}
 
 _es_index_vote = 'cfs_votes'
+_es_index_comment = 'cfs_comments'
+_es_index_blog = 'cfs_blogs'
 
 _es_type = '_doc'
 _es_size = 100
 
 LIKE = 'LIKE'
 DISLIKE = 'DISLIKE'
+
+
+class voteManager:
+    blog = 5
+    blog_comment = 1
+    problem_comment = 3
+
+
+def get_blog_details(blog_id):
+    try:
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_blog, _es_type, blog_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        print(response)
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                data['id'] = response['_id']
+                data['blog_id'] = response['_id']
+                app.logger.info('Get blog_details method completed')
+                return data
+            app.logger.warning('Blog not found')
+            raise Exception('Blog not found')
+        raise Exception('Es Down')
+    except Exception as e:
+        raise e
+
+
+def get_comment_details(comment_id):
+    try:
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_comment, _es_type, comment_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                data['id'] = response['_id']
+                return data
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        raise Exception('Internal server error')
+    except Exception as e:
+        raise e
 
 
 def get_vote_count(vote_ref_id, vote_type):
@@ -93,7 +137,23 @@ def add_vote(data):
         post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index_vote, _es_type)
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
 
+        vote_factor = 1
+        if data['vote_type'] == DISLIKE:
+            vote_factor = -1
+
         if 'result' in response and response['result'] == 'created':
+            if data['vote_topic'] == 'blog':
+                blog_details = get_blog_details(data['vote_ref_id'])
+                blog_writer = blog_details['blog_writer']
+                add_contribution(blog_writer, voteManager.blog*vote_factor)
+            if data['vote_topic'] == 'comment':
+                comment_details = get_comment_details(data['vote_ref_id'])
+                comment_writer = comment_details['comment_writer']
+                add_contribution(comment_writer, voteManager.blog*vote_factor)
+            if data['vote_topic'] == 'problem-comment' or data['vote_topic'] == 'category-comment':
+                comment_details = get_comment_details(data['vote_ref_id'])
+                comment_writer = comment_details['comment_writer']
+                add_contribution(comment_writer, voteManager.problem_comment*vote_factor)
             return {'message': 'success'}
         app.logger.error('Elasticsearch down, response: ' + str(response))
         raise Exception('ES Down')

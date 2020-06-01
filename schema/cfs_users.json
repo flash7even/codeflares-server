@@ -37,6 +37,9 @@
       "skill_title": {
         "type": "keyword"
       },
+      "contribution": {
+        "type": "long"
+      },
       "settings": {
         "type": "nested",
         "properties": {

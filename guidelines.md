@@ -1,26 +1,26 @@
 
 ### Features
 
-1. Algorithm Database
-1. Problem Database
-1. Individual Skill Generator
-1. Individual Training Model
-1. Team Skill Generator
-1. Team Training Model
-1. Automated Training Contest Generator
-1. Classroom Based Training
-1. Learning Resources
-1. Blog
+1. [Algorithm Database](#algorithmdatabase)
+1. [Problem Database](#problemdatabase)
+1. [Individual Skill Generator](#individualskillgenerator)
+1. [Individual Training Model](#individualtrainingmodel)
+1. [Team Skill Generator](#teamskillgenerator)
+1. [Team Training Model](#teamtrainingmodel)
+1. [Automated Training Contest Generator](#automatedtrainingcontestgenerator)
+1. [Classroom Based Training](#classroombasedtraining)
+1. [Learning Resources](#learningresources)
+1. [Blog](#blog)
 
 #### Algorithm Database
 We have a collection of algorithms that most of the contestants use frequently in problem solving.
 All these algorithms are divided into two levels. The first level is called the **root level** which contains only
-the **root level categories**. And the second level is called the **child level** which consists of all the algorithms.
+the [**root level categories**](/category/list/). And the second level is called the **child level** which consists of all the algorithms.
 The child level algorithms are then divided into the root level categories.
 
 For example, some of the root level categories are: *Base Algorithms, Number Theory, Graph, Data Structure, Dynamic Programming, Geometry* etc.
-1. Some second level algorithms that fall under **Number Theory**: *GCD, LCM, Prime Number, Sieve, Prime Factorization* etc.
-1. Similarly, some second level algorithms that fall under **Graph**: *BFS, DFS, Dijkstra, Bellmanford, SCC, DAG* etc.
+1. Some second level algorithms that fall under [**Number Theory**](/category/list/root/number_theory/): *GCD, LCM, Prime Number, Sieve, Prime Factorization* etc.
+1. Similarly, some second level algorithms that fall under [**Graph**](/category/list/root/graph/): *BFS, DFS, Dijkstra, Bellmanford, SCC, DAG* etc.
 
 Most of the second level algorithms are somewhat dependent on some other second level algorithms. For example,
 
@@ -61,9 +61,9 @@ Every solved problem of an user contribute to the skill of the algorithms which 
 
 3. As explained in the **Problem Database** section, for any solved problem **P**, how much it'll contribute to the skill of a algorithm
 it depends on the following two factors: **problem-difficulty** and _**problem-category-connection-matrix**_.
-Using this factors for each solved problems, we generate a skill value for all the second level algorithms.
+Using this factors for each solved problems, we generate a [**skill value**](/training/individual/#overallAlgorithmSkill) for all the second level algorithms.
 
-4. Now we generate the skill value for the **root level categories** using the skill value of the algorithms that fall under that particular
+4. Now we generate the [**skill value**](/training/individual/#topicWiseSkill) for the **root level categories** using the skill value of the algorithms that fall under that particular
 root category. We have a _**algorithm-percentage-matrix**_ which stores the information of how much an algorithm contribute to the overall
 skill value of a root category.
 
@@ -141,4 +141,4 @@ the category page for [BFS](/category/view/FU3OZHIBq8HNJ2ynhr1y/).
 #### Blog
 Blog is a feature where you can share your knowledge and thoughts about anything related to competitive programming.
 You can also publicly discuss with each other about different problems and algorithms. The feature is still in the initial stage.
-We'll improve it and add more features in the blogs later on.
+We'll improve it and add more features in the blog section later on.

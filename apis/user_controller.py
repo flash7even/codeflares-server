@@ -259,6 +259,26 @@ class SearchUser(Resource):
             return {'message': str(e)}, 500
 
 
+@api.route('/search/contributor', defaults={'page': 0})
+@api.route('/search/contributor/<int:page>')
+class SearchUser(Resource):
+
+    @api.doc('search users based on post parameters')
+    def post(self, page=0):
+        app.logger.info('Search user API called')
+        try:
+            param = request.get_json()
+            size = param.get('size', _es_size)
+            param.pop('size', None)
+            user_list = search_user(param, page*size, size, sort_by='contribution', sort_order='desc')
+            return {
+                'user_list': user_list
+            }
+
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
 @api.route('/sync/<string:user_id>')
 class Sync(Resource):
 

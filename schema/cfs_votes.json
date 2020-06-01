@@ -7,6 +7,9 @@
     "vote_type": {
       "type": "keyword"
     },
+    "vote_topic": {
+      "type": "keyword"
+    },
     "voter_id": {
       "type": "keyword"
     },

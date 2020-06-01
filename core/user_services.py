@@ -95,6 +95,32 @@ def update_user_details(user_id, user_data):
         return {'message': str(e)}
 
 
+def add_contribution(user_id, value):
+    app.logger.info(f'add_contribution for {user_id} by {str(value)}')
+    try:
+        ignore_fields = ['username', 'password']
+        rs = requests.session()
+
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_user, _es_type, user_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+
+        if 'found' in response:
+            if response['found']:
+                user = response['_source']
+                contribution = int(user.get('contribution', 0)) + value
+                user['contribution'] = contribution
+                response = rs.put(url=search_url, json=user, headers=_http_headers).json()
+                if 'result' in response:
+                    return response['result']
+            app.logger.info('User not found')
+            return 'not found'
+        app.logger.error('Elasticsearch down')
+        return response
+
+    except Exception as e:
+        return {'message': str(e)}
+
+
 def get_user_details_public(user_id):
     try:
         rs = requests.session()

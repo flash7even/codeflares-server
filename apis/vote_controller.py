@@ -86,7 +86,7 @@ class CreateVote(Resource):
         try:
             rs = requests.session()
             data = request.get_json()
-            mandatory_fields = ['vote_ref_id', 'vote_type', 'voter_id']
+            mandatory_fields = ['vote_ref_id', 'vote_type', 'voter_id', 'vote_topic']
             for f in mandatory_fields:
                 if f not in data:
                     return {'message': 'bad request'}, 400
