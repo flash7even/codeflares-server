@@ -110,8 +110,7 @@ def search_problems(param, from_value, size_value, heavy = False):
                 data['id'] = hit['_id']
                 dependency_list = find_problem_dependency_list(data['id'])
                 if heavy:
-                    data['category_dependency_list'] = dependency_list['dependency_list']
-                    data['category_list_light'] = dependency_list['light_data']
+                    data['category_dependency_list'] = dependency_list
                 item_list.append(data)
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
