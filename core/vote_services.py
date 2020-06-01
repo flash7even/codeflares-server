@@ -146,10 +146,10 @@ def add_vote(data):
                 blog_details = get_blog_details(data['vote_ref_id'])
                 blog_writer = blog_details['blog_writer']
                 add_contribution(blog_writer, voteManager.blog*vote_factor)
-            if data['vote_topic'] == 'comment':
+            if data['vote_topic'] == 'blog-comment':
                 comment_details = get_comment_details(data['vote_ref_id'])
                 comment_writer = comment_details['comment_writer']
-                add_contribution(comment_writer, voteManager.blog*vote_factor)
+                add_contribution(comment_writer, voteManager.blog_comment*vote_factor)
             if data['vote_topic'] == 'problem-comment' or data['vote_topic'] == 'category-comment':
                 comment_details = get_comment_details(data['vote_ref_id'])
                 comment_writer = comment_details['comment_writer']
