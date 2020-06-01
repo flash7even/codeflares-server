@@ -111,6 +111,7 @@ def search_problems(param, from_value, size_value, heavy = False):
                 dependency_list = find_problem_dependency_list(data['id'])
                 if heavy:
                     data['category_dependency_list'] = dependency_list
+                    data['solve_count'] = get_solved_count_for_problem(data['id'])
                 item_list.append(data)
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
