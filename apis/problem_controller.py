@@ -240,7 +240,7 @@ class SearchProblem(Resource):
         try:
             app.logger.info('Problem search api called')
             param = request.get_json()
-            result = search_problems(param, page*_es_size, _es_size, heavy=True)
+            result = search_problems_by_category(param, heavy=True)
             app.logger.info('Problem search api completed')
             return {
                 "problem_list": result

@@ -121,8 +121,10 @@ def search_problems(param, from_value, size_value, heavy = False):
 
 
 def search_problems_by_category(param, heavy = False):
+    print('search_problems_by_category called')
     user_id = param.get('user_id', None)
     param.pop('user_id', None)
+    print(param)
     try:
         problem_list = search_problem_list_simplified(param)
         item_list = []
@@ -131,7 +133,6 @@ def search_problems_by_category(param, heavy = False):
             problem_details['solved'] = 'no'
             if user_id:
                 edge = get_user_problem_status(user_id, problem_id)
-                print('EDGE: ', edge)
                 if edge and edge['status'] == SOLVED:
                     problem_details['solved'] = 'yes'
 

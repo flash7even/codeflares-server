@@ -224,6 +224,7 @@ class SearchCategory(Resource):
         try:
             app.logger.info('Category search api called')
             param = request.get_json()
+            print('param: ', param)
             result = search_categories(param, page*_es_size, _es_size)
             app.logger.info('Category search api completed')
             print(result)

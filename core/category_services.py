@@ -173,7 +173,8 @@ def search_categories(param, from_value, size_value, heavy = False):
 
                 if user_id:
                     cat_info = get_user_category_data(user_id, category['category_id'])
-                    category['solve_count'] = cat_info.get('solve_count', 0)
+                    if cat_info is not None:
+                        category['solve_count'] = cat_info.get('solve_count', 0)
                 if heavy:
                     category['category_dependency_list'] = find_category_dependency_list(category['category_id'])
 
