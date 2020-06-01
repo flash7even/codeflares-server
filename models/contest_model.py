@@ -19,18 +19,19 @@ class ContestModel:
 
     def add_category_for_problem_selection(self, category_params, category_map, cat):
         try:
-            category_name = cat['category_name']
-            data = {
-                'category_name': category_name,
-                'minimum_difficulty': float(cat.get('minimum_difficulty', 0)),
-                'maximum_difficulty': float(cat.get('maximum_difficulty', 0)),
-                'minimum_problem': int(cat.get('minimum_problem', 0)),
-                'maximum_problem': int(cat.get('maximum_problem', 0)),
-            }
-            if data['minimum_difficulty'] > data['maximum_difficulty'] or data['minimum_problem'] > data['maximum_problem']:
-                raise Exception('Invalid data provided')
-            category_map[category_name] = 1
-            category_params.append(data)
+            if cat['category_name'] and cat['minimum_difficulty'] and cat['maximum_difficulty'] and cat['minimum_problem'] and cat['maximum_problem']:
+                category_name = cat['category_name']
+                data = {
+                    'category_name': category_name,
+                    'minimum_difficulty': float(cat.get('minimum_difficulty', 0)),
+                    'maximum_difficulty': float(cat.get('maximum_difficulty', 0)),
+                    'minimum_problem': int(cat.get('minimum_problem', 0)),
+                    'maximum_problem': int(cat.get('maximum_problem', 0)),
+                }
+                if data['minimum_difficulty'] > data['maximum_difficulty'] or data['minimum_problem'] > data['maximum_problem']:
+                    raise Exception('Invalid data provided')
+                category_map[category_name] = 1
+                category_params.append(data)
         except Exception as e:
             raise e
 
