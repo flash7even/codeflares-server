@@ -79,20 +79,21 @@ class IndividualTrainingModel(Resource):
 
     @access_required(access="ALL")
     @api.doc('get training model for currently logged in user')
-    def get(self, user_id):
+    def post(self, user_id):
         app.logger.info('Get individual training model api called')
 
-        problems = search_top_skilled_problems_for_user(user_id, 'relevant_score', 5, True)
-        categories = search_top_skilled_categoires_for_user(user_id, 'ALL', 'relevant_score', 5, True)
-        category_skill_list = search_top_skilled_categoires_for_user(user_id, 'ALL', 'skill_value', 150, True)
-        root_category_skill_list = search_top_skilled_categoires_for_user(user_id, 'root', 'skill_value', 15, True)
+        param = request.get_json()
+        response = {}
 
-        return {
-            'problem_stat': problems,
-            'category_stat': categories,
-            'category_skill_list': category_skill_list,
-            'root_category_skill_list': root_category_skill_list
-        }
+        if 'training_problems' in param and param['training_problems']:
+            response['problem_stat'] = search_top_skilled_problems_for_user(user_id, 'relevant_score', 10, True)
+        if 'training_categories' in param and param['training_categories']:
+            response['category_stat'] = search_top_skilled_categoires_for_user(user_id, 'ALL', 'relevant_score', 10, True)
+        if 'category_skill' in param and param['category_skill']:
+            response['category_skill_list'] = search_top_skilled_categoires_for_user(user_id, 'ALL', 'skill_value', 200, True)
+        if 'root_category_skill' in param and param['root_category_skill']:
+            response['root_category_skill_list'] = search_top_skilled_categoires_for_user(user_id, 'root', 'skill_value', 20, True)
+        return response
 
 
 @api.route('/team/<string:team_id>')
@@ -100,27 +101,28 @@ class TeamTrainingModel(Resource):
 
     @access_required(access="ALL")
     @api.doc('get training model for currently logged in user')
-    def get(self, team_id):
+    def post(self, team_id):
         app.logger.info('Get individual training model api called')
-        problems = search_top_skilled_problems_for_user(team_id, 'relevant_score', 5, True)
-        categories = search_top_skilled_categoires_for_user(team_id, 'ALL', 'relevant_score', 5, True)
-        category_skill_list = search_top_skilled_categoires_for_user(team_id, 'ALL', 'skill_value', 150, True)
-        root_category_skill_list = search_top_skilled_categoires_for_user(team_id, 'root', 'category_id', 15, True)
-
+        param = request.get_json()
         team_details = get_team_details(team_id)
-        team_details['skill_info'] = []
-        member_list = team_details.get('member_list', [])
-        for member in member_list:
-            user_details = get_user_details_by_handle_name(member['user_handle'])
-            if user_details is None:
-                continue
-            skill_list = search_top_skilled_categoires_for_user(user_details['id'], 'root', 'category_id', 15, True)
-            team_details['skill_info'].append({'skill_list': skill_list})
 
-        team_details['problem_stat'] = problems
-        team_details['category_stat'] = categories
-        team_details['category_skill_list'] = category_skill_list
-        team_details['root_category_skill_list'] = root_category_skill_list
+        if 'training_problems' in param and param['training_problems']:
+            team_details['problem_stat'] = search_top_skilled_problems_for_user(team_id, 'relevant_score', 5, True)
+        if 'training_categories' in param and param['training_categories']:
+            team_details['category_stat'] = search_top_skilled_categoires_for_user(team_id, 'ALL', 'relevant_score', 5, True)
+        if 'category_skill' in param and param['category_skill']:
+            team_details['category_skill_list'] = search_top_skilled_categoires_for_user(team_id, 'ALL', 'skill_value', 150, True)
+        if 'root_category_skill' in param and param['root_category_skill']:
+            team_details['root_category_skill_list'] = search_top_skilled_categoires_for_user(team_id, 'root', 'category_id', 15, True)
+        if 'skill_comparison_info' in param and param['skill_comparison_info']:
+            team_details['skill_info'] = []
+            member_list = team_details.get('member_list', [])
+            for member in member_list:
+                user_details = get_user_details_by_handle_name(member['user_handle'])
+                if user_details is None:
+                    continue
+                skill_list = search_top_skilled_categoires_for_user(user_details['id'], 'root', 'category_id', 15, True)
+                team_details['skill_info'].append({'skill_list': skill_list})
         return team_details
 
 
