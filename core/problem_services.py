@@ -3,7 +3,7 @@ import time
 import requests
 from flask import current_app as app
 
-from core.problem_category_services import find_problem_dependency_list, search_problem_list_simplified
+from core.problem_category_services import find_problem_dependency_list, search_problem_list_simplified, search_problem_list_simplified_dtsearch
 from core.resource_services import search_resource
 from core.comment_services import get_comment_list, get_comment_count
 from core.vote_services import get_vote_count_list
@@ -14,8 +14,8 @@ _es_index_problem_category = 'cfs_problem_category_edges'
 _es_index_problem_user = 'cfs_user_problem_edges'
 _es_index_problem = 'cfs_problems'
 _es_type = '_doc'
-_es_size = 100
-_es_max_solved_problem = 1000
+_es_size = 15
+_es_max_solved_problem = 15
 
 SOLVED = 'SOLVED'
 UNSOLVED = 'UNSOLVED'
@@ -144,6 +144,36 @@ def search_problems_by_category(param, heavy = False):
 
             item_list.append(problem_details)
         return item_list
+    except Exception as e:
+        raise e
+
+
+def search_problems_by_category_dt_search(param, start, length):
+    print('search_problems_by_category called')
+    user_id = param.get('user_id', None)
+    param.pop('user_id', None)
+    print(param)
+    try:
+        problem_stat = search_problem_list_simplified_dtsearch(param, start, length)
+        item_list = []
+        for problem_id in problem_stat['problem_list']:
+            problem_details = get_problem_details(problem_id)
+            problem_details['solved'] = 'no'
+            if user_id:
+                edge = get_user_problem_status(user_id, problem_id)
+                if edge and edge['status'] == SOLVED:
+                    problem_details['solved'] = 'yes'
+
+            dependency_list = find_problem_dependency_list(problem_id)
+            problem_details['category_dependency_list'] = dependency_list
+
+            problem_details['solve_count'] = get_solved_count_for_problem(problem_id)
+
+            item_list.append(problem_details)
+        return {
+            'problem_list': item_list,
+            'total': problem_stat['total']
+        }
     except Exception as e:
         raise e
 

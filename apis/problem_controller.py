@@ -12,7 +12,7 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('problem', description='Namespace for problem service')
 
-from core.problem_services import search_problems, search_problems_by_category, get_problem_details
+from core.problem_services import search_problems, search_problems_by_category, get_problem_details, search_problems_by_category_dt_search
 from core.problem_category_services import add_problem_category_dependency
 from core.category_services import get_category_id_from_name, get_category_details
 
@@ -245,6 +245,39 @@ class SearchProblem(Resource):
             return {
                 "problem_list": result
             }
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/dtsearch/heavy')
+class SearchProblemDTSearch(Resource):
+
+    @api.doc('dtsearch problem based on post parameters')
+    def post(self):
+        try:
+            app.logger.info('Problem dtsearch api called')
+            param = request.get_json()
+            draw = param['draw']
+            start = param['start']
+            length = param['length']
+            search = param['search']['value']
+
+            param_body = {}
+            if len(search) > 0:
+                param_body['filter'] = search
+
+            if 'user_id' in param:
+                param_body['user_id'] = param['user_id']
+
+            proble_stat = search_problems_by_category_dt_search(param_body, start, length)
+            resp = {
+                'draw': draw,
+                'recordsTotal': proble_stat['total'],
+                'recordsFiltered': proble_stat['total'],
+                'data': proble_stat['problem_list'],
+            }
+            print(resp)
+            return resp
         except Exception as e:
             return {'message': str(e)}, 500
 

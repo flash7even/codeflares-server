@@ -10,7 +10,7 @@ _es_index_problem_category = 'cfs_problem_category_edges'
 _es_index_problem_user = 'cfs_user_problem_edges'
 _es_index_problem = 'cfs_problems'
 _es_type = '_doc'
-_es_size = 100
+_es_size = 15
 _es_max_solved_problem = 1000
 
 SOLVED = 'SOLVED'
@@ -125,6 +125,45 @@ def search_problem_list_simplified(param, sort_by = 'problem_difficulty', sort_o
     except Exception as e:
         raise e
 
+
+def search_problem_list_simplified_dtsearch(param, start, length):
+    print('search_problem_list_simplified_dtsearch called: ', param)
+    try:
+        query_json = {'query': {'match_all': {}}}
+        rs = requests.session()
+
+        should = []
+        keyword_fields = ['category_name', 'category_root', 'problem_id']
+        text_fields = ['problem_name']
+
+        if 'filter' in param:
+            for f in keyword_fields:
+                should.append({'term': {f: param['filter']}})
+            for f in text_fields:
+                should.append({'match': {f: param['filter']}})
+
+        if len(should) > 0:
+            query_json = {'query': {'bool': {'should': should}}}
+
+        query_json['from'] = start
+        query_json['size'] = length
+        print('query_json: ', json.dumps(query_json))
+
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_category, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        item_list = []
+
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                data = hit['_source']
+                item_list.append(data['problem_id'])
+
+        return {
+            'problem_list': item_list,
+            'total': response['hits']['total']['value']
+        }
+    except Exception as e:
+        raise e
 
 def get_problem_count_for_category(param):
     try:
