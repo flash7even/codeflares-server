@@ -148,13 +148,13 @@ def search_problems_by_category(param, heavy = False):
         raise e
 
 
-def search_problems_by_category_dt_search(param, start, length):
+def search_problems_by_category_dt_search(param, start, length, sort_by, sort_order):
     print('search_problems_by_category called')
     user_id = param.get('user_id', None)
     param.pop('user_id', None)
     print(param)
     try:
-        problem_stat = search_problem_list_simplified_dtsearch(param, start, length)
+        problem_stat = search_problem_list_simplified_dtsearch(param, start, length, sort_by, sort_order)
         item_list = []
         for problem_id in problem_stat['problem_list']:
             problem_details = get_problem_details(problem_id)

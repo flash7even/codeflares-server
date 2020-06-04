@@ -126,7 +126,7 @@ def search_problem_list_simplified(param, sort_by = 'problem_difficulty', sort_o
         raise e
 
 
-def search_problem_list_simplified_dtsearch(param, start, length):
+def search_problem_list_simplified_dtsearch(param, start, length, sort_by, sort_order):
     print('search_problem_list_simplified_dtsearch called: ', param)
     try:
         query_json = {'query': {'match_all': {}}}
@@ -136,17 +136,41 @@ def search_problem_list_simplified_dtsearch(param, start, length):
         keyword_fields = ['category_name', 'category_root', 'problem_id']
         text_fields = ['problem_name']
 
+        minimum_difficulty = 0
+        maximum_difficulty = 100
+
+        if 'minimum_difficulty' in param and param['minimum_difficulty']:
+            minimum_difficulty = int(param['minimum_difficulty'])
+
+        if 'maximum_difficulty' in param and param['maximum_difficulty']:
+            maximum_difficulty = int(param['maximum_difficulty'])
+
         if 'filter' in param:
             for f in keyword_fields:
                 should.append({'term': {f: param['filter']}})
             for f in text_fields:
                 should.append({'match': {f: param['filter']}})
 
+        must = []
+
+        must.append({"range": {"problem_difficulty": {"gte": minimum_difficulty, "lte": maximum_difficulty}}})
+
+        for f in keyword_fields:
+            if f in param:
+                must.append({'term': {f: param[f]}})
+        for f in text_fields:
+            if f in param:
+                must.append({'match': {f: param[f]}})
+
         if len(should) > 0:
-            query_json = {'query': {'bool': {'should': should}}}
+            must.append({'bool': {'should': should}})
+
+        if len(must) > 0:
+            query_json = {'query': {'bool': {'must': must}}}
 
         query_json['from'] = start
         query_json['size'] = length
+        query_json['sort'] = [{sort_by: {'order': sort_order}}]
         print('query_json: ', json.dumps(query_json))
 
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_category, _es_type)

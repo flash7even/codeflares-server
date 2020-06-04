@@ -262,14 +262,28 @@ class SearchProblemDTSearch(Resource):
             length = param['length']
             search = param['search']['value']
 
+            print(json.dumps(param))
+
             param_body = {}
             if len(search) > 0:
                 param_body['filter'] = search
 
-            if 'user_id' in param:
-                param_body['user_id'] = param['user_id']
+            print('custom_param: ', param['custom_param'])
 
-            proble_stat = search_problems_by_category_dt_search(param_body, start, length)
+            for f in param['custom_param']:
+                param_body[f] = param['custom_param'][f]
+
+            sort_by = 'problem_difficulty'
+            sort_order = 'asc'
+
+            if 'sort_by' in param:
+                if param['sort_by'] == 'problem_name':
+                    sort_by = 'problem_name.keyword'
+                else:
+                    sort_by = param['sort_by']
+                sort_order = param['sort_order']
+
+            proble_stat = search_problems_by_category_dt_search(param_body, start, length, sort_by, sort_order)
             resp = {
                 'draw': draw,
                 'recordsTotal': proble_stat['total'],
