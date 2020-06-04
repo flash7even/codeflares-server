@@ -1,6 +1,7 @@
 import requests
 from flask import current_app as app
 import time
+import json
 import datetime
 from core.follower_services import get_follow_stat
 
@@ -180,6 +181,54 @@ def search_user(param, from_val, to_val, sort_by = 'updated_at', sort_order = 'd
                 rank += 1
                 data.append(user)
             return data
+        app.logger.error('Elasticsearch down, response : ' + str(response))
+        raise Exception('Internal server error')
+
+    except Exception as e:
+        raise e
+
+
+def dtsearch_user(param, start, length, sort_by = 'updated_at', sort_order = 'desc'):
+    try:
+        query_json = {'query': {'match_all': {}}}
+        text_fields = ['username', 'full_name']
+        should = []
+
+        if 'filter' in param and param['filter']:
+            for f in text_fields:
+                should.append({'fuzzy': {f: {'value': param['filter'], 'prefix_length': 0, 'fuzziness': 3}}})
+
+        if len(should) > 0:
+            query_json = {'query': {'bool': {'should': should}}}
+
+        query_json['sort'] = [{sort_by: {'order': sort_order}}]
+        query_json['from'] = start
+        query_json['size'] = length
+        print('query_json: ', json.dumps(query_json))
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user, _es_type)
+        response = requests.session().post(url=search_url, json=query_json, headers=_http_headers).json()
+        print('response: ', response)
+
+        if 'hits' in response:
+            data = []
+            rank = 1
+            for hit in response['hits']['hits']:
+                user = hit['_source']
+                user['id'] = hit['_id']
+                follow_stat = get_follow_stat(user['id'])
+                user['follow_stat'] = follow_stat
+                user['rating_history'] = get_user_rating_history(user['id'])
+                user['rank'] = rank+start
+                user['skill_value'] = user.get('skill_value', 0)
+                user['solve_count'] = user.get('solve_count', 0)
+                user['contribution'] = user.get('contribution', 0)
+                user['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(user['created_at']))
+                rank += 1
+                data.append(user)
+            return {
+                'user_list': data,
+                'total': response['hits']['total']['value']
+            }
         app.logger.error('Elasticsearch down, response : ' + str(response))
         raise Exception('Internal server error')
 

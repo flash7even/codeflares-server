@@ -8,7 +8,7 @@ from flask_jwt_extended.exceptions import *
 from jwt.exceptions import *
 from commons.jwt_helpers import access_required
 
-from core.user_services import search_user, get_user_details, get_user_rating_history
+from core.user_services import search_user, get_user_details, get_user_rating_history, dtsearch_user
 from core.rating_services import add_user_ratings
 from core.sync_services import user_problem_data_sync, user_training_model_sync
 from core.job_services import add_pending_job
@@ -235,6 +235,46 @@ class SearchUser(Resource):
                 'user_list': user_list
             }
 
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/dtsearch')
+class SearchUser(Resource):
+
+    @api.doc('search users based on post parameters')
+    def post(self):
+        try:
+            app.logger.info('User dtsearch api called')
+            param = request.get_json()
+            draw = param['draw']
+            start = param['start']
+            length = param['length']
+            search = param['search']['value']
+
+            print(json.dumps(param))
+            print('search: ', search)
+
+            param_body = {}
+            if len(search) > 0:
+                param_body['filter'] = search
+
+            sort_by = 'skill_value'
+            sort_order = 'asc'
+
+            if 'sort_by' in param:
+                sort_by = param['sort_by']
+                sort_order = param['sort_order']
+
+            user_stat = dtsearch_user(param_body, start, length, sort_by, sort_order)
+            resp = {
+                'draw': draw,
+                'recordsTotal': user_stat['total'],
+                'recordsFiltered': user_stat['total'],
+                'data': user_stat['user_list'],
+            }
+            print(resp)
+            return resp
         except Exception as e:
             return {'message': str(e)}, 500
 
