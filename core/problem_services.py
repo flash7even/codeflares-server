@@ -1,18 +1,18 @@
+import json
 import time
 
 import requests
 from flask import current_app as app
 
-from core.problem_category_services import find_problem_dependency_list, search_problem_list_simplified, search_problem_list_simplified_dtsearch
 from core.resource_services import search_resource
 from core.comment_services import get_comment_list, get_comment_count
 from core.vote_services import get_vote_count_list
 
 _http_headers = {'Content-Type': 'application/json'}
 
-_es_index_problem_category = 'cfs_problem_category_edges'
 _es_index_problem_user = 'cfs_user_problem_edges'
 _es_index_problem = 'cfs_problems'
+_es_index_category = 'cfs_categories'
 _es_type = '_doc'
 _es_size = 15
 _es_max_solved_problem = 15
@@ -64,62 +64,6 @@ def get_problem_details(problem_id, user_id = None):
         raise e
 
 
-def search_problems(param, from_value, size_value, heavy = False):
-    try:
-        query_json = {'query': {'match_all': {}}}
-        rs = requests.session()
-
-        must = []
-        keyword_fields = ['problem_title', 'oj_name', 'problem_id']
-
-        minimum_difficulty = 0
-        maximum_difficulty = 100
-
-        if 'minimum_difficulty' in param and param['minimum_difficulty']:
-            minimum_difficulty = int(param['minimum_difficulty'])
-
-        if 'maximum_difficulty' in param and param['maximum_difficulty']:
-            maximum_difficulty = int(param['maximum_difficulty'])
-
-        param.pop('minimum_difficulty', None)
-        param.pop('maximum_difficulty', None)
-
-        for f in param:
-            if f in keyword_fields:
-                if param[f]:
-                    must.append({'term': {f: param[f]}})
-            else:
-                if param[f]:
-                    must.append({'match': {f: param[f]}})
-
-        must.append({"range": {"problem_difficulty": {"gte": minimum_difficulty, "lte": maximum_difficulty}}})
-
-        if len(must) > 0:
-            query_json = {'query': {'bool': {'must': must}}}
-
-        query_json['from'] = from_value
-        query_json['size'] = size_value
-
-        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem, _es_type)
-        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        item_list = []
-
-        if 'hits' in response:
-            for hit in response['hits']['hits']:
-                data = hit['_source']
-                data['id'] = hit['_id']
-                dependency_list = find_problem_dependency_list(data['id'])
-                if heavy:
-                    data['category_dependency_list'] = dependency_list
-                    data['solve_count'] = get_solved_count_for_problem(data['id'])
-                item_list.append(data)
-            return item_list
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return item_list
-    except Exception as e:
-        raise e
-
-
 def search_problems_by_category(param, heavy = False):
     print('search_problems_by_category called')
     user_id = param.get('user_id', None)
@@ -156,8 +100,11 @@ def search_problems_by_category_dt_search(param, start, length, sort_by, sort_or
     try:
         problem_stat = search_problem_list_simplified_dtsearch(param, start, length, sort_by, sort_order)
         item_list = []
+        print('RETURNED')
         for problem_id in problem_stat['problem_list']:
+            print('problem_id: ', problem_id)
             problem_details = get_problem_details(problem_id)
+            print('problem_details: ', problem_details)
             problem_details['solved'] = 'no'
             if user_id:
                 edge = get_user_problem_status(user_id, problem_id)
@@ -168,6 +115,7 @@ def search_problems_by_category_dt_search(param, start, length, sort_by, sort_or
             problem_details['category_dependency_list'] = dependency_list
 
             problem_details['solve_count'] = get_solved_count_for_problem(problem_id)
+            print('problem_details: ', problem_details)
 
             item_list.append(problem_details)
         return {
@@ -317,3 +265,185 @@ def add_user_problem_status(user_id, problem_id, data):
         raise Exception('Internal server error')
     except Exception as e:
         raise Exception('Internal server error')
+
+
+def get_category_details(cat_id):
+    try:
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_category, _es_type, cat_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                return data
+        return None
+    except Exception as e:
+        raise e
+
+
+def find_problem_dependency_list(problem_id):
+    try:
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_problem, _es_type, problem_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        item_list = []
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                categories = data.get('categories', [])
+                for category in categories:
+                    category['category_info'] = get_category_details(category['category_id'])
+                    item_list.append(category)
+        return item_list
+    except Exception as e:
+        raise e
+
+
+def generate_query_params(param):
+    app.logger.info(f'generate_query_params called, param: {json.dumps(param)}')
+    must = []
+    nested_must = []
+    nested_fields = ['category_id', 'category_name', 'category_root']
+    keyword_fields = ['problem_title', 'problem_id', 'problem_difficulty', 'oj_name']
+    text_fields = ['problem_name']
+
+    if 'category_id' in param:
+        nested_must.append({'term': {'categories.category_id': param['category_id']}})
+    if 'category_name' in param:
+        nested_must.append({'term': {'categories.category_name': param['category_name']}})
+    if 'category_root' in param:
+        nested_must.append({'term': {'categories.category_root': param['category_root']}})
+
+    minimum_difficulty = 0
+    maximum_difficulty = 100
+
+    if 'minimum_difficulty' in param and param['minimum_difficulty']:
+        minimum_difficulty = int(param['minimum_difficulty'])
+
+    if 'maximum_difficulty' in param and param['maximum_difficulty']:
+        maximum_difficulty = int(param['maximum_difficulty'])
+
+    if minimum_difficulty > 0 or maximum_difficulty < 100:
+        must.append({"range": {"problem_difficulty": {"gte": minimum_difficulty, "lte": maximum_difficulty}}})
+
+    should = []
+    nested_should = []
+    if 'filter' in param and param['filter']:
+        nested_should.append({'term': {'categories.category_id': param['filter']}})
+        nested_should.append({'term': {'categories.category_name': param['filter']}})
+        nested_should.append({'term': {'categories.category_root': param['filter']}})
+
+        should.append({'term': {'problem_title': param['filter']}})
+        should.append({'match': {'problem_name': param['filter']}})
+        should.append({'term': {'oj_name': param['filter']}})
+
+    if len(should) > 0:
+        must.append({'bool': {'should': should}})
+
+    if len(nested_should) > 0:
+        nested_must.append({'bool': {'should': nested_should}})
+
+    if len(nested_must) > 0:
+        must.append({'nested': {'path': 'categories', 'query': {'bool': {'must': nested_must}}}})
+
+
+    for f in keyword_fields:
+        if f in param:
+            must.append({'term': {f: param[f]}})
+
+    for f in text_fields:
+        if f in param:
+            must.append({'match': {f: param[f]}})
+
+    query_json = {'query': {'match_all': {}}}
+    if len(must) > 0:
+        query_json = {'query': {'bool': {'must': must}}}
+    app.logger.info(f'generated query_json: {json.dumps(query_json)}')
+    return  query_json
+
+
+def search_problem_list_simplified(param, sort_by = 'problem_difficulty', sort_order = 'asc'):
+    app.logger.debug('search_problem_list_simplified called')
+    try:
+        rs = requests.session()
+        query_json = generate_query_params(param)
+        query_json['_source'] = "{}"
+        query_json['size'] = _es_size
+        query_json['sort'] = [{sort_by: {'order': sort_order}}]
+        app.logger.debug(f'query_json: {json.dumps(query_json)}')
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        app.logger.debug(f'response: {json.dumps(response)}')
+        item_list = []
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                item_list.append(hit['_id'])
+        print('item_list: ', item_list)
+        return item_list
+    except Exception as e:
+        raise e
+
+
+def search_problem_list_simplified_dtsearch(param, start, length, sort_by, sort_order):
+    app.logger.info('search_problem_list_simplified_dtsearch called')
+    try:
+        rs = requests.session()
+        query_json = generate_query_params(param)
+        query_json['_source'] = "{}"
+        query_json['from'] = start
+        query_json['size'] = length
+        query_json['sort'] = [{sort_by: {'order': sort_order}}]
+        app.logger.debug(f'query_json: {json.dumps(query_json)}')
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        app.logger.debug(f'response: {json.dumps(response)}')
+        item_list = []
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                item_list.append(hit['_id'])
+        return {
+            'problem_list': item_list,
+            'total': response['hits']['total']['value']
+        }
+    except Exception as e:
+        raise e
+
+
+def search_problems(param, from_value, size_value, heavy = False):
+    try:
+        rs = requests.session()
+        query_json = generate_query_params(param)
+        query_json['from'] = from_value
+        query_json['size'] = size_value
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        item_list = []
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                data = hit['_source']
+                data['id'] = hit['_id']
+                dependency_list = find_problem_dependency_list(data['id'])
+                if heavy:
+                    data['category_dependency_list'] = dependency_list
+                    data['solve_count'] = get_solved_count_for_problem(data['id'])
+                item_list.append(data)
+            return item_list
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        return item_list
+    except Exception as e:
+        raise e
+
+
+def get_problem_count_for_category(param):
+    try:
+        rs = requests.session()
+        query_json = generate_query_params(param)
+        query_json['size'] = 0
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        if 'hits' in response:
+            return response['hits']['total']['value']
+        return 0
+    except Exception as e:
+        raise e
+

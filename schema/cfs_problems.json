@@ -2,7 +2,13 @@
   "dynamic": "strict",
   "properties": {
     "problem_name": {
-      "type": "text"
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
     },
     "problem_title": {
       "type": "keyword"
@@ -21,6 +27,23 @@
     },
     "oj_name": {
       "type": "keyword"
+    },
+    "categories": {
+      "type": "nested",
+      "properties": {
+        "category_id": {
+          "type": "keyword"
+        },
+        "category_name": {
+          "type": "keyword"
+        },
+        "category_root": {
+          "type": "keyword"
+        },
+        "dependency_factor": {
+          "type": "float"
+        }
+      }
     },
     "source_link": {
       "type": "text"

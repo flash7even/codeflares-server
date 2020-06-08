@@ -5,7 +5,7 @@ from flask import current_app as app
 
 _http_headers = {'Content-Type': 'application/json'}
 
-from core.problem_category_services import get_problem_count_for_category
+from core.problem_services import get_problem_count_for_category
 from core.user_category_edge_services import get_user_category_data
 from core.comment_services import get_comment_list, get_comment_count
 from core.resource_services import search_resource

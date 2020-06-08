@@ -13,7 +13,6 @@ from commons.jwt_helpers import access_required
 api = Namespace('problem', description='Namespace for problem service')
 
 from core.problem_services import search_problems, search_problems_by_category, get_problem_details, search_problems_by_category_dt_search
-from core.problem_category_services import add_problem_category_dependency
 from core.category_services import get_category_id_from_name, get_category_details
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -153,40 +152,32 @@ class CreateProblem(Resource):
             app.logger.info('Create problem api called')
             rs = requests.session()
             data = request.get_json()
-
-            data['created_at'] = int(time.time())
-            data['updated_at'] = int(time.time())
-
-            category_dependency_list = []
+            categories = []
             if 'category_dependency_list' in data:
                 category_dependency_list = data['category_dependency_list']
                 data.pop('category_dependency_list', None)
-
-            post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
-            response = rs.post(url=post_url, json=data, headers=_http_headers).json()
-            app.logger.info('Problem Created Successfully')
-            app.logger.info('Now Create Dependency Edges')
-
-            if 'result' in response and response['result'] == 'created':
                 for cat in category_dependency_list:
-                    app.logger.debug('Att dependency for: ' + json.dumps(cat))
                     category_id = cat.get('category_id', None)
                     if category_id is None:
                         category_id = get_category_id_from_name(cat['category_name'])
-
                     category_details = get_category_details(category_id)
-                    app.logger.debug('category_details: ' + json.dumps(category_details))
                     edge = {
-                        'problem_id': response['_id'],
-                        'problem_name': data['problem_name'],
                         'category_id': category_id,
                         'dependency_factor': cat['factor'],
                         'category_root': category_details['category_root'],
                         'category_name': category_details['category_name'],
-                        'problem_difficulty': data['problem_difficulty'],
                     }
-                    app.logger.debug('call add_problem_category_dependency')
-                    add_problem_category_dependency(edge)
+                    categories.append(edge)
+
+            data['categories'] = categories
+            data['created_at'] = int(time.time())
+            data['updated_at'] = int(time.time())
+
+            post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
+            response = rs.post(url=post_url, json=data, headers=_http_headers).json()
+            app.logger.info('Problem Created Successfully')
+
+            if 'result' in response and response['result'] == 'created':
                 app.logger.info('Create problem api completed')
                 return response['_id'], 201
             app.logger.error('Elasticsearch down, response: ' + str(response))
