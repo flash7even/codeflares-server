@@ -12,7 +12,7 @@ from core.category_services import search_categories, find_category_dependency_l
 
 from core.problem_services import get_problem_details, get_solved_problem_count_for_user, \
     find_problems_for_user_by_status_filtered, available_problems_for_user, add_user_problem_status, \
-    find_problem_dependency_list
+    find_problem_dependency_list, search_problems
 from core.user_category_edge_services import add_user_category_data, get_user_category_data
 from core.team_services import get_team_details, update_team_details
 from core.user_services import get_user_details_by_handle_name, update_user_details
@@ -20,7 +20,6 @@ from core.user_services import get_user_details_by_handle_name, update_user_deta
 _http_headers = {'Content-Type': 'application/json'}
 
 
-_es_index_problem_category = 'cfs_problem_category_edges'
 _es_index_problem_user = 'cfs_user_problem_edges'
 _es_index_user_category = 'cfs_user_category_edges'
 _es_index_problem = 'cfs_problems'
@@ -129,25 +128,20 @@ def category_wise_problem_solve_for_users(user_list):
         cnt_dict = {}
         category_list = search_categories({}, 0, _es_size)
         for category in category_list:
-            rs = requests.session()
-            query = {"from": 0, "size": 200, "query": { "bool": { "must": [ { "term": { "category_id": category["category_id"]}}]}}}
-            url = 'http://{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_category)
-            response = rs.post(url=url, json=query, headers=_http_headers).json()
-            if 'hits' in response:
-                for hit in response['hits']['hits']:
-                    edge = hit['_source']
-                    problem_id = edge['problem_id']
-                    problem_details = get_problem_details(problem_id)
-                    problem_diff = int(float(problem_details['problem_difficulty']))
-                    cat_id = edge['category_id']
-                    if cat_id not in cnt_dict:
-                        cnt_dict[cat_id] = {
-                            'total_count': 0,
-                            'difficulty_wise_count': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                        }
-                    if problem_id in solved_problems:
-                        cnt_dict[cat_id]['difficulty_wise_count'][problem_diff] += 1
-                        cnt_dict[cat_id]['total_count'] += 1
+            category_id = category['category_id']
+            param = {"category_id": category_id}
+            problem_list = search_problems(param, 0, _es_size)
+            for problem in problem_list:
+                problem_id = problem['id']
+                problem_diff = int(float(problem['problem_difficulty']))
+                if category_id not in cnt_dict:
+                    cnt_dict[category_id] = {
+                        'total_count': 0,
+                        'difficulty_wise_count': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    }
+                if problem_id in solved_problems:
+                    cnt_dict[category_id]['difficulty_wise_count'][problem_diff] += 1
+                    cnt_dict[category_id]['total_count'] += 1
         for cat in category_list:
             cat_id = cat['category_id']
             cat['solved_stat'] = cnt_dict.get(cat_id, {'total_count': 0, 'difficulty_wise_count': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]})
@@ -224,6 +218,7 @@ def sync_root_category_score_for_user(user_id):
 
 
 def generate_sync_data_for_category(user_id, category):
+    app.logger.info(f'generate_sync_data_for_category for user_id: {user_id}, category: {category}')
     category_skill_generator = CategorySkillGenerator()
     factor = float(category.get('factor', 1))
     skill_stat = category_skill_generator.generate_skill(category['solved_stat']['difficulty_wise_count'], factor)
@@ -259,6 +254,7 @@ def generate_sync_data_for_category(user_id, category):
 def sync_category_score_for_user(user_id):
     app.logger.debug(f'sync_category_score_for_user called for user_id: {user_id}')
     category_list = category_wise_problem_solve_for_users([user_id])
+    app.logger.debug(f'category wise solve problem stat: {json.dumps(category_list)}')
 
     for category in category_list:
         if category['category_root'] == 'root':

@@ -55,19 +55,15 @@ considering your problem solving record.
 ###### How it works?
 
 1. Considering your problem solving record, we generate your skill for each of the second level algorithms.
-
 2. For any algorithm **X**, the skill of that algorithm depends on the problems that have some connections with the algorithm **X**.
 Every solved problem of an user contribute to the skill of the algorithms which are connected to that algorithm.
-
 3. As explained in the **Problem Database** section, for any solved problem **P**, how much it'll contribute to the skill of a algorithm
 it depends on the following two factors: **problem-difficulty** and _**problem-category-connection-matrix**_.
 Using this factors for each solved problems, we generate a [**skill value**](/training/individual/#overallAlgorithmSkill) for all the second level algorithms.
-
 4. Now we generate the [**skill value**](/training/individual/#topicWiseSkill) for the **root level categories** using the skill value of the algorithms that fall under that particular
 root category. We have a _**algorithm-percentage-matrix**_ which stores the information of how much an algorithm contribute to the overall
 skill value of a root category.
-
-4. Finally we generate the **overall current skill** of an user using our _**root-algorithm-percentage-matrix**_.
+5. Finally we generate the **overall current skill** of an user using our _**root-algorithm-percentage-matrix**_.
 Each entry of this matrix denotes how much a root category contribute to the **overall total skill** of a contestant.
 
 
@@ -106,7 +102,6 @@ team practice or even for the classroom training purposes.
 1. You can generate a completely automated training contest for your practice. Make a request from our
 *Training Contest -> Create Training Contest* page providing the required information. We create a automated contest for
 you using our **randomized algorithm model** following ACM ICPC problem structure.
-
 2. You can also request for a customized contest adding some custom filters. For example, let's say you want a problem set where at least
 **M** problems must be from ***Data Structure*** with difficulty range **(u - v)** and **N** problems from ***Graph*** with
 difficulty range **(p - q)**. Add these options in the customized filter section in [**Create Training Contest**](/contest/add/) page. After you send your
