@@ -1,22 +1,22 @@
 
 class Skill:
 
-    max_skill = 2000
+    max_skill = 1000000
 
     skill_levels = [0, 10, 20, 45, 85, 130, 175, 220, 300, 450, 750, max_skill]
 
     skill_title = [
-        'Zero',
-        'Newbie',
-        'Pupil',
-        'Specialist',
-        'Expert',
-        'Candidate Master',
-        'Master',
-        'International Master',
-        'Grandmaster',
-        'International Grandmaster',
-        'Legendary Grandmaster	'
+        'Level 00',
+        'Level 01',
+        'Level 02',
+        'Level 03',
+        'Level 04',
+        'Level 05',
+        'Level 06',
+        'Level 07',
+        'Level 08',
+        'Level 09',
+        'Level 10'
     ]
 
     score_per_level_dx = [
