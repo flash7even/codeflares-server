@@ -1,6 +1,6 @@
 import os
 
-appname = 'health-attendance'
+appname = 'codeflares'
 basedir = os.path.abspath(os.path.dirname(__file__))
 version = '0.0.1-alpha'
 
