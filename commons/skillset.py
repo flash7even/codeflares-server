@@ -3,7 +3,7 @@ class Skill:
 
     max_skill = 1000000
 
-    skill_levels = [0, 10, 20, 45, 85, 130, 175, 220, 300, 450, 750, max_skill]
+    skill_levels = [0, 8, 20, 35, 70, 120, 200, 320, 470, 670, 920, max_skill]
 
     skill_title = [
         'Level 00',
