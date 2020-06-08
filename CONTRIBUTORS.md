@@ -1,16 +1,16 @@
 Authors
 -------
 
-1. [Zobayer Hasan](mailto:zobayer@tigeritbd.com)
+1. [Tarango Khan](tarangokhan77@gmail.com)
 
 
 Testers
 -------
 
-1. [Zobayer Hasan](mailto:zobayer@tigeritbd.com)
+1. [Tarango Khan](tarangokhan77@gmail.com)
 
 
 Maintainers
 -----------
 
-1. [Zobayer Hasan](mailto:zobayer@tigeritbd.com)
+1. [Tarango Khan](tarangokhan77@gmail.com)

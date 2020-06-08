@@ -64,9 +64,7 @@ def create_app(instance_name):
     app.config['PROPAGATE_EXCEPTIONS'] = True
     print('ENVIRONMENT NAME: ', instance_name)
     app.config.from_object(instances[instance_name])
-    app.config.from_pyfile(f'{Config.BASEDIR}/jwt-{instance_name}.cfg', silent=True)
-    app.config.from_pyfile(f'{Config.BASEDIR}/elastic-{instance_name}.cfg', silent=True)
-    app.config.from_pyfile(f'{Config.BASEDIR}/redis-{instance_name}.cfg', silent=True)
+    app.config.from_pyfile(f'{Config.BASEDIR}/config-{instance_name}.cfg', silent=True)
     redis_store.init_app(app)
     CORS(app)
 
