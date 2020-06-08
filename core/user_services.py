@@ -11,7 +11,7 @@ _http_headers = {'Content-Type': 'application/json'}
 
 _es_index_user = 'cfs_users'
 _es_type = '_doc'
-_es_size = 500
+_es_size = 2000
 
 public_fields = ['username', 'first_name', 'last_name', 'full_name', 'skill_value', 'skill_title', 'solve_count']
 

@@ -15,7 +15,7 @@ _es_index_category = 'cfs_categories'
 _es_index_category_dependency = 'cfs_category_dependencies'
 _es_index_category_problem = 'cfs_problem_category_edges'
 _es_type = '_doc'
-_es_size = 500
+_es_size = 2000
 _bulk_size = 25
 
 

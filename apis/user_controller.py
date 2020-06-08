@@ -19,7 +19,7 @@ _http_headers = {'Content-Type': 'application/json'}
 
 _es_index = 'cfs_users'
 _es_type = '_doc'
-_es_size = 100
+_es_size = 2000
 
 @api.errorhandler(NoAuthorizationError)
 def handle_auth_error(e):

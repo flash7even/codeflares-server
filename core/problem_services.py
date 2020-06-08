@@ -14,8 +14,8 @@ _es_index_problem_user = 'cfs_user_problem_edges'
 _es_index_problem = 'cfs_problems'
 _es_index_category = 'cfs_categories'
 _es_type = '_doc'
-_es_size = 15
-_es_max_solved_problem = 15
+_es_size = 2000
+_es_max_solved_problem = 2000
 
 SOLVED = 'SOLVED'
 UNSOLVED = 'UNSOLVED'
