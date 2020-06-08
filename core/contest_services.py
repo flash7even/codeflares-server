@@ -4,10 +4,10 @@ import requests
 from flask import current_app as app
 import random
 
-from core.problem_services import get_problem_details, search_problems, find_problems_by_status_filtered_for_user_list
+from core.problem_services import get_problem_details, search_problems, find_problems_by_status_filtered_for_user_list, get_user_problem_status
 from core.team_services import get_team_details
 from models.contest_model import ContestModel
-from core.user_services import get_user_details
+from core.user_services import get_user_details, get_user_details_public
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -17,6 +17,44 @@ _es_index_contest_problem_edges = 'cfs_contest_problem_edges'
 
 _es_type = '_doc'
 _es_size = 100
+
+
+def get_problem_order(x):
+    div = int(x/26)
+    mod = x%26
+    pos = mod
+    if mod == 0:
+        pos = 26
+    else:
+        div += 1
+
+    d1 = 'A'
+    d1 = chr(ord(d1) + pos - 1)
+    d2 = div
+    return str(d1) + str(d2)
+
+
+def get_contest_details(contest_id):
+    try:
+        app.logger.info('Get contest_details api called')
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_contest, _es_type, contest_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                data['id'] = response['_id']
+                setter_data = get_user_details(data['setter_id'])
+                data['setter_handle'] = setter_data['username']
+                data['problem_set'] = find_problem_set_for_contest(contest_id)
+                app.logger.info('Get contest_details api completed')
+                return data
+            app.logger.warning('Contest not found')
+            raise Exception('Contest not found')
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        raise Exception('Elasticsearch Down')
+    except Exception as e:
+        raise e
 
 
 def create_contest(data):
@@ -33,11 +71,12 @@ def create_contest(data):
         raise e
 
 
-def add_problem_for_contest(problem_id, contest_id):
+def add_problem_for_contest(problem_id, contest_id, pos):
     try:
         rs = requests.session()
         data = {
             'problem_id': problem_id,
+            'problem_order': get_problem_order(pos),
             'contest_id': contest_id,
             'created_at': int(time.time()),
             'updated_at': int(time.time())
@@ -63,6 +102,7 @@ def find_problem_set_for_contest(contest_id):
             for hit in response['hits']['hits']:
                 data = hit['_source']
                 problem_details = get_problem_details(data['problem_id'])
+                problem_details['problem_order'] = data['problem_order']
                 item_list.append(problem_details)
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return item_list
@@ -101,8 +141,10 @@ def create_problem_set(data, contest_id):
         print('category_configs_by_level done: ', category_configs_by_level)
         contest_mdoel = ContestModel()
         problem_set = contest_mdoel.create_problem_set_for_contest(param_list, category_configs_by_level, data['problem_count'], solved_problem_list)
+        pos = 1
         for problem in problem_set:
-            add_problem_for_contest(problem, contest_id)
+            add_problem_for_contest(problem, contest_id, pos)
+            pos += 1
         return problem_set
     except Exception as e:
         raise e
@@ -141,9 +183,10 @@ def reupload_problem_set_for_contest(contest_id, problem_list):
             problem_id_list.append(problem_id)
 
         delete_problem_set_for_contest(contest_id)
-
+        pos = 1
         for problem in problem_id_list:
-            add_problem_for_contest(problem, contest_id)
+            add_problem_for_contest(problem, contest_id, pos)
+            pos += 1
     except Exception as e:
         raise e
 
@@ -205,3 +248,32 @@ def search_contests(param, from_value, size_value):
         return item_list
     except Exception as e:
         raise e
+
+
+def contest_standings(contest_id):
+    problem_list = find_problem_set_for_contest(contest_id)
+    contest_details = get_contest_details(contest_id)
+    team_details = get_team_details(contest_details['contest_ref_id'])
+    user_list = team_details['member_list']
+    standings = {
+        'problem_list': problem_list,
+        'user_list': user_list,
+        'user_stat': []
+    }
+
+    for user in user_list:
+        user_details = get_user_details_public(user['user_id'])
+        user_stat = []
+        for problem in problem_list:
+            edge = get_user_problem_status(user['user_id'], problem['id'])
+            if edge is None:
+                user_stat.append({'status': 'UNSOLVED'})
+            else:
+                user_stat.append({'status': edge['status']})
+        data = {
+            'problem_stat': user_stat,
+            'user_id': user['user_id'],
+            'user_handle': user_details['username']
+        }
+        standings['user_stat'].append(data)
+    return standings

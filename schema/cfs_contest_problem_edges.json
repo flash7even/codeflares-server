@@ -1,6 +1,9 @@
 {
   "dynamic": "strict",
   "properties": {
+    "problem_order": {
+      "type": "keyword"
+    },
     "problem_id": {
       "type": "keyword"
     },

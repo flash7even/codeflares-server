@@ -12,7 +12,8 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('contest', description='Namespace for contest service')
 
-from core.contest_services import create_contest, create_problem_set, search_contests, find_problem_set_for_contest, reupload_problem_set_for_contest
+from core.contest_services import create_contest, create_problem_set, search_contests, find_problem_set_for_contest, \
+    reupload_problem_set_for_contest, get_contest_details, contest_standings
 from core.user_services import get_user_details
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -87,23 +88,8 @@ class ContestByID(Resource):
     def get(self, contest_id):
         try:
             app.logger.info('Get contest_details api called')
-            rs = requests.session()
-            search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, contest_id)
-            response = rs.get(url=search_url, headers=_http_headers).json()
-            print(response)
-            if 'found' in response:
-                if response['found']:
-                    data = response['_source']
-                    data['id'] = response['_id']
-                    setter_data = get_user_details(data['setter_id'])
-                    data['setter_handle'] = setter_data['username']
-                    data['problem_set'] = find_problem_set_for_contest(contest_id)
-                    app.logger.info('Get contest_details api completed')
-                    return data, 200
-                app.logger.warning('Contest not found')
-                return {'found': response['found']}, 404
-            app.logger.error('Elasticsearch down, response: ' + str(response))
-            return response, 500
+            contest_details = get_contest_details(contest_id)
+            return contest_details, 200
         except Exception as e:
             return {'message': str(e)}, 500
 
@@ -200,6 +186,21 @@ class SearchContest(Resource):
             print(result)
             return {
                 "contest_list": result
+            }
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/standings/<string:contest_id>')
+class Standings(Resource):
+
+    @api.doc('Get Contest Standings')
+    def get(self, contest_id):
+        try:
+            app.logger.info(f'Contest standings api called: {str(contest_id)}')
+            standings = contest_standings(contest_id)
+            return {
+                "standings": standings
             }
         except Exception as e:
             return {'message': str(e)}, 500
