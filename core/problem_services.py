@@ -301,68 +301,64 @@ def find_problem_dependency_list(problem_id):
 
 def generate_query_params(param):
     app.logger.info(f'generate_query_params called, param: {json.dumps(param)}')
-    must = []
-    nested_must = []
-    nested_fields = ['category_id', 'category_name', 'category_root']
-    keyword_fields = ['problem_title', 'problem_id', 'problem_difficulty', 'oj_name']
-    text_fields = ['problem_name']
-
-    if 'category_id' in param:
-        nested_must.append({'term': {'categories.category_id': param['category_id']}})
-    if 'category_name' in param:
-        nested_must.append({'term': {'categories.category_name': param['category_name']}})
-    if 'category_root' in param:
-        nested_must.append({'term': {'categories.category_root': param['category_root']}})
-
-    minimum_difficulty = 0
-    maximum_difficulty = 100
-
-    if 'minimum_difficulty' in param and param['minimum_difficulty']:
-        minimum_difficulty = int(param['minimum_difficulty'])
-
-    if 'maximum_difficulty' in param and param['maximum_difficulty']:
-        maximum_difficulty = int(param['maximum_difficulty'])
-
-    if minimum_difficulty > 0 or maximum_difficulty < 100:
-        must.append({"range": {"problem_difficulty": {"gte": minimum_difficulty, "lte": maximum_difficulty}}})
-
-    should = []
-    nested_should = []
     if 'filter' in param and param['filter']:
+        should = []
+        nested_should = []
         nested_should.append({'term': {'categories.category_id': param['filter']}})
         nested_should.append({'term': {'categories.category_name': param['filter']}})
         nested_should.append({'term': {'categories.category_root': param['filter']}})
-
         should.append({'term': {'problem_title': param['filter']}})
         should.append({'match': {'problem_name': param['filter']}})
         should.append({'term': {'oj_name': param['filter']}})
+        should.append({'nested': {'path': 'categories', 'query': {'bool': {'should': nested_should}}}})
+        query_json = {'query': {'bool': {'should': should}}}
+        app.logger.info(f'generated query_json: {json.dumps(query_json)}')
+        return query_json
+    else:
+        must = []
+        nested_must = []
+        nested_fields = ['category_id', 'category_name', 'category_root']
+        keyword_fields = ['problem_title', 'problem_id', 'problem_difficulty', 'oj_name']
+        text_fields = ['problem_name']
 
-    if len(should) > 0:
-        must.append({'bool': {'should': should}})
+        if 'category_id' in param:
+            nested_must.append({'term': {'categories.category_id': param['category_id']}})
+        if 'category_name' in param:
+            nested_must.append({'term': {'categories.category_name': param['category_name']}})
+        if 'category_root' in param:
+            nested_must.append({'term': {'categories.category_root': param['category_root']}})
 
-    if len(nested_should) > 0:
-        nested_must.append({'bool': {'should': nested_should}})
+        minimum_difficulty = 0
+        maximum_difficulty = 100
 
-    if len(nested_must) > 0:
-        must.append({'nested': {'path': 'categories', 'query': {'bool': {'must': nested_must}}}})
+        if 'minimum_difficulty' in param and param['minimum_difficulty']:
+            minimum_difficulty = int(param['minimum_difficulty'])
+
+        if 'maximum_difficulty' in param and param['maximum_difficulty']:
+            maximum_difficulty = int(param['maximum_difficulty'])
+
+        if minimum_difficulty > 0 or maximum_difficulty < 100:
+            must.append({"range": {"problem_difficulty": {"gte": minimum_difficulty, "lte": maximum_difficulty}}})
+
+        if len(nested_must) > 0:
+            must.append({'nested': {'path': 'categories', 'query': {'bool': {'must': nested_must}}}})
+
+        for f in keyword_fields:
+            if f in param:
+                must.append({'term': {f: param[f]}})
+
+        for f in text_fields:
+            if f in param:
+                must.append({'match': {f: param[f]}})
+
+        query_json = {'query': {'match_all': {}}}
+        if len(must) > 0:
+            query_json = {'query': {'bool': {'must': must}}}
+        app.logger.info(f'generated query_json: {json.dumps(query_json)}')
+        return query_json
 
 
-    for f in keyword_fields:
-        if f in param:
-            must.append({'term': {f: param[f]}})
-
-    for f in text_fields:
-        if f in param:
-            must.append({'match': {f: param[f]}})
-
-    query_json = {'query': {'match_all': {}}}
-    if len(must) > 0:
-        query_json = {'query': {'bool': {'must': must}}}
-    app.logger.info(f'generated query_json: {json.dumps(query_json)}')
-    return  query_json
-
-
-def search_problem_list_simplified(param, sort_by = 'problem_difficulty', sort_order = 'asc'):
+def search_problem_list_simplified(param, sort_by='problem_difficulty', sort_order='asc'):
     app.logger.debug('search_problem_list_simplified called')
     try:
         rs = requests.session()
@@ -446,4 +442,3 @@ def get_problem_count_for_category(param):
         return 0
     except Exception as e:
         raise e
-
