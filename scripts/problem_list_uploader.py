@@ -51,6 +51,7 @@ def problem_list_extract(data, filename):
     data = data.replace({np.nan: None})
     for i in range(0, len(data)):
         problem_name = data['problem_name'][i]
+        problem_type = data['problem_type'][i]
         problem_id = data['problem_id'][i]
         problem_difficulty = data['problem_difficulty'][i]
         oj_name = data['oj_name'][i]
@@ -79,6 +80,7 @@ def problem_list_extract(data, filename):
                 logger.error('Category dependency not found for: ' + str(problem_name) + " oj_name: " + str(oj_name) + ' filename: ' + str(filename))
         json_data = {
             "problem_name": str(problem_name),
+            "problem_type": str(problem_type),
             "problem_difficulty": float(str(problem_difficulty)),
             "problem_significance": float(str(problem_significance)),
             "source_link": str(source_link),

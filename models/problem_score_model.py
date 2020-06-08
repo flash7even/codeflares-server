@@ -31,7 +31,7 @@ class ProblemScoreGenerator:
 
         level_idx = 0
         for idx, level in enumerate(level_dx):
-            if  problem_diff >= level[0] and problem_diff <= level[1]:
+            if problem_diff >= level[0] and problem_diff <= level[1]:
                 level_idx = idx
                 break
 

@@ -28,6 +28,9 @@
     "oj_name": {
       "type": "keyword"
     },
+    "problem_type": {
+      "type": "keyword"
+    },
     "categories": {
       "type": "nested",
       "properties": {
