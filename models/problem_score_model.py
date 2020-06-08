@@ -53,10 +53,11 @@ class ProblemScoreGenerator:
             score = max(score, 0)
             return score
 
-    def generate_score(self, problem_diff, category_level_list):
+    def generate_score(self, problem_diff, category_level_list, user_skill_level):
         category_len = len(category_level_list)
         if category_len == 0:
-            return {'score': 0}
+            score = (10.0 - user_skill_level)*100.0/10.0
+            return {'score': score}
         score_sum = 0
         for category_level in category_level_list:
             cur_score = self.calculate(problem_diff, category_level)

@@ -13,6 +13,7 @@ from core.training_model_services import sync_category_score_for_team, sync_prob
 from core.notification_services import add_notification
 from core.team_services import get_team_details
 from core.user_services import get_user_details_by_handle_name
+from commons.skillset import Skill
 
 
 def user_problem_data_sync(user_id):
@@ -38,15 +39,17 @@ def user_training_model_sync(user_id):
     # THE CATEGORY DEPENDENCY LIST MUST FORM A DAG. NEED TO WRITE SCRIPT TO VERIFY.
 
     app.logger.info('sync_category_score_for_user done')
-    sync_problem_score_for_user(user_id)
 
-    app.logger.info('sync_problem_score_for_user done')
     skill_value = sync_root_category_score_for_user(user_id)
-
     app.logger.info('sync_root_category_score_for_user done')
-    sync_overall_stat_for_user(user_id, skill_value)
 
     app.logger.info('sync_overall_stat_for_user done')
+    sync_overall_stat_for_user(user_id, skill_value)
+
+    skill = Skill()
+    user_skill_level = skill.get_skill_level_from_skill(skill_value)
+    sync_problem_score_for_user(user_id, user_skill_level)
+    app.logger.info('sync_problem_score_for_user done')
 
     notification_data = {
         'user_id': user_id,
@@ -61,13 +64,16 @@ def user_training_model_sync(user_id):
 
 def team_training_model_sync(team_id):
     app.logger.info(f'team_training_model_sync service called for team: {team_id}')
+    app.logger.debug('sync sync_category_score_for_team')
     sync_category_score_for_team(team_id)
-    app.logger.debug('sync sync_problem_score_for_team')
-    sync_problem_score_for_team(team_id)
     app.logger.debug('sync sync_root_category_score_for_team')
     skill_value = sync_root_category_score_for_team(team_id)
     app.logger.debug('sync sync_overall_stat_for_team')
     sync_overall_stat_for_team(team_id, skill_value)
+    skill = Skill()
+    user_skill_level = skill.get_skill_level_from_skill(skill_value)
+    app.logger.debug('sync sync_problem_score_for_team')
+    sync_problem_score_for_team(team_id, user_skill_level)
 
     team_details = get_team_details(team_id)
     member_list = team_details.get('member_list', [])

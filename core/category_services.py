@@ -86,6 +86,7 @@ def add_category_category_dependency(data):
 
 
 def find_category_dependency_list(category_id_1):
+    app.logger.info('find_category_dependency_list for: ' + str(category_id_1))
     try:
         rs = requests.session()
         must = [
@@ -107,6 +108,22 @@ def find_category_dependency_list(category_id_1):
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return item_list
+    except Exception as e:
+        raise e
+
+
+def find_category_dependency_list_for_multiple_categories(category_list):
+    try:
+        dependent_categories = []
+        for category in category_list:
+            dep_list = find_category_dependency_list(category)
+            for category_data in dep_list:
+                app.logger.debug('category_data: ' + str(category_data))
+                category_id = category_data['category_id']
+                if category_id not in dependent_categories:
+                    dependent_categories.append(category_id)
+        app.logger.debug(f'dependent_categories: {json.dumps(dependent_categories)}')
+        return dependent_categories
     except Exception as e:
         raise e
 

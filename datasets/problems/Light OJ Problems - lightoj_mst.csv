@@ -1,7 +1,7 @@
-problem_name,problem_id,problem_difficulty,problem_significance,oj_name,source_link,solved_count,category_id_1,category_id_2,category_id_3
-Country Roads,1002,4.15,5.85,lightoj,http://lightoj.com/volume_showproblem.php?problem=1002,2182,"minimum_spanning_tree,9",,
-Civil and Evil Engineer,1029,4.42,5.58,lightoj,http://lightoj.com/volume_showproblem.php?problem=1029,1389,"minimum_spanning_tree,9",,
-Road Construction,1041,4.68,5.32,lightoj,http://lightoj.com/volume_showproblem.php?problem=1041,1267,"minimum_spanning_tree,9",,
-Donation,1040,4.95,5.05,lightoj,http://lightoj.com/volume_showproblem.php?problem=1040,1083,"minimum_spanning_tree,9",,
-Air Ports,1059,5.22,4.78,lightoj,http://lightoj.com/volume_showproblem.php?problem=1059,912,"minimum_spanning_tree,9",,
-Trail Maintenance,1123,5.48,4.52,lightoj,http://lightoj.com/volume_showproblem.php?problem=1123,656,"minimum_spanning_tree,9",,
+problem_name,problem_type,problem_id,problem_difficulty,problem_significance,oj_name,source_link,solved_count,category_id_1,category_id_2,category_id_3
+Country Roads,classical,1002,4.15,5.85,lightoj,http://lightoj.com/volume_showproblem.php?problem=1002,2182,"minimum_spanning_tree,9",,
+Civil and Evil Engineer,,1029,4.42,5.58,lightoj,http://lightoj.com/volume_showproblem.php?problem=1029,1389,"minimum_spanning_tree,9",,
+Road Construction,,1041,4.68,5.32,lightoj,http://lightoj.com/volume_showproblem.php?problem=1041,1267,"minimum_spanning_tree,9",,
+Donation,,1040,4.95,5.05,lightoj,http://lightoj.com/volume_showproblem.php?problem=1040,1083,"minimum_spanning_tree,9",,
+Air Ports,,1059,5.22,4.78,lightoj,http://lightoj.com/volume_showproblem.php?problem=1059,912,"minimum_spanning_tree,9",,
+Trail Maintenance,,1123,5.48,4.52,lightoj,http://lightoj.com/volume_showproblem.php?problem=1123,656,"minimum_spanning_tree,9",,
