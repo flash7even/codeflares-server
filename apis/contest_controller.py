@@ -204,3 +204,18 @@ class Standings(Resource):
             }
         except Exception as e:
             return {'message': str(e)}, 500
+
+
+@api.route('/standings/<string:contest_id>/<string:user_id>')
+class StandingsUser(Resource):
+
+    @api.doc('Get Contest Standings')
+    def get(self, contest_id, user_id):
+        try:
+            app.logger.info(f'Contest standings api called: {str(contest_id)} , {str(user_id)}')
+            standings = contest_standings(contest_id, user_id)
+            return {
+                "standings": standings
+            }
+        except Exception as e:
+            return {'message': str(e)}, 500

@@ -55,3 +55,21 @@ def get_follow_stat(user_id):
         return data
     except Exception as e:
         raise e
+
+
+def get_following_list(user_id):
+    try:
+        rs = requests.session()
+        must = [{'term': {'followed_by': user_id}}]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = _es_size
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_followers, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        item_list = []
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                data = hit['_source']
+                item_list.append(data['user_id'])
+        return item_list
+    except Exception as e:
+        raise e

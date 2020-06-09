@@ -4,6 +4,7 @@ class Skill:
     max_skill = 1000000
 
     skill_levels = [0, 8, 20, 35, 70, 120, 200, 320, 470, 670, 920, max_skill]
+    score_table = [0, 1, 2.82, 5.19, 8, 11.18, 14.69, 18.52, 22.62, 27, 31.62]
 
     skill_title = [
         'Level 00',

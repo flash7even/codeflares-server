@@ -5,7 +5,6 @@ from commons.skillset import Skill
 
 
 MAX_PROBLEM_SOLVED = 100
-score_table = [0, 1, 2.82, 5.19, 8, 11.18, 14.69, 18.52, 22.62, 27, 31.62]
 
 
 class CategorySkillGenerator:
@@ -32,7 +31,7 @@ class CategorySkillGenerator:
             factor[a] = (x/a)**(self.n)
 
         for dif in range(1, 11):
-            score = score_table[dif]
+            score = Skill.score_table[dif]
             solve_count = solved_table[dif]
             factor_dx = 1
             counted = 0

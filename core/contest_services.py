@@ -8,6 +8,8 @@ from core.problem_services import get_problem_details, search_problems, find_pro
 from core.team_services import get_team_details
 from models.contest_model import ContestModel
 from core.user_services import get_user_details, get_user_details_public
+from core.follower_services import get_following_list
+from commons.skillset import Skill
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -250,30 +252,53 @@ def search_contests(param, from_value, size_value):
         raise e
 
 
-def contest_standings(contest_id):
+def generate_contest_standings(contest_id, user_list):
     problem_list = find_problem_set_for_contest(contest_id)
-    contest_details = get_contest_details(contest_id)
-    team_details = get_team_details(contest_details['contest_ref_id'])
-    user_list = team_details['member_list']
-    standings = {
-        'problem_list': problem_list,
-        'user_list': user_list,
-        'user_stat': []
-    }
-
-    for user in user_list:
-        user_details = get_user_details_public(user['user_id'])
+    user_stat_list = []
+    for user_id in user_list:
+        user_details = get_user_details_public(user_id)
         user_stat = []
+        score = 0
         for problem in problem_list:
-            edge = get_user_problem_status(user['user_id'], problem['id'])
+            problem_diff = int(float(problem['problem_difficulty']))
+            edge = get_user_problem_status(user_id, problem['id'])
             if edge is None:
                 user_stat.append({'status': 'UNSOLVED'})
             else:
                 user_stat.append({'status': edge['status']})
+                if edge['status'] == 'SOLVED':
+                    score += Skill.score_table[problem_diff]
         data = {
             'problem_stat': user_stat,
-            'user_id': user['user_id'],
-            'user_handle': user_details['username']
+            'user_id': user_id,
+            'user_handle': user_details['username'],
+            'score': str(round(score, 2))
         }
-        standings['user_stat'].append(data)
+        user_stat_list.append(data)
+
+    user_stat_list.sort(key=lambda x: x.get('score'), reverse=True)
+
+    standings = {
+        'problem_list': problem_list,
+        'user_list': user_list,
+        'user_stat': user_stat_list
+    }
+    return standings
+
+
+def contest_standings(contest_id, user_id=None):
+    contest_details = get_contest_details(contest_id)
+
+    user_list = []
+    if user_id:
+        user_list = get_following_list(user_id)
+
+    team_details = get_team_details(contest_details['contest_ref_id'])
+    team_members = team_details['member_list']
+
+    for member in team_members:
+        if member['user_id'] not in user_list:
+            user_list.append(member['user_id'])
+
+    standings = generate_contest_standings(contest_id, user_list)
     return standings
