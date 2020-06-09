@@ -13,6 +13,9 @@
     "contest_type": {
       "type": "keyword"
     },
+    "contest_access": {
+      "type": "keyword"
+    },
     "contest_level": {
       "type": "long"
     },

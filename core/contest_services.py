@@ -293,12 +293,15 @@ def contest_standings(contest_id, user_id=None):
     if user_id:
         user_list = get_following_list(user_id)
 
-    team_details = get_team_details(contest_details['contest_ref_id'])
-    team_members = team_details['member_list']
+    if contest_details['contest_type'] == 'individual':
+        user_list.append(contest_details['contest_ref_id'])
+    else:
+        team_details = get_team_details(contest_details['contest_ref_id'])
+        team_members = team_details['member_list']
 
-    for member in team_members:
-        if member['user_id'] not in user_list:
-            user_list.append(member['user_id'])
+        for member in team_members:
+            if member['user_id'] not in user_list:
+                user_list.append(member['user_id'])
 
     standings = generate_contest_standings(contest_id, user_list)
     return standings

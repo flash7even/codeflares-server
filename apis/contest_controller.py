@@ -15,6 +15,7 @@ api = Namespace('contest', description='Namespace for contest service')
 from core.contest_services import create_contest, create_problem_set, search_contests, find_problem_set_for_contest, \
     reupload_problem_set_for_contest, get_contest_details, contest_standings
 from core.user_services import get_user_details
+from core.team_services import search_teams_for_user
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -23,7 +24,8 @@ _es_type = '_doc'
 _es_size = 500
 
 mandatory_fields = ['contest_name', 'setter_id', 'contest_ref_id', 'contest_type', 'contest_level',
-                    'problem_count', 'description', 'start_date', 'end_date']
+                    'problem_count', 'description', 'start_date', 'end_date', 'contest_access']
+
 
 @api.errorhandler(NoAuthorizationError)
 def handle_auth_error(e):
@@ -176,11 +178,49 @@ class CreateContest(Resource):
 @api.route('/search/<int:page>')
 class SearchContest(Resource):
 
+    @access_required(access="ALL")
+    @api.doc('search contest based on post parameters')
+    def post(self, page=0):
+        try:
+            current_user = get_jwt_identity().get('id')
+            username = get_jwt_identity().get('username')
+            app.logger.info('Contest search api called')
+            param = request.get_json()
+            param['contest_access'] = 'public'
+            result = search_contests(param, page*_es_size, _es_size)
+
+            team_list = search_teams_for_user(username, {})
+            for team in team_list:
+                team_id = team['id']
+                param['contest_access'] = 'private'
+                param['contest_ref_id'] = team_id
+                contest_list = search_contests(param, page*_es_size, _es_size)
+                result = result + contest_list
+
+            param['contest_access'] = 'private'
+            param['contest_ref_id'] = current_user
+            contest_list = search_contests(param, page * _es_size, _es_size)
+            result = result + contest_list
+
+            app.logger.info('Contest search api completed')
+            print(result)
+            return {
+                "contest_list": result
+            }
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/public/search', defaults={'page': 0})
+@api.route('/public/search/<int:page>')
+class SearchContest(Resource):
+
     @api.doc('search contest based on post parameters')
     def post(self, page=0):
         try:
             app.logger.info('Contest search api called')
             param = request.get_json()
+            param['contest_access'] = 'public'
             result = search_contests(param, page*_es_size, _es_size)
             app.logger.info('Contest search api completed')
             print(result)
