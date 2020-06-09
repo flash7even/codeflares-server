@@ -201,6 +201,47 @@ class CreateUser(Resource):
             return {'message': str(e)}, 500
 
 
+@api.route('/changepass/<string:user_id>')
+class ChangePassword(Resource):
+
+    @access_required(access='ALL')
+    @api.doc('update user password')
+    def put(self, user_id):
+        try:
+            app.logger.info(f'Attempting to update password for user {user_id}')
+            rs = requests.session()
+
+            fields = ['old_password', 'new_password']
+            user_data = request.get_json()
+            for field in fields:
+                if user_data.get(field, None) is None:
+                    return 'bad request', 400
+
+            old_pass = md5(user_data['old_password'].encode(encoding='utf-8')).hexdigest()
+            new_pass = md5(user_data['new_password'].encode(encoding='utf-8')).hexdigest()
+
+            search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, user_id)
+            response = rs.get(url=search_url, headers=_http_headers).json()
+
+            if 'found' in response:
+                if response['found']:
+                    data = response['_source']
+                    if data['password'] != old_pass:
+                        return 'Wrong password', 409
+                    data['password'] = new_pass
+                    upd_response = rs.put(url=search_url, json=data, headers=_http_headers)
+                    if upd_response.ok:
+                        app.logger.info('Password has been updated')
+                        return 'updated', 200
+                else:
+                    app.logger.debug('User does not exist')
+                    return 'user not found', 404
+            app.logger.error('Elasticsearch error')
+            return 'internal server error', 500
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
 @api.route('/search', defaults={'page': 0})
 @api.route('/search/<int:page>')
 class SearchUser(Resource):
