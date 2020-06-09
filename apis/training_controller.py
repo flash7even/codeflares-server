@@ -81,10 +81,8 @@ class IndividualTrainingModel(Resource):
     @api.doc('get training model for currently logged in user')
     def post(self, user_id):
         app.logger.info('Get individual training model api called')
-
         param = request.get_json()
         response = {}
-
         if 'training_problems' in param and param['training_problems']:
             response['problem_stat'] = search_top_skilled_problems_for_user(user_id, 'relevant_score', 10, True)
         if 'training_categories' in param and param['training_categories']:
@@ -105,15 +103,14 @@ class TeamTrainingModel(Resource):
         app.logger.info('Get individual training model api called')
         param = request.get_json()
         team_details = get_team_details(team_id)
-
         if 'training_problems' in param and param['training_problems']:
-            team_details['problem_stat'] = search_top_skilled_problems_for_user(team_id, 'relevant_score', 5, True)
+            team_details['problem_stat'] = search_top_skilled_problems_for_user(team_id, 'relevant_score', 10, True)
         if 'training_categories' in param and param['training_categories']:
-            team_details['category_stat'] = search_top_skilled_categoires_for_user(team_id, 'ALL', 'relevant_score', 5, True)
+            team_details['category_stat'] = search_top_skilled_categoires_for_user(team_id, 'ALL', 'relevant_score', 10, True)
         if 'category_skill' in param and param['category_skill']:
-            team_details['category_skill_list'] = search_top_skilled_categoires_for_user(team_id, 'ALL', 'skill_value', 150, True)
+            team_details['category_skill_list'] = search_top_skilled_categoires_for_user(team_id, 'ALL', 'skill_value', 200, True)
         if 'root_category_skill' in param and param['root_category_skill']:
-            team_details['root_category_skill_list'] = search_top_skilled_categoires_for_user(team_id, 'root', 'category_id', 15, True)
+            team_details['root_category_skill_list'] = search_top_skilled_categoires_for_user(team_id, 'root', 'category_id', 20, True)
         if 'skill_comparison_info' in param and param['skill_comparison_info']:
             team_details['skill_info'] = []
             member_list = team_details.get('member_list', [])

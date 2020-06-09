@@ -80,12 +80,15 @@ def search_top_skilled_categoires_for_user(user_id, category_root, sort_field, s
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
         item_list = []
         if 'hits' in response:
+            rank = 1
             for hit in response['hits']['hits']:
                 item = hit['_source']
                 item['relevant_score'] = "{:.2f}".format(item['relevant_score'])
                 if heavy:
                     item['category_info'] = get_category_details(item['category_id'])
+                item['rank'] = rank
                 item_list.append(item)
+                rank += 1
         return item_list
     except Exception as e:
         raise e
@@ -105,12 +108,15 @@ def search_top_skilled_problems_for_user(user_id, sort_field, size, heavy=False)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
         item_list = []
         if 'hits' in response:
+            rank = 1
             for hit in response['hits']['hits']:
                 item = hit['_source']
                 item['relevant_score'] = "{:.2f}".format(item['relevant_score'])
                 if heavy:
                     item['problem_info'] = get_problem_details(item['problem_id'])
+                item['rank'] = rank
                 item_list.append(item)
+                rank += 1
         return item_list
     except Exception as e:
         raise e
