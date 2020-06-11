@@ -68,7 +68,6 @@ def update_user_details(user_id, user_data):
                 response = rs.put(url=search_url, json=user, headers=_http_headers).json()
                 if 'result' in response:
                     return response['result']
-            app.logger.info('User not found')
             return 'not found'
         app.logger.error('Elasticsearch down')
         return response
@@ -78,7 +77,6 @@ def update_user_details(user_id, user_data):
 
 
 def add_contribution(user_id, value):
-    app.logger.info(f'add_contribution for {user_id} by {str(value)}')
     try:
         ignore_fields = ['username', 'password']
         rs = requests.session()
@@ -94,7 +92,6 @@ def add_contribution(user_id, value):
                 response = rs.put(url=search_url, json=user, headers=_http_headers).json()
                 if 'result' in response:
                     return response['result']
-            app.logger.info('User not found')
             return 'not found'
         app.logger.error('Elasticsearch down')
         return response

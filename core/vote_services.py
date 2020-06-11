@@ -36,7 +36,6 @@ def get_blog_details(blog_id):
                 data = response['_source']
                 data['id'] = response['_id']
                 data['blog_id'] = response['_id']
-                app.logger.info('Get blog_details method completed')
                 return data
             app.logger.warning('Blog not found')
             raise Exception('Blog not found')

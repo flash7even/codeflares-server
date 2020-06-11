@@ -333,7 +333,6 @@ def find_problem_dependency_list(problem_id):
 
 
 def generate_query_params(param):
-    app.logger.info(f'generate_query_params called, param: {json.dumps(param)}')
     if 'filter' in param and param['filter']:
         should = []
         nested_should = []
@@ -345,7 +344,6 @@ def generate_query_params(param):
         should.append({'term': {'oj_name': param['filter']}})
         should.append({'nested': {'path': 'categories', 'query': {'bool': {'should': nested_should}}}})
         query_json = {'query': {'bool': {'should': should}}}
-        app.logger.info(f'generated query_json: {json.dumps(query_json)}')
         return query_json
     else:
         must = []
@@ -387,22 +385,18 @@ def generate_query_params(param):
         query_json = {'query': {'match_all': {}}}
         if len(must) > 0:
             query_json = {'query': {'bool': {'must': must}}}
-        app.logger.info(f'generated query_json: {json.dumps(query_json)}')
         return query_json
 
 
 def search_problem_list_simplified(param, sort_by='problem_difficulty', sort_order='asc'):
-    app.logger.debug('search_problem_list_simplified called')
     try:
         rs = requests.session()
         query_json = generate_query_params(param)
         query_json['_source'] = "{}"
         query_json['size'] = _es_size
         query_json['sort'] = [{sort_by: {'order': sort_order}}]
-        app.logger.debug(f'query_json: {json.dumps(query_json)}')
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        app.logger.debug(f'response: {json.dumps(response)}')
         item_list = []
         if 'hits' in response:
             for hit in response['hits']['hits']:
@@ -414,7 +408,6 @@ def search_problem_list_simplified(param, sort_by='problem_difficulty', sort_ord
 
 
 def search_problem_list_simplified_dtsearch(param, start, length, sort_by, sort_order):
-    app.logger.info('search_problem_list_simplified_dtsearch called')
     try:
         rs = requests.session()
         query_json = generate_query_params(param)
@@ -422,10 +415,8 @@ def search_problem_list_simplified_dtsearch(param, start, length, sort_by, sort_
         query_json['from'] = start
         query_json['size'] = length
         query_json['sort'] = [{sort_by: {'order': sort_order}}]
-        app.logger.debug(f'query_json: {json.dumps(query_json)}')
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        app.logger.debug(f'response: {json.dumps(response)}')
         item_list = []
         if 'hits' in response:
             for hit in response['hits']['hits']:

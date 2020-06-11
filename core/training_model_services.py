@@ -214,19 +214,14 @@ def root_category_solved_count_by_solved_problem_list(solve_problems):
 
 def sync_root_category_score_for_user(user_id):
     try:
-        app.logger.debug(f'sync_root_category_score_for_user called for user_id: {user_id}')
         solved_problems = find_problems_for_user_by_status_filtered(['SOLVED'], user_id)
         root_solved_count = root_category_solved_count_by_solved_problem_list(solved_problems)
-        app.logger.info('root_solved_count: ' + json.dumps(root_solved_count))
         category_list = search_categories({'category_root': 'root'}, 0, _es_size)
         skill_value = 0
         for category in category_list:
             data = generate_sync_data_for_root_category(user_id, category, root_solved_count)
             skill_value += data['skill_value_by_percentage']
-            app.logger.debug(f'Insert root category synced data: {json.dumps(data)}')
             add_user_category_data(user_id, category['category_id'], data)
-
-        app.logger.debug(f'sync_root_category_score_for_user completed for user_id: {user_id}')
         return skill_value
     except Exception as e:
         raise e
@@ -234,7 +229,6 @@ def sync_root_category_score_for_user(user_id):
 
 def generate_sync_data_for_category(user_id, category):
     try:
-        app.logger.info(f'generate_sync_data_for_category for user_id: {user_id}, category: {category}')
         category_skill_generator = CategorySkillGenerator()
         factor = float(category.get('factor', 1))
         skill_stat = category_skill_generator.generate_skill(category['solved_stat']['difficulty_wise_count'], factor)
@@ -271,9 +265,7 @@ def generate_sync_data_for_category(user_id, category):
 
 def sync_category_score_for_user(user_id):
     try:
-        app.logger.debug(f'sync_category_score_for_user called for user_id: {user_id}')
         category_list = category_wise_problem_solve_for_users([user_id])
-        app.logger.debug(f'category wise solve problem stat: {json.dumps(category_list)}')
 
         for category in category_list:
             if category['category_root'] == 'root':
@@ -290,16 +282,11 @@ def generate_sync_data_for_problem(user_id, user_skill_level, problem):
         dependent_categories = find_problem_dependency_list(problem['id'])
         problem_score_generator = ProblemScoreGenerator()
         if problem['problem_type'] == 'classical':
-            app.logger.info(f'CLASSICAL_CASE, problem data: {json.dumps(problem)}')
             dependent_category_id_list = []
-            app.logger.info('dependent_categories: ' + str(dependent_categories))
             for category in dependent_categories:
                 category_id = category['category_id']
                 dependent_category_id_list.append(category_id)
-
-            app.logger.info('dependent_category_id_list: ' + str(dependent_category_id_list))
             dependent_dependent_category_list = find_category_dependency_list_for_multiple_categories(dependent_category_id_list)
-            app.logger.info('dependent_dependent_category_list: ' + str(dependent_dependent_category_list))
             category_level_list = []
             for category_id in dependent_dependent_category_list:
                 category_details = get_user_category_data(user_id, category_id)
@@ -309,7 +296,6 @@ def generate_sync_data_for_problem(user_id, user_skill_level, problem):
                 category_level_list.append(category_level)
             relevant_score = problem_score_generator.generate_score(int(float(problem['problem_difficulty'])),
                                                                     category_level_list, user_skill_level)
-            app.logger.debug(f'CLASSICAL_CASE relevant_score: {str(relevant_score)}')
         else:
             category_level_list = []
             for category in dependent_categories:
@@ -334,7 +320,6 @@ def generate_sync_data_for_problem(user_id, user_skill_level, problem):
 
 def sync_problem_score_for_user(user_id, user_skill_level):
     try:
-        app.logger.debug(f'sync_problem_score_for_user called for user: {user_id}')
         problem_list = available_problems_for_user(user_id)
         for problem in problem_list:
             data = generate_sync_data_for_problem(user_id, user_skill_level, problem)
@@ -345,7 +330,6 @@ def sync_problem_score_for_user(user_id, user_skill_level):
 
 def sync_overall_stat_for_user(user_id, skill_value = None):
     try:
-        app.logger.debug(f'sync_overall_stat_for_user, user: {user_id}')
         solve_count = get_solved_problem_count_for_user(user_id)
         if skill_value is None:
             skill_value = generate_skill_value_for_user(user_id)
@@ -356,7 +340,6 @@ def sync_overall_stat_for_user(user_id, skill_value = None):
             'solve_count': int(solve_count),
             'skill_title': skill_title,
         }
-        app.logger.debug('User final stat to update: ' + json.dumps(user_data))
         update_user_details(user_id, user_data)
     except Exception as e:
         raise e
@@ -364,7 +347,6 @@ def sync_overall_stat_for_user(user_id, skill_value = None):
 
 def sync_problem_score_for_team(team_id, user_skill_level):
     try:
-        app.logger.debug(f'sync_problem_score_for_team called for team_id: {team_id}')
         team_details = get_team_details(team_id)
         marked_list = {}
         for member in team_details['member_list']:
@@ -386,7 +368,6 @@ def sync_problem_score_for_team(team_id, user_skill_level):
 
 def sync_category_score_for_team(team_id):
     try:
-        app.logger.debug(f'sync_category_score_for_team called for team_id: {team_id}')
         team_details = get_team_details(team_id)
         user_list = []
         for member in team_details['member_list']:
@@ -407,7 +388,6 @@ def sync_category_score_for_team(team_id):
 
 def sync_root_category_score_for_team(team_id):
     try:
-        app.logger.debug(f'sync_root_category_score_for_team called for team_id: {team_id}')
         team_details = get_team_details(team_id)
         solved_problems = []
         for member in team_details['member_list']:
@@ -435,7 +415,6 @@ def sync_root_category_score_for_team(team_id):
 
 def sync_overall_stat_for_team(team_id, skill_value = None):
     try:
-        app.logger.debug(f'sync_overall_stat_for_team, team: {team_id}')
         team_details = get_team_details(team_id)
         mark_problem = {}
         solve_count = 0

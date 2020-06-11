@@ -103,7 +103,6 @@ def update_team_details(team_id, post_data):
                 else:
                     app.logger.error('Elasticsearch down, response: ' + str(response))
                     return response
-            app.logger.warning('Team not found')
             return {'message': 'not found'}
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response
@@ -131,7 +130,6 @@ def get_team_details(team_id):
                 data['follow_stat'] = get_follow_stat(data['id'])
                 data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(data['created_at']))
                 return data
-            app.logger.warning('Team not found')
             raise Exception('Team not found')
         app.logger.error('Elasticsearch down, response: ' + str(response))
         raise Exception('Internal server error')

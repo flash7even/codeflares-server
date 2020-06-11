@@ -38,7 +38,6 @@ def get_problem_order(x):
 
 def get_contest_details(contest_id):
     try:
-        app.logger.info('Get contest_details api called')
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_contest, _es_type, contest_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
@@ -49,9 +48,7 @@ def get_contest_details(contest_id):
                 setter_data = get_user_details(data['setter_id'])
                 data['setter_handle'] = setter_data['username']
                 data['problem_set'] = find_problem_set_for_contest(contest_id)
-                app.logger.info('Get contest_details api completed')
                 return data
-            app.logger.warning('Contest not found')
             raise Exception('Contest not found')
         app.logger.error('Elasticsearch down, response: ' + str(response))
         raise Exception('Elasticsearch Down')
