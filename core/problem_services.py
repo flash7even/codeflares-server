@@ -8,6 +8,8 @@ from core.resource_services import search_resource
 from core.comment_services import get_comment_list, get_comment_count
 from core.vote_services import get_vote_count_list
 
+from commons.skillset import Skill
+
 _http_headers = {'Content-Type': 'application/json'}
 
 _es_index_problem_user = 'cfs_user_problem_edges'
@@ -162,6 +164,37 @@ def get_solved_problem_count_for_user(user_id):
         if 'hits' in response:
             return response['hits']['total']['value']
         return 0
+    except Exception as e:
+        raise e
+
+
+def get_total_problem_score_for_user(user_list):
+    try:
+        rs = requests.session()
+        score_sum = 0
+        marked_problem = {}
+        for user_id in user_list:
+            must = [
+                {'term': {'user_id': user_id}},
+                {'term': {'status': SOLVED}}
+            ]
+            query_json = {'query': {'bool': {'must': must}}}
+            query_json['size'] = _es_size
+            search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
+            response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+            score_sum = 0
+            if 'hits' in response:
+                for hit in response['hits']['hits']:
+                    edge = hit['_source']
+                    problem_id = edge['problem_id']
+                    if problem_id not in marked_problem:
+                        marked_problem[problem_id] = 1
+                        url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_problem, _es_type, problem_id)
+                        presponse = rs.get(url=url, headers=_http_headers).json()
+                        if 'found' in presponse and presponse['found']:
+                            problem_details = presponse['_source']
+                            score_sum += Skill.get_problem_score(problem_details['problem_difficulty'])
+        return score_sum
     except Exception as e:
         raise e
 

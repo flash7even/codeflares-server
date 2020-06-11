@@ -22,6 +22,15 @@
     "skill_value": {
       "type": "float"
     },
+    "decreased_skill_value": {
+      "type": "float"
+    },
+    "total_score": {
+      "type": "float"
+    },
+    "target_score": {
+      "type": "float"
+    },
     "solve_count": {
       "type": "long"
     },

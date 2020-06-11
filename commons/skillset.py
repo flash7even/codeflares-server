@@ -71,3 +71,7 @@ class Skill:
         level_dx = level - u
         score = self.weekly_min_score[u] + score_dx*level_dx
         return score
+
+    def get_problem_score(self, dif):
+        dif = int(dif)
+        return self.score_table[dif]

@@ -162,8 +162,6 @@ class CreateUser(Resource):
         app.logger.info('Create user API called')
         rs = requests.session()
         data = request.get_json()
-        data['created_at'] = int(time.time())
-        data['updated_at'] = int(time.time())
 
         try:
             user_data = self.__validate_json(data)
@@ -187,6 +185,14 @@ class CreateUser(Resource):
                     app.logger.info('Username already exists')
                     return 'Username already exists', 200
 
+            user_data['created_at'] = int(time.time())
+            user_data['updated_at'] = int(time.time())
+            user_data['skill_value'] = 0
+            user_data['decreased_skill_value'] = 0
+            user_data['total_score'] = 0
+            user_data['target_score'] = 0
+            user_data['solve_count'] = 0
+            user_data['contribution'] = 0
             post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
             response = rs.post(url=post_url, json=user_data, headers=_http_headers).json()
 
