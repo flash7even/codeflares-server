@@ -17,9 +17,9 @@ def user_list_sync():
     user_list = search_user({'username': 'flash_7'}, 0, 500)
     for user in user_list:
         id = user['id']
-        #user_problem_data_sync(id)
+        user_problem_data_sync(id)
         app.logger.info(f'user_problem_data_sync done')
-        #user_training_model_sync(id)
+        user_training_model_sync(id)
         app.logger.info(f'user_training_model_sync done')
 
         details_info = get_user_details(id)
