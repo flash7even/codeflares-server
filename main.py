@@ -12,7 +12,7 @@ from flask_script import Manager
 
 from apis import Config, create_app
 
-from core.rating_services import user_list_sync, team_list_sync
+from core.rating_sync_services import user_list_sync, team_list_sync
 
 
 def db_job():

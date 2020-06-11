@@ -2,10 +2,9 @@ import requests
 from flask import current_app as app
 import time
 import json
-import datetime
 from core.follower_services import get_follow_stat
 
-from core.rating_services import search_user_ratings
+from core.rating_services import get_user_rating_history
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -14,24 +13,6 @@ _es_type = '_doc'
 _es_size = 2000
 
 public_fields = ['username', 'first_name', 'last_name', 'full_name', 'skill_value', 'skill_title', 'solve_count']
-
-
-def get_user_rating_history(user_id):
-    rating_list = search_user_ratings(user_id)
-    rating_history = []
-    for rating_data in rating_list:
-        day = datetime.date.fromtimestamp(rating_data['created_at'])
-        data = {
-            'rating': rating_data['skill_value'],
-            'solve_count': rating_data['solve_count'],
-            'date': {
-                "year": day.year,
-                "month": day.month,
-                "day": day.day
-            }
-        }
-        rating_history.append(data)
-    return rating_history
 
 
 def get_user_details_by_handle_name(username):

@@ -8,8 +8,8 @@ from flask_jwt_extended.exceptions import *
 from jwt.exceptions import *
 from commons.jwt_helpers import access_required
 
-from core.user_services import search_user, get_user_details, get_user_rating_history, dtsearch_user
-from core.rating_services import add_user_ratings
+from core.user_services import search_user, get_user_details, dtsearch_user
+from core.rating_services import add_user_ratings, get_user_rating_history
 from core.sync_services import user_problem_data_sync, user_training_model_sync
 from core.job_services import add_pending_job
 
