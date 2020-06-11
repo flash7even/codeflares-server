@@ -15,6 +15,18 @@ _es_size = 2000
 public_fields = ['username', 'first_name', 'last_name', 'full_name', 'skill_value', 'skill_title', 'solve_count']
 
 
+def reformat_user_data(data):
+    data['skill_value'] = int(data.get('skill_value', 0) - data.get('decreased_skill_value', 0))
+    data['skill_value'] = "{:.2f}".format(data['skill_value'])
+    data['decreased_skill_value'] = "{:.2f}".format(data.get('decreased_skill_value', 0))
+    data['total_score'] = "{:.2f}".format(data.get('total_score', 0))
+    data['target_score'] = "{:.2f}".format(data.get('target_score', 0))
+    data['solve_count'] = data.get('solve_count', 0)
+    data['contribution'] = data.get('contribution', 0)
+    data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
+    return data
+
+
 def get_user_details_by_handle_name(username):
     try:
         rs = requests.session()
@@ -25,7 +37,7 @@ def get_user_details_by_handle_name(username):
             for hit in response['hits']['hits']:
                 user = hit['_source']
                 user['id'] = hit['_id']
-                user['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(user['created_at']))
+                user = reformat_user_data(user)
                 return user
         return None
     except Exception as e:
@@ -43,7 +55,8 @@ def get_user_details(user_id):
                 data = response['_source']
                 data['id'] = response['_id']
                 data['follow_stat'] = get_follow_stat(user_id)
-                data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
+                data['follow_stat'] = get_follow_stat(user_id)
+                data = reformat_user_data(data)
                 return data
         raise Exception('User not found')
     except Exception as e:
@@ -110,11 +123,11 @@ def get_user_details_public(user_id):
             if response['found']:
                 data = response['_source']
                 data['follow_stat'] = get_follow_stat(user_id)
-                data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
                 public_data = {}
                 for f in public_fields:
                     public_data[f] = data.get(f, None)
                 public_data['id'] = user_id
+                public_data = reformat_user_data(public_data)
                 return public_data
         raise Exception('User not found')
     except Exception as e:
@@ -155,8 +168,8 @@ def search_user(param, from_val, to_val, sort_by = 'updated_at', sort_order = 'd
                 user['follow_stat'] = follow_stat
                 user['rating_history'] = get_user_rating_history(user['id'])
                 user['rank'] = rank
-                user['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(user['created_at']))
                 rank += 1
+                user = reformat_user_data(user)
                 data.append(user)
             return data
         app.logger.error('Elasticsearch down, response : ' + str(response))
@@ -182,7 +195,6 @@ def dtsearch_user(param, start, length, sort_by = 'updated_at', sort_order = 'de
         query_json['sort'] = [{sort_by: {'order': sort_order}}]
         query_json['from'] = start
         query_json['size'] = length
-        print('query_json: ', json.dumps(query_json))
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user, _es_type)
         response = requests.session().post(url=search_url, json=query_json, headers=_http_headers).json()
         print('response: ', response)
@@ -197,11 +209,10 @@ def dtsearch_user(param, start, length, sort_by = 'updated_at', sort_order = 'de
                 user['follow_stat'] = follow_stat
                 user['rating_history'] = get_user_rating_history(user['id'])
                 user['rank'] = rank+start
-                user['skill_value'] = user.get('skill_value', 0)
                 user['solve_count'] = user.get('solve_count', 0)
                 user['contribution'] = user.get('contribution', 0)
-                user['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(user['created_at']))
                 rank += 1
+                user = reformat_user_data(user)
                 data.append(user)
             return {
                 'user_list': data,

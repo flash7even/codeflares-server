@@ -193,7 +193,8 @@ def get_total_problem_score_for_user(user_list):
                         presponse = rs.get(url=url, headers=_http_headers).json()
                         if 'found' in presponse and presponse['found']:
                             problem_details = presponse['_source']
-                            score_sum += Skill.get_problem_score(problem_details['problem_difficulty'])
+                            skill = Skill()
+                            score_sum += skill.get_problem_score(problem_details['problem_difficulty'])
         return score_sum
     except Exception as e:
         raise e

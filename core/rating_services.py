@@ -57,14 +57,19 @@ def get_user_rating_history(user_id):
     rating_list = search_user_ratings(user_id)
     rating_history = []
     for rating_data in rating_list:
-        day = datetime.date.fromtimestamp(rating_data['created_at'])
+        daytime = datetime.datetime.fromtimestamp(rating_data['created_at'])
+        daytime = daytime.strftime('%Y %m %d %H %M %S')
+        daytime = daytime.split(' ')
         data = {
             'rating': rating_data['skill_value'],
             'solve_count': rating_data['solve_count'],
             'date': {
-                "year": day.year,
-                "month": day.month,
-                "day": day.day
+                "year": daytime[0],
+                "month": daytime[1],
+                "day": daytime[2],
+                "hour": daytime[3],
+                "minute": daytime[4],
+                "second": daytime[5],
             }
         }
         rating_history.append(data)
