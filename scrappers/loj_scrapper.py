@@ -18,7 +18,7 @@ class LightOJScrapper:
         try:
             options = Options()
             options.headless = True
-            driver = webdriver.Firefox(options=options)
+            driver = webdriver.Chrome(options=options)
             driver.get(login_url)
 
             elem = driver.find_element_by_name("myuserid")
