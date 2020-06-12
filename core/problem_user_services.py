@@ -1,3 +1,5 @@
+import json
+
 from flask import current_app as app
 
 from core.problem_services import search_problems, add_user_problem_status
@@ -13,6 +15,7 @@ def sync_problems(user_id, problem_list, oj_name):
     try:
         for problem in problem_list:
             problem_db = search_problems({'problem_id': problem, 'oj_name': oj_name}, 0, 1)
+            app.logger.info(f'lightoj problem in es db: {problem_db}')
             if len(problem_db) == 0:
                 continue
             problem_id = problem_db[0]['id']
@@ -70,9 +73,10 @@ def synch_user_problem(user_id):
 
         if 'lightoj' in allowed_judges:
             handle = user_info.get('lightoj_handle', None)
-            print('lightoj: ', handle)
+            app.logger.info(f'lightoj handle: {handle}')
             if handle:
                 problem_stat = lightoj.get_user_info(handle)
+                app.logger.info(f'lightoj problem_stat: {json.dumps(problem_stat)}')
                 sync_problems(user_id, problem_stat['solved_problems'], 'lightoj')
 
     except Exception as e:
