@@ -167,6 +167,7 @@ def get_total_problem_score_for_user(user_list):
         score_sum = 0
         marked_problem = {}
         for user_id in user_list:
+            app.logger.debug(f'check for user: {user_id}')
             must = [
                 {'term': {'user_id': user_id}},
                 {'term': {'status': SOLVED}}
@@ -175,7 +176,6 @@ def get_total_problem_score_for_user(user_list):
             query_json['size'] = _es_size
             search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
             response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-            score_sum = 0
             if 'hits' in response:
                 for hit in response['hits']['hits']:
                     edge = hit['_source']

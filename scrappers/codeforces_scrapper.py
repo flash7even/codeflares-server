@@ -79,10 +79,13 @@ class CodeforcesScrapper:
             }
 
     def get_user_rating_history(self, username):
-        rs = requests.session()
-        url = self.rating_history_url + username
-        rating_history = rs.get(url=url, headers=_http_headers).json()
-        return rating_history['result']
+        try:
+            rs = requests.session()
+            url = self.rating_history_url + username
+            rating_history = rs.get(url=url, headers=_http_headers).json()
+            return rating_history['result']
+        except Exception as e:
+            return []
 
 
 if __name__ == '__main__':

@@ -20,6 +20,18 @@ _es_type = '_doc'
 _es_size = 100
 
 
+def reformat_team_data(data):
+    data['skill_value'] = data.get('skill_value', 0) - data.get('decreased_skill_value', 0)
+    data['skill_value'] = float("{:.2f}".format(data['skill_value']))
+    data['decreased_skill_value'] = float("{:.2f}".format(data.get('decreased_skill_value', 0)))
+    data['total_score'] = float("{:.2f}".format(data.get('total_score', 0)))
+    data['target_score'] = float("{:.2f}".format(data.get('target_score', 0)))
+    data['next_week_target'] = float("{:.2f}".format(data['total_score'] + data['target_score']))
+    data['solve_count'] = data.get('solve_count', 0)
+    data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
+    return data
+
+
 def get_team_rating_history(team_id):
     rating_list = search_user_ratings(team_id)
     rating_history = []
@@ -85,7 +97,6 @@ def add_team_members_bulk(member_list, team_id, team_type, logged_in_user):
         raise e
 
 
-
 def update_team_details(team_id, post_data):
     try:
         rs = requests.session()
@@ -128,7 +139,7 @@ def get_team_details(team_id):
                 user_details = get_user_details(data['team_leader_id'])
                 data['team_leader_handle'] = user_details['username']
                 data['follow_stat'] = get_follow_stat(data['id'])
-                data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(data['created_at']))
+                data = reformat_team_data(data)
                 return data
             raise Exception('Team not found')
         app.logger.error('Elasticsearch down, response: ' + str(response))
@@ -297,6 +308,7 @@ def search_teams(param, from_val, size_val):
                 team['id'] = hit['_id']
                 member_edge_list = get_all_users_from_team(team['id'])
                 team['member_list'] = member_edge_list
+                team = reformat_team_data(team)
                 item_list.append(team)
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))

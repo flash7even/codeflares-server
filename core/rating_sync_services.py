@@ -11,10 +11,12 @@ from core.sync_services import user_problem_data_sync, user_training_model_sync,
 from core.team_services import search_teams, get_team_details, update_team_details
 from core.user_services import search_user, get_user_details, update_user_details
 
+_es_size = 2000
+
 
 def user_list_sync():
     app.logger.info(f'user_list_sync called')
-    user_list = search_user({'username': 'flash_7'}, 0, 500)
+    user_list = search_user({}, 0, _es_size)
     for user in user_list:
         id = user['id']
         user_problem_data_sync(id)
@@ -54,21 +56,19 @@ def user_list_sync():
 
 
 def team_list_sync():
-    team_list = search_teams({'team_name': 'nsu_vendetta'}, 0, 500)
+    team_list = search_teams({}, 0, _es_size)
     for team in team_list:
-        team_id = team['id']
-        team_training_model_sync(team_id)
-
+        id = team['id']
+        team_training_model_sync(id)
         details_info = get_team_details(id)
         member_id_list = []
         for member in details_info['member_list']:
-            member_id_list.append(member['member_id'])
+            member_id_list.append(member['user_id'])
 
         skill_value = details_info.get('skill_value', 0)
         solve_count = details_info.get('solve_count', 0)
         previous_problem_score = details_info['total_score']
         current_problem_score = get_total_problem_score_for_user(member_id_list)
-
         updated_data = {
             'total_score': current_problem_score
         }
@@ -84,3 +84,4 @@ def team_list_sync():
         updated_data['target_score'] = skill.generate_next_week_prediction(current_skill_level)
         add_user_ratings(id, current_skill, solve_count)
         update_team_details(id, updated_data)
+    app.logger.info(f'team_list_sync completed')

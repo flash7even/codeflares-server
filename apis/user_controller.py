@@ -12,7 +12,7 @@ from core.user_services import search_user, get_user_details, dtsearch_user
 from core.rating_services import add_user_ratings, get_user_rating_history
 from core.sync_services import user_problem_data_sync, user_training_model_sync
 from core.job_services import add_pending_job
-from core.rating_sync_services import user_list_sync
+from core.rating_sync_services import user_list_sync, team_list_sync
 
 api = Namespace('user', description='user related services')
 
@@ -411,8 +411,7 @@ class SyncTrainingModel(Resource):
             return {'message': str(e)}, 500
 
 
-
-@api.route('/test/')
+@api.route('/rating-change')
 class Test(Resource):
 
     @api.doc('Sync user training model by id')
@@ -420,7 +419,8 @@ class Test(Resource):
         try:
             user_list_sync()
             app.logger.info('user_list_sync done')
+            team_list_sync()
+            app.logger.info('team_list_sync done')
             return {'message': 'success'}, 200
         except Exception as e:
             return {'message': str(e)}, 500
-

@@ -172,6 +172,11 @@ class CreateTeam(Resource):
 
             data['created_at'] = int(time.time())
             data['updated_at'] = int(time.time())
+            data['skill_value'] = 0
+            data['decreased_skill_value'] = 0
+            data['total_score'] = 0
+            data['target_score'] = 0
+            data['solve_count'] = 0
 
             member_list = []
             if 'member_list' in data:

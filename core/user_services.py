@@ -16,11 +16,12 @@ public_fields = ['username', 'first_name', 'last_name', 'full_name', 'skill_valu
 
 
 def reformat_user_data(data):
-    data['skill_value'] = int(data.get('skill_value', 0) - data.get('decreased_skill_value', 0))
-    data['skill_value'] = "{:.2f}".format(data['skill_value'])
-    data['decreased_skill_value'] = "{:.2f}".format(data.get('decreased_skill_value', 0))
-    data['total_score'] = "{:.2f}".format(data.get('total_score', 0))
-    data['target_score'] = "{:.2f}".format(data.get('target_score', 0))
+    data['skill_value'] = data.get('skill_value', 0) - data.get('decreased_skill_value', 0)
+    data['skill_value'] = float("{:.2f}".format(data['skill_value']))
+    data['decreased_skill_value'] = float("{:.2f}".format(data.get('decreased_skill_value', 0)))
+    data['total_score'] = float("{:.2f}".format(data.get('total_score', 0)))
+    data['target_score'] = float("{:.2f}".format(data.get('target_score', 0)))
+    data['next_week_target'] = float("{:.2f}".format(data['total_score'] + data['target_score']))
     data['solve_count'] = data.get('solve_count', 0)
     data['contribution'] = data.get('contribution', 0)
     data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
