@@ -59,7 +59,8 @@ def get_problem_details(problem_id, user_id = None):
                 data['resource_list'] = search_resource({'resource_ref_id': response['_id']}, 0, _es_size)
                 if user_id:
                     edge = get_user_problem_status(user_id, problem_id)
-                    data['user_status'] = edge['status']
+                    if edge:
+                        data['user_status'] = edge['status']
                 return data
         return None
     except Exception as e:
@@ -67,10 +68,8 @@ def get_problem_details(problem_id, user_id = None):
 
 
 def search_problems_by_category(param, heavy = False):
-    print('search_problems_by_category called')
     user_id = param.get('user_id', None)
     param.pop('user_id', None)
-    print(param)
     try:
         problem_list = search_problem_list_simplified(param)
         item_list = []
@@ -95,18 +94,13 @@ def search_problems_by_category(param, heavy = False):
 
 
 def search_problems_by_category_dt_search(param, start, length, sort_by, sort_order):
-    print('search_problems_by_category called')
     user_id = param.get('user_id', None)
     param.pop('user_id', None)
-    print(param)
     try:
         problem_stat = search_problem_list_simplified_dtsearch(param, start, length, sort_by, sort_order)
         item_list = []
-        print('RETURNED')
         for problem_id in problem_stat['problem_list']:
-            print('problem_id: ', problem_id)
             problem_details = get_problem_details(problem_id)
-            print('problem_details: ', problem_details)
             problem_details['solved'] = 'no'
             if user_id:
                 edge = get_user_problem_status(user_id, problem_id)
@@ -117,7 +111,6 @@ def search_problems_by_category_dt_search(param, start, length, sort_by, sort_or
             problem_details['category_dependency_list'] = dependency_list
 
             problem_details['solve_count'] = get_solved_count_for_problem(problem_id)
-            print('problem_details: ', problem_details)
 
             item_list.append(problem_details)
         return {
@@ -215,10 +208,8 @@ def find_problems_for_user_by_status_filtered(status, user_id, heavy=False):
 
         query_json = {'query': {'bool': {'must': must}}}
         query_json['size'] = _es_max_solved_problem
-        print('query_json: ', query_json)
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        print('response: ', response)
 
         problem_list = []
         if 'hits' in response:
@@ -253,7 +244,6 @@ def find_problems_by_status_filtered_for_user_list(status, user_list, heavy=Fals
 def available_problems_for_user(user_id):
     try:
         problem_list = search_problems({}, 0, _es_size)
-        print('problem_list found')
         available_list = []
         for problem in problem_list:
             edge = get_user_problem_status(user_id, problem['id'])
@@ -263,7 +253,6 @@ def available_problems_for_user(user_id):
                 status = edge.get('status', None)
                 if status == UNSOLVED:
                     available_list.append(problem)
-        print('available_list found')
         return available_list
     except Exception as e:
         raise e
@@ -402,7 +391,6 @@ def search_problem_list_simplified(param, sort_by='problem_difficulty', sort_ord
         if 'hits' in response:
             for hit in response['hits']['hits']:
                 item_list.append(hit['_id'])
-        print('item_list: ', item_list)
         return item_list
     except Exception as e:
         raise e
