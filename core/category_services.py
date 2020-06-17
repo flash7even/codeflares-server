@@ -1,6 +1,8 @@
 import time
 import json
 import requests
+import string
+import re
 from flask import current_app as app
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -17,6 +19,12 @@ _es_index_category_problem = 'cfs_problem_category_edges'
 _es_type = '_doc'
 _es_size = 2000
 _bulk_size = 25
+
+
+def create_category_id(category_name):
+    regex = re.compile('[%s]' % re.escape(string.punctuation))
+    category_id = regex.sub('-', category_name)
+    return category_id
 
 
 def get_category_details(cat_id, user_id = None):

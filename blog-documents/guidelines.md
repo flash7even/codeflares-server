@@ -129,8 +129,8 @@ Each problem and algorithm has a separate page where you can discuss about that 
 There are also some statistics and resources list that will help the contestants to improve their knowledge. You can contribute there
 by sharing your knowledge and resources about that problem or algorithm.
 
-For more details, please checkout the problem page for [Anagram Division](/problem/view/E03OZHIBq8HNJ2yn_8Og/) and
-the category page for [BFS](/category/view/FU3OZHIBq8HNJ2ynhr1y/).
+For more details, please checkout the problem page for [Anagram Division](/problem/view/lightoj-1158/) and
+the category page for [BFS](/category/view/bfs/).
 
 
 #### Blog

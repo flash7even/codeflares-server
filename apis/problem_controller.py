@@ -13,6 +13,7 @@ from commons.jwt_helpers import access_required
 api = Namespace('problem', description='Namespace for problem service')
 
 from core.problem_services import search_problems, search_problems_by_category, get_problem_details, search_problems_by_category_dt_search
+from core.problem_services import create_problem_id
 from core.category_services import get_category_id_from_name, get_category_details
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -173,7 +174,8 @@ class CreateProblem(Resource):
             data['created_at'] = int(time.time())
             data['updated_at'] = int(time.time())
 
-            post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
+            problem_id = create_problem_id(data['oj_name'] + '-' + data['problem_id'])
+            post_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
             response = rs.post(url=post_url, json=data, headers=_http_headers).json()
             app.logger.info('Problem Created Successfully')
 

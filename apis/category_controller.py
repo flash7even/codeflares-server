@@ -13,6 +13,7 @@ from commons.jwt_helpers import access_required
 api = Namespace('category', description='Namespace for category service')
 
 from core.category_services import add_category_category_dependency, get_category_id_from_name, search_categories, get_category_details
+from core.category_services import create_category_id
 from core.training_model_services import category_wise_problem_solve_for_users
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -161,7 +162,8 @@ class CreateCategory(Resource):
                 category_dependency_list = data['category_dependency_list']
                 data.pop('category_dependency_list', None)
 
-            post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
+            category_id = create_category_id(data['category_name'])
+            post_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, category_id)
             response = rs.post(url=post_url, json=data, headers=_http_headers).json()
 
             if 'result' in response and response['result'] == 'created':

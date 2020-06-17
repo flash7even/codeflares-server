@@ -1,5 +1,7 @@
 import json
 import time
+import string
+import re
 
 import requests
 from flask import current_app as app
@@ -23,6 +25,12 @@ SOLVED = 'SOLVED'
 UNSOLVED = 'UNSOLVED'
 SOLVE_LATER = 'SOLVE_LATER'
 FLAGGED = 'FLAGGED'
+
+
+def create_problem_id(problem_name):
+    regex = re.compile('[%s]' % re.escape(string.punctuation))
+    problem_id = regex.sub('-', problem_name)
+    return problem_id
 
 
 def get_solved_count_for_problem(problem_id):
