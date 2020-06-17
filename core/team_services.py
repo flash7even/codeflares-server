@@ -28,7 +28,10 @@ def reformat_team_data(data):
     data['target_score'] = float("{:.2f}".format(data.get('target_score', 0)))
     data['next_week_target'] = float("{:.2f}".format(data['total_score'] + data['target_score']))
     data['solve_count'] = data.get('solve_count', 0)
-    data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
+    if 'created_at' in data:
+        data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
+    if 'updated_at' in data:
+        data['updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['updated_at']))
     return data
 
 

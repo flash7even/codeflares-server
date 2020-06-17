@@ -24,7 +24,7 @@ def db_job():
 
 
 cron_job = BackgroundScheduler(daemon=True)
-cron_job.add_job(db_job, 'interval', seconds=86400)
+cron_job.add_job(db_job, 'interval', seconds=604800)
 cron_job.start()
 
 app = create_app(os.getenv('FLASK_ENV', 'development'))

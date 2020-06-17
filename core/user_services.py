@@ -24,7 +24,10 @@ def reformat_user_data(data):
     data['next_week_target'] = float("{:.2f}".format(data['total_score'] + data['target_score']))
     data['solve_count'] = data.get('solve_count', 0)
     data['contribution'] = data.get('contribution', 0)
-    data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
+    if 'created_at' in data:
+        data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
+    if 'updated_at' in data:
+        data['updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['updated_at']))
     return data
 
 

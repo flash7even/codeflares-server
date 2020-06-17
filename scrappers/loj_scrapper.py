@@ -3,6 +3,7 @@ import json
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
+from flask import current_app as app, request
 
 login_url = 'http://www.lightoj.com/login_main.php'
 user_details_url = 'http://www.lightoj.com/volume_userstat.php?user_id='
@@ -15,11 +16,13 @@ class LightOJScrapper:
     }
 
     def get_user_info(self, username):
+        app.logger.info(f'get_user_info called for: {username}')
         try:
             options = Options()
             options.headless = True
             driver = webdriver.Firefox(options=options)
             driver.get(login_url)
+            app.logger.info('go to login page')
 
             elem = driver.find_element_by_name("myuserid")
             elem.clear()
@@ -30,11 +33,13 @@ class LightOJScrapper:
             elem.send_keys(self.credentials['password'])
 
             elem.send_keys(Keys.ENTER)
+            app.logger.info('login completed')
 
             url = user_details_url + username
 
             driver.get(url)
             page_source = driver.page_source
+            app.logger.info('received problem statistics for user')
             soup = BeautifulSoup(page_source, 'html.parser')
 
             tables = soup.findAll("table")
@@ -57,6 +62,7 @@ class LightOJScrapper:
                 if problem is not None:
                     problems.append(problem)
 
+            app.logger.info(f'solved problem list: {json.dumps(problems)}')
             driver.quit()
 
             return {
@@ -66,12 +72,16 @@ class LightOJScrapper:
                 'solved_problems': problems
             }
         except Exception as e:
-            return {
+            app.logger.info(f'Exception occurred, could not manage to get user statistics from lightoj')
+            app.logger.info(f'Exception: {str(e)}')
+            data = {
                 'platform': 'lightoj',
                 'user_name': username,
                 'solved_count': 0,
                 'solved_problems': []
             }
+            app.logger.info(f'Return data: {json.dumps(data)}')
+            return data
 
 
 if __name__ == '__main__':

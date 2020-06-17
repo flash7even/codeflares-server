@@ -41,7 +41,7 @@ def synch_user_problem(user_id):
 
         user_info = get_user_details(user_id)
         print('user_info: ', user_info)
-        allowed_judges = ['codeforces', 'uva', 'codechef', 'spoj', 'lightoj']
+        allowed_judges = ['codeforces', 'uva', 'codechef', 'spoj']
 
         if 'codeforces' in allowed_judges:
             handle = user_info.get('codeforces_handle', None)
