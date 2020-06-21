@@ -1,0 +1,6 @@
+problem_name,problem_type,problem_id,problem_difficulty,problem_significance,oj_name,source_link,solved_count,category_id_1,category_id_2,category_id_3,category_id_4
+Rectangles,,11930,5.5,,,https://onlinejudge.org/index.php?option=onlinejudge&page=show_problem&problem=3081,,"two_sat,8",,,
+The Door Problem,,776/D,6.5,,,https://codeforces.com/contest/776/problem/D,,"two_sat,8",,,
+Wedding,,11294,7.5,,,https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=18&page=show_problem&problem=2269,,"two_sat,8",,,
+Forming the Council,,1251,6,,,http://www.lightoj.com/login_main.php?url=volume_showproblem.php?problem=1251,,"two_sat,8",,,
+Explosion,,1407,7,,,http://www.lightoj.com/login_main.php?url=volume_showproblem.php?problem=1407,,"two_sat,8",,,

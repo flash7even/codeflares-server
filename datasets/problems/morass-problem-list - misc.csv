@@ -1,0 +1,5 @@
+problem_name,problem_type,problem_id,problem_difficulty,problem_significance,oj_name,source_link,solved_count,category_id_1,category_id_2,category_id_3,category_id_4
+Digit Sum,,PR003004,4.5,,,https://www.spoj.com/problems/PR003004/,,"digit_manipulation,8",,,
+Maximize Sum of Digits,,770/B,4,,,https://codeforces.com/contest/770/problem/B,,"digit_manipulation,8",,,
+K12 - Building Construction,,KOPC12A,4,,,https://www.spoj.com/problems/KOPC12A/,,"ternary_search,8",,,
+Trick or Treat,,12197,4,,,https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=3349,,"ternary_search,8",,,

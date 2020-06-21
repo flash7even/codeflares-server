@@ -1,6 +1,6 @@
 category_root,category_name,short_name,category_difficulty,category_importance,factor,score_percentage
 root,base,Base,2.4,10,1,10
-root,combinatorics,Combi,5,6,1,8
+root,combinatorics,Combinatorics,5,6,1,8
 root,data_structure,DS,6,9,1,12
 root,dynamic_programming,DP,6,8,1,10
 root,game_theory,Game Theory,3.5,3,1,2

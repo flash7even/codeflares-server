@@ -1,0 +1,6 @@
+problem_name,problem_type,problem_id,problem_difficulty,problem_significance,oj_name,source_link,solved_count,category_id_1,category_id_2,category_id_3
+Arbitrage,,ARBITRAG,5,2,,https://www.spoj.com/problems/ARBITRAG/,,"bellaman_ford,6","floyd_warshall,6",
+Wormholes,,558,3,,,https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem=499,,"bellaman_ford,8",,
+Traffic,,10449,4,,,https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem=1390,,"bellaman_ford,8",,
+XYZZY,,10557,4,,,https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem=1498,,"bellaman_ford,8",,
+Flying to Fredericton,,11280,5,,,https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=24&page=show_problem&problem=2255,,"bellaman_ford,8",,

@@ -1,6 +1,7 @@
 category_root,category_name,short_name,category_difficulty,category_importance,factor,score_percentage
-base,ad_hoc,,1,10,1,35
-base,observation,,3,8,1,15
-base,implementation,,3.5,7,1,40
-base,pattern,,4,6.5,2,10
+base,ad_hoc,,1,10,1,33
+base,observation,,3,8,1,7
+base,implementation,,3.5,7,1,30
+base,pattern,,4,6.5,2,5
+base,constructive_algorithm,,5.5,7,1,25
 sum,,,,,,100

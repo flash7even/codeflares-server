@@ -1,0 +1,5 @@
+problem_name,problem_type,problem_id,problem_difficulty,problem_significance,oj_name,source_link,solved_count,category_id_1,category_id_2,category_id_3,category_id_4
+Tourists' Tour,,gym/102006/problem/K,6.5,,,https://codeforces.com/gym/102006/problem/K,,"graph_coloring,8",,,
+Arpa’s overnight party and Mehrdad’s silent entering,,741/C,6.5,,,https://codeforces.com/contest/741/problem/C,,"graph_coloring,8","constructive_algorithm,6","dfs,6",
+The Joys of Farming,classical,11331,4,,,https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=2306,,"graph_coloring,8",,,
+Graph Coloring,,664/D,4,,,https://codeforces.com/contest/664/problem/D,,"graph_coloring,8","union_find,5","two_sat,6",

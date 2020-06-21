@@ -1,0 +1,17 @@
+problem_name,problem_type,problem_id,problem_difficulty,problem_significance,oj_name,source_link,solved_count,category_id_1,category_id_2,category_id_3
+Ada and Jobs,classical,ADAJOBS,6.5,,,https://www.spoj.com/problems/ADAJOBS/,,"aho_corasick,9",,
+Substring Problem,,SUB_PROB,6.5,,,https://www.spoj.com/problems/SUB_PROB/en/,,"aho_corasick,9",,
+Legen...,,696/D,8.5,2,,https://codeforces.com/problemset/problem/696/D,,"aho_corasick,9","non_classical_dp,6",
+Aho-Corasick Trie,,AHOCUR,6.5,2,,https://www.spoj.com/problems/AHOCUR/,,"aho_corasick,9","non_classical_dp,6",
+Music & Lyrics,,LYRC,6.5,,,https://www.codechef.com/problems/LYRC,,"aho_corasick,9",,
+Lucky Common Subsequence,,346/B,7,2,,https://codeforces.com/problemset/problem/346/B,,"aho_corasick,9","non_classical_dp,6",
+Pattern Find,classical,NAJPF,5.5,,,https://www.spoj.com/problems/NAJPF/,,"kmp,8",,
+Anthem of Berland,,808/G,6,,,https://codeforces.com/contest/808/problem/G,,"kmp,8",,
+Ada and Pet,,ADAPET,6,,,https://www.spoj.com/problems/ADAPET/,,"kmp,8",,
+Caesar Cipher,,12604,6,,,https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=4282,,"kmp,8",,
+Secret Word,,12467,6,,,https://onlinejudge.org/index.php?option=onlinejudge&page=show_problem&problem=3911,,"kmp,8",,
+Matrix Matcher,,11019,6,,,https://onlinejudge.org/index.php?option=onlinejudge&page=show_problem&problem=1960,,"kmp,8",,
+Chef and String,,CHSTR,6,,,https://www.codechef.com/problems/CHSTR,,"z_algorithm,8","suffix_array,8",
+Suffix Equal Prefix,,SUFEQPRE,7,,,https://www.spoj.com/problems/SUFEQPRE/,,"z_algorithm,8",,
+Password,,126/B,5,,,https://codeforces.com/problemset/problem/126/B,,"z_algorithm,8","binary_search,8","suffix_array,8"
+String Transformation,,119/D,7.5,,,https://codeforces.com/contest/119/problem/D,,"z_algorithm,8","hashing,8",

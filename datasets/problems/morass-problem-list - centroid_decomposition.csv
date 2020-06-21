@@ -1,0 +1,13 @@
+problem_name,problem_type,problem_id,problem_difficulty,problem_significance,oj_name,source_link,solved_count,category_id_1,category_id_2,category_id_3,category_id_4
+Awesome Shawarma,,gym/101991/problem/A,6,,,https://codeforces.com/gym/101991/problem/A,,"centroid_decomposition,8",,,
+Digit Tree,,715/C,7.5,,,https://codeforces.com/contest/715/problem/C,,"centroid_decomposition,8",,,
+Arpa’s letter-marked tree and Mehrdad’s Dokhtar-kosh paths,,741/D,8.5,,,https://codeforces.com/contest/741/problem/D,,"centroid_decomposition,8",,,
+Performance Review,,13164,7,,,https://onlinejudge.org/index.php?option=onlinejudge&Itemid=8&page=show_problem&problem=5064,,"centroid_decomposition,8",,,
+Santa Clauses and a Soccer Championship,,752/F,6.5,,,https://codeforces.com/contest/752/problem/F,,"centroid_decomposition,8",,,
+Mahmoud and a xor trip,,766/E,7,2,,https://codeforces.com/contest/766/problem/E,,"centroid_decomposition,8","bit_manipulation,8","non_classical_dp,5","constructive_algorithm,6"
+Red-Black Cobweb,,833/D,8,,,https://codeforces.com/contest/833/problem/D,,"centroid_decomposition,8","implementation,9",,
+Holiday Accommodation,,HOLI,5.5,,,https://www.spoj.com/problems/HOLI/,,"centroid_decomposition,8",,,
+Xenia and Tree,classical,342/E,7,,,https://codeforces.com/problemset/problem/342/E,,"centroid_decomposition,8",,,
+Ciel the Commander,classical,321/C,5.5,,,https://codeforces.com/problemset/problem/321/C,,"centroid_decomposition,8",,,
+Kirito in Memeland,,KIRMEME,6.5,,,https://www.codechef.com/problems/KIRMEME,,"centroid_decomposition,8",,,
+Bear and Tree Jumps,,771/C,6,2,,https://codeforces.com/problemset/problem/771/C,,"centroid_decomposition,8","non_classical_dp,5",,

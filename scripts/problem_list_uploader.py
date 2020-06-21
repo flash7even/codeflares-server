@@ -95,6 +95,20 @@ def problem_list_extract(data, filename):
                 "oj_name": str(oj_name),
                 "category_dependency_list": category_dependency_list
             }
+
+            source_link = json_data['source_link']
+
+            if 'spoj' in source_link:
+                json_data['oj_name'] = 'spoj'
+            elif 'codeforces' in source_link:
+                json_data['oj_name'] = 'codeforces'
+            elif 'codechef' in source_link:
+                json_data['oj_name'] = 'codechef'
+            elif 'lightoj' in source_link:
+                json_data['oj_name'] = 'lightoj'
+            else:
+                json_data['oj_name'] = 'uva'
+
             add_problem_list(json_data, filename)
     except Exception as e:
         raise e
