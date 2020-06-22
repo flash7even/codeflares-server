@@ -2,6 +2,7 @@ import argparse
 import json
 
 from commons.skillset import Skill
+from flask import current_app as app
 
 
 MAX_PROBLEM_SOLVED = 100
@@ -17,6 +18,27 @@ class CategorySkillGenerator:
         self.group_bound = [0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
         if group_bound:
             self.group_bound = group_bound
+
+    def get_score_for_latest_solved_problem(self, difficulty, solve_count_order, problem_factor):
+        difficulty = int(difficulty)
+        app.logger.info(f'get_score_for_latest_solved_problem called, difficulty: {difficulty}, solve_count_order: {solve_count_order}')
+
+        limit = self.group_bound[difficulty]
+        group_len = self.group_table[difficulty]
+
+        if solve_count_order > limit:
+            group_order = int(limit/group_len)
+            if limit%group_len != 0:
+                group_order += 1
+            group_order += (solve_count_order - limit)
+        else:
+            group_order = int(solve_count_order/group_len)
+            if solve_count_order%group_len != 0:
+                group_order += 1
+        mty_factor = (1.0/group_order)**(self.n)
+        score = Skill.score_table[difficulty] * mty_factor * float(problem_factor)
+        app.logger.info(f'generated score: {score}')
+        return score
 
     def generate_skill(self, solved_table, problem_factor):
         factor = {}

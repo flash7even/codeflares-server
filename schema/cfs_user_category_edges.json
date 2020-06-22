@@ -4,6 +4,9 @@
     "category_id": {
       "type": "keyword"
     },
+    "category_root": {
+      "type": "keyword"
+    },
     "user_id": {
       "type": "keyword"
     },
@@ -25,8 +28,35 @@
     "solve_count": {
       "type": "long"
     },
-    "category_root": {
-      "type": "keyword"
+    "scd_1": {
+      "type": "long"
+    },
+    "scd_2": {
+      "type": "long"
+    },
+    "scd_3": {
+      "type": "long"
+    },
+    "scd_4": {
+      "type": "long"
+    },
+    "scd_5": {
+      "type": "long"
+    },
+    "scd_6": {
+      "type": "long"
+    },
+    "scd_7": {
+      "type": "long"
+    },
+    "scd_8": {
+      "type": "long"
+    },
+    "scd_9": {
+      "type": "long"
+    },
+    "scd_10": {
+      "type": "long"
     },
     "created_at": {
       "type": "long"

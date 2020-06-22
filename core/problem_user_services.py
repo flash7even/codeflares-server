@@ -2,7 +2,7 @@ import json
 
 from flask import current_app as app
 
-from core.problem_services import search_problems, add_user_problem_status
+from core.problem_services import search_problems, add_user_problem_status, apply_solved_problem_for_user
 from core.user_services import get_user_details
 from scrappers.codechef_scrapper import CodechefScrapper
 from scrappers.codeforces_scrapper import CodeforcesScrapper
@@ -21,12 +21,7 @@ def sync_problems(user_id, problem_list, oj_name):
             problem_id = problem_db[0]['id']
             if len(problem_db) > 1:
                 app.logger.error('Multiple problem with same id found')
-            data = {
-                'user_id': user_id,
-                'problem_id': problem_id,
-                'status': 'SOLVED'
-            }
-            add_user_problem_status(user_id, problem_id, data)
+            apply_solved_problem_for_user(user_id, problem_id, problem_db[0])
     except Exception as e:
         raise e
 
