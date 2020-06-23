@@ -206,3 +206,4 @@ def search_categories(param, from_value, size_value, heavy = False):
         return item_list
     except Exception as e:
         raise e
+

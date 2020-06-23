@@ -316,20 +316,28 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details):
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
         if 'result' in response:
             # Update dependent category skill
+            updated_categories = []
+            affected_root_categories = []
             problem_difficulty = problem_details['problem_difficulty']
             app.logger.info(f'problem_difficulty: {problem_difficulty}')
             dep_cat_list = find_problem_dependency_list(problem_id)
             cat_skill_model = CategorySkillGenerator()
             for cat in dep_cat_list:
                 category_id = cat['category_id']
+                category_root = cat['category_info']['category_root']
+                if category_id not in updated_categories:
+                    updated_categories.append(category_id)
+                if category_root not in affected_root_categories:
+                    affected_root_categories.append(category_root)
                 uc_edge = get_user_category_data(user_id, category_id)
                 app.logger.info(f'uc_edge from es: {uc_edge}')
                 if uc_edge is None:
                     uc_edge = {
                         "category_id": category_id,
-                        "category_root": cat['category_info']['category_root'],
+                        "category_root": category_root,
                         "user_id": user_id,
                         "skill_value": 0,
+                        "skill_level": 0,
                         "relevant_score": 0,
                         "solve_count": 0,
                         "skill_value_by_percentage": 0,
@@ -345,12 +353,16 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details):
                 uc_edge['skill_value'] += added_skill
                 skill_info = Skill()
                 uc_edge['skill_title'] = skill_info.get_skill_title(uc_edge['skill_value'])
+                uc_edge['skill_level'] = skill_info.get_skill_level_from_skill(uc_edge['skill_value'])
                 score_percentage = float(cat['category_info']['score_percentage'])
                 uc_edge['skill_value_by_percentage'] = uc_edge['skill_value']*score_percentage/100
                 app.logger.info(f'add uc_edge: {uc_edge}')
                 uc_edge.pop('id', None)
                 add_user_category_data(user_id, category_id, uc_edge)
-            return response['_id']
+            return {
+                'updated_categories': updated_categories,
+                'affected_root_categories': affected_root_categories,
+            }
         raise Exception('Internal server error')
     except Exception as e:
         raise Exception('Internal server error')

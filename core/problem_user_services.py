@@ -9,10 +9,15 @@ from scrappers.codeforces_scrapper import CodeforcesScrapper
 from scrappers.loj_scrapper import LightOJScrapper
 from scrappers.spoj_scrapper import SpojScrapper
 from scrappers.uva_scrapper import UvaScrapper
+from core.category_services import search_categories
+from core.user_category_edge_services import update_root_category_skill_for_user
+
+_es_size = 1000
 
 
 def sync_problems(user_id, problem_list, oj_name):
     try:
+        updated_categories = []
         for problem in problem_list:
             problem_db = search_problems({'problem_id': problem, 'oj_name': oj_name}, 0, 1)
             app.logger.info(f'lightoj problem in es db: {problem_db}')
@@ -21,7 +26,15 @@ def sync_problems(user_id, problem_list, oj_name):
             problem_id = problem_db[0]['id']
             if len(problem_db) > 1:
                 app.logger.error('Multiple problem with same id found')
-            apply_solved_problem_for_user(user_id, problem_id, problem_db[0])
+            rsp = apply_solved_problem_for_user(user_id, problem_id, problem_db[0])
+            modified_list = rsp['updated_categories']
+            for cat in modified_list:
+                if cat not in updated_categories:
+                    updated_categories.append(cat)
+
+            root_category_list = search_categories({"category_root": "root"}, 0, _es_size)
+            user_skill = update_root_category_skill_for_user(user_id, root_category_list)
+            app.logger.info(f'user_skill: {user_skill}')
     except Exception as e:
         raise e
 
