@@ -72,6 +72,7 @@ def sync_problems(user_id, oj_problem_set):
                 new_cont = category_score_generator.get_dependent_score(uc_edge['skill_level'], dependency_percentage)
                 cont_dx = new_cont - old_cont
                 dcat_uc_edge['relevant_score'] += cont_dx
+                dcat_uc_edge['solve_count'] += 1
                 updated_categories[dcat_id] = dcat_uc_edge
 
         for category_id in updated_categories:
@@ -97,7 +98,7 @@ def synch_user_problem(user_id):
 
         user_info = get_user_details(user_id)
         print('user_info: ', user_info)
-        allowed_judges = ['codeforces', 'uva', 'codechef', 'spoj']
+        allowed_judges = ['codeforces', 'uva', 'codechef', 'spoj', 'lightoj']
 
         oj_problem_set = []
 

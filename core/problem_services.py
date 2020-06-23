@@ -358,6 +358,7 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, updated_
             problem_factor = cat['category_info'].get('factor', 1)
             added_skill = cat_skill_model.get_score_for_latest_solved_problem(problem_difficulty, uc_edge[dif_key], problem_factor)
             uc_edge['skill_value'] += added_skill
+            uc_edge['solve_count'] += 1
             uc_edge['skill_title'] = skill_info.get_skill_title(uc_edge['skill_value'])
             uc_edge['skill_level'] = skill_info.get_skill_level_from_skill(uc_edge['skill_value'])
             score_percentage = float(cat['category_info']['score_percentage'])
