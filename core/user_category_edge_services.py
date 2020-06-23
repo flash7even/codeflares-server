@@ -101,7 +101,6 @@ def update_root_category_skill_for_user(user_id, root_category_list):
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
         if 'aggregations' in response:
             skill_value = response['aggregations']['skill_value_by_percentage']['value']
-            user_skill_sum += skill_value
             category_id = cat['category_id']
             uc_edge = get_user_category_data(user_id, category_id)
             app.logger.info(f'uc_edge from es: {uc_edge}')
@@ -122,6 +121,7 @@ def update_root_category_skill_for_user(user_id, root_category_list):
             uc_edge['skill_level'] = skill_info.get_skill_level_from_skill(uc_edge['skill_value'])
             score_percentage = float(cat['score_percentage'])
             uc_edge['skill_value_by_percentage'] = uc_edge['skill_value'] * score_percentage / 100
+            user_skill_sum += uc_edge['skill_value_by_percentage']
             app.logger.info(f'add uc_edge: {uc_edge}')
             uc_edge.pop('id', None)
             add_user_category_data(user_id, category_id, uc_edge)

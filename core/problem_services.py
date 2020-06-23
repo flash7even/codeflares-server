@@ -300,9 +300,11 @@ def add_user_problem_status(user_id, problem_id, data):
         raise Exception('Internal server error')
 
 
-def apply_solved_problem_for_user(user_id, problem_id, problem_details):
+def apply_solved_problem_for_user(user_id, problem_id, problem_details, updated_categories):
     app.logger.info(f'apply_solved_problem_for_user for user_id: {user_id}, problem_id: {problem_id}')
+    app.logger.info('current updated_categories: ' + json.dumps(updated_categories))
     try:
+        skill_info = Skill()
         up_edge = get_user_problem_status(user_id, problem_id)
         if up_edge is not None and up_edge['status'] == SOLVED:
             return
@@ -314,57 +316,56 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details):
         }
         post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
-        if 'result' in response:
-            # Update dependent category skill
-            updated_categories = []
-            affected_root_categories = []
-            problem_difficulty = problem_details['problem_difficulty']
-            app.logger.info(f'problem_difficulty: {problem_difficulty}')
-            dep_cat_list = find_problem_dependency_list(problem_id)
-            cat_skill_model = CategorySkillGenerator()
-            for cat in dep_cat_list:
-                category_id = cat['category_id']
-                category_root = cat['category_info']['category_root']
-                if category_id not in updated_categories:
-                    updated_categories.append(category_id)
-                if category_root not in affected_root_categories:
-                    affected_root_categories.append(category_root)
-                uc_edge = get_user_category_data(user_id, category_id)
-                app.logger.info(f'uc_edge from es: {uc_edge}')
-                if uc_edge is None:
-                    uc_edge = {
-                        "category_id": category_id,
-                        "category_root": category_root,
-                        "user_id": user_id,
-                        "skill_value": 0,
-                        "skill_level": 0,
-                        "relevant_score": 0,
-                        "solve_count": 0,
-                        "skill_value_by_percentage": 0,
-                    }
-                    for d in range(1, 11):
-                        key = 'scd_' + str(d)
-                        uc_edge[key] = 0
 
-                dif_key = 'scd_' + str(int(problem_difficulty))
-                uc_edge[dif_key] += 1
-                problem_factor = cat['category_info'].get('factor', 1)
-                added_skill = cat_skill_model.get_score_for_latest_solved_problem(problem_difficulty, uc_edge[dif_key], problem_factor)
-                uc_edge['skill_value'] += added_skill
-                skill_info = Skill()
-                uc_edge['skill_title'] = skill_info.get_skill_title(uc_edge['skill_value'])
-                uc_edge['skill_level'] = skill_info.get_skill_level_from_skill(uc_edge['skill_value'])
-                score_percentage = float(cat['category_info']['score_percentage'])
-                uc_edge['skill_value_by_percentage'] = uc_edge['skill_value']*score_percentage/100
-                app.logger.info(f'add uc_edge: {uc_edge}')
-                uc_edge.pop('id', None)
-                add_user_category_data(user_id, category_id, uc_edge)
-            return {
-                'updated_categories': updated_categories,
-                'affected_root_categories': affected_root_categories,
-            }
-        raise Exception('Internal server error')
+        if 'result' not in response:
+            raise Exception('Internal server error')
+
+        # Update dependent category skill
+        problem_difficulty = problem_details['problem_difficulty']
+        app.logger.info(f'problem_difficulty: {problem_difficulty}')
+        dep_cat_list = find_problem_dependency_list(problem_id)
+        cat_skill_model = CategorySkillGenerator()
+        for cat in dep_cat_list:
+            app.logger.info(f'dept cat: {cat}')
+            category_id = cat['category_id']
+            category_root = cat['category_info']['category_root']
+            if category_id in updated_categories:
+                uc_edge = updated_categories[category_id]
+            else:
+                uc_edge = get_user_category_data(user_id, category_id)
+                if uc_edge:
+                    uc_edge['old_skill_level'] = uc_edge['skill_level']
+                    uc_edge.pop('id', None)
+            app.logger.info(f'uc_edge from es: {uc_edge}')
+            if uc_edge is None:
+                uc_edge = {
+                    "category_id": category_id,
+                    "category_root": category_root,
+                    "user_id": user_id,
+                    "skill_value": 0,
+                    "skill_level": 0,
+                    "old_skill_level": 0,
+                    "relevant_score": 0,
+                    "solve_count": 0,
+                    "skill_value_by_percentage": 0,
+                }
+                for d in range(1, 11):
+                    key = 'scd_' + str(d)
+                    uc_edge[key] = 0
+
+            dif_key = 'scd_' + str(int(problem_difficulty))
+            uc_edge[dif_key] += 1
+            problem_factor = cat['category_info'].get('factor', 1)
+            added_skill = cat_skill_model.get_score_for_latest_solved_problem(problem_difficulty, uc_edge[dif_key], problem_factor)
+            uc_edge['skill_value'] += added_skill
+            uc_edge['skill_title'] = skill_info.get_skill_title(uc_edge['skill_value'])
+            uc_edge['skill_level'] = skill_info.get_skill_level_from_skill(uc_edge['skill_value'])
+            score_percentage = float(cat['category_info']['score_percentage'])
+            uc_edge['skill_value_by_percentage'] = uc_edge['skill_value']*score_percentage/100
+            app.logger.info(f'add uc_edge: {uc_edge}')
+            updated_categories[category_id] = uc_edge
     except Exception as e:
+        app.logger.error(f'Exception occurred: {e}')
         raise Exception('Internal server error')
 
 

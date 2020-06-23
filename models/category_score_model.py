@@ -1,7 +1,9 @@
 import argparse
 import json
 import random
+from flask import current_app as app
 
+eps = 0.000000000001
 
 class CategoryScoreGenerator:
 
@@ -12,6 +14,8 @@ class CategoryScoreGenerator:
     own_skill_score_table = [100, 96, 90, 85, 60, 40, 15, 10, 5, 2, 1, 1]
 
     def get_dependent_score(self, diff, percentage):
+        if diff <= eps:
+            return 0.0
         min_diff = 10
         while min_diff >= 0:
             if diff >= min_diff:
@@ -24,9 +28,13 @@ class CategoryScoreGenerator:
         range_dif = range_ed - range_st
         score = min_score + range_dif * (1.0 - (diff - min_diff))
         score = score*percentage/100.0
+        score = score*self.dependent_percentage/100.0
+        app.logger.info(f'Final score: {score}')
         return score
 
-    def get_own_difficulty_based_score(self, diff, percentage):
+    def get_own_difficulty_based_score(self, diff):
+        if diff <= eps:
+            return 0.0
         min_diff = 10
         while min_diff >= 0:
             if diff >= min_diff:
@@ -38,14 +46,14 @@ class CategoryScoreGenerator:
         max_score = self.own_skill_score_table[min_diff]
         range_dif = range_ed - range_st
         score = max_score - range_dif * (diff - min_diff)
-        score = score*percentage/100.0
+        score = score*self.own_skill_percentage/100.0
         return score
 
     def generate_score(self, dependent_category_diff, own_diff):
         dependent_len = len(dependent_category_diff)
 
         if dependent_len == 0:
-            final_score = self.get_own_difficulty_based_score(own_diff, 100)
+            final_score = self.get_own_difficulty_based_score(own_diff)
             return {
                 'score': final_score
             }
@@ -58,7 +66,6 @@ class CategoryScoreGenerator:
             cur_score = self.get_dependent_score(dep_cat_diff, avg_percentage)
             dependent_score += cur_score
 
-        dependent_score = dependent_score*self.dependent_percentage/100.0
         own_diff_based_score = self.get_own_difficulty_based_score(own_diff, self.own_skill_percentage)
         final_score = dependent_score + own_diff_based_score
 

@@ -336,8 +336,8 @@ def sync_overall_stat_for_user(user_id, skill_value = None):
         skill_obj = Skill()
         skill_title = skill_obj.get_skill_title(skill_value)
         user_data = {
-            'skill_value': int(skill_value),
-            'solve_count': int(solve_count),
+            'skill_value': skill_value,
+            'solve_count': solve_count,
             'skill_title': skill_title,
         }
         update_user_details(user_id, user_data)

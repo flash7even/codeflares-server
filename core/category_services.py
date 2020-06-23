@@ -119,6 +119,32 @@ def find_category_dependency_list(category_id_1):
         raise e
 
 
+def find_dependent_category_list(category_id_2):
+    try:
+        rs = requests.session()
+        must = [
+            {'term': {'category_id_2': category_id_2}}
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = _es_size
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_category_dependency, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        item_list = []
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                category = hit['_source']
+                category.pop('category_id_2', None)
+                category['category_info'] = get_category_details(category['category_id_1'])
+                category['category_id'] = category['category_id_1']
+                category.pop('category_id_1', None)
+                item_list.append(category)
+            return item_list
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        return item_list
+    except Exception as e:
+        raise e
+
+
 def find_category_dependency_list_for_multiple_categories(category_list):
     try:
         dependent_categories = []
