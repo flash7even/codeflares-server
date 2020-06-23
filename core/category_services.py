@@ -207,3 +207,38 @@ def search_categories(param, from_value, size_value, heavy = False):
     except Exception as e:
         raise e
 
+
+def calculate_dependency_percentage():
+    try:
+        app.logger.info('calculate_dependency_percentage called')
+        rs = requests.session()
+        category_list = search_categories({}, 0, _es_size)
+        for category in category_list:
+            category_id = category['category_id']
+            must = [
+                {'term': {'category_id_1': category_id}}
+            ]
+            query_json = {'query': {'bool': {'must': must}}}
+            query_json['size'] = _es_size
+            search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_category_dependency, _es_type)
+            response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+
+            dcat_list = []
+            total_factor = 0
+            if 'hits' in response:
+                for hit in response['hits']['hits']:
+                    dcat = hit['_source']
+                    dcat['id'] = hit['_id']
+                    total_factor += float(dcat['dependency_factor'])
+                    dcat_list.append(dcat)
+
+            for dcat in dcat_list:
+                id = dcat['id']
+                dcat.pop('id', None)
+                own_factor = float(dcat['dependency_factor'])
+                dcat['dependency_percentage'] = own_factor*100.0/total_factor
+                url = 'http://{}/{}/{}/{}/'.format(app.config['ES_HOST'], _es_index_category_dependency, _es_type, id)
+                rs.put(url=url, json=dcat, headers=_http_headers).json()
+        app.logger.info('calculate_dependency_percentage completed')
+    except Exception as e:
+        raise e

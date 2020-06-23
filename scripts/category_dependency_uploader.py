@@ -30,6 +30,12 @@ def add_category_dependency(data):
     logger.debug('response: ' + json.dumps(response))
 
 
+def category_post_process():
+    url = "http://localhost:5056/api/category/post-process"
+    response = rs.post(url=url, json={}, headers=_http_headers).json()
+    logger.debug('response: ' + json.dumps(response))
+
+
 def category_dependency_extract():
     data = pd.read_csv("../datasets/categories/algorithm-links - algorithm-links.csv")
     data = data.replace({np.nan: None})
@@ -66,6 +72,7 @@ def category_dependency_extract():
 if __name__ == '__main__':
     logger.info('START RUNNING CATEGORY DEPENDENCY UPLOADER SCRIPT\n')
     category_dependency_extract()
+    category_post_process()
     logger.info('FINISHED RUNNING CATEGORY DEPENDENCY UPLOADER SCRIPT\n')
 
 

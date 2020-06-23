@@ -13,7 +13,7 @@ from commons.jwt_helpers import access_required
 api = Namespace('category', description='Namespace for category service')
 
 from core.category_services import add_category_category_dependency, get_category_id_from_name, search_categories, get_category_details
-from core.category_services import create_category_id
+from core.category_services import create_category_id, calculate_dependency_percentage
 from core.training_model_services import category_wise_problem_solve_for_users
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -281,5 +281,20 @@ class UserCategoryByID(Resource):
             app.logger.info('Get category_details api called')
             data = get_category_details(category_id, user_id)
             return data
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/post-process')
+class CategoryPostProcess(Resource):
+
+    @api.doc('category post process')
+    def post(self):
+        try:
+            app.logger.info('category post-process api called')
+            calculate_dependency_percentage()
+            return {
+                "message": "success"
+            }
         except Exception as e:
             return {'message': str(e)}, 500

@@ -10,6 +10,9 @@
     "dependency_factor": {
       "type": "float"
     },
+    "dependency_percentage": {
+      "type": "float"
+    },
     "created_at": {
       "type": "long"
     },
