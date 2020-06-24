@@ -21,8 +21,9 @@ def user_list_sync():
         id = user['id']
         user_problem_data_sync(id)
         app.logger.info(f'user_problem_data_sync done')
-        user_training_model_sync(id)
-        app.logger.info(f'user_training_model_sync done')
+
+        # user_training_model_sync(id)
+        # app.logger.info(f'user_training_model_sync done')
 
         details_info = get_user_details(id)
         skill_value = details_info.get('skill_value', 0)

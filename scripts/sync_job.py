@@ -119,7 +119,7 @@ def db_job():
         update_job(cur_job['id'], 'PROCESSING')
         if cur_job['job_type'] == 'USER_SYNC':
             user_problem_sync(cur_job['job_ref_id'])
-            user_training_model_sync(cur_job['job_ref_id'])
+            # user_training_model_sync(cur_job['job_ref_id'])
         else:
             team_training_model_sync(cur_job['job_ref_id'])
 
