@@ -1,7 +1,7 @@
 import json
 from flask import current_app as app
 
-from core.problem_services import search_problems, apply_solved_problem_for_user
+from core.problem_services import search_problems, apply_solved_problem_for_user, search_problems_filtered_by_categories, get_user_problem_status, add_user_problem_status
 from core.user_services import get_user_details
 from scrappers.codechef_scrapper import CodechefScrapper
 from scrappers.codeforces_scrapper import CodeforcesScrapper
@@ -11,9 +11,46 @@ from scrappers.uva_scrapper import UvaScrapper
 from core.category_services import search_categories, find_dependent_category_list
 from core.user_category_edge_services import update_root_category_skill_for_user, get_user_category_data, add_user_category_data
 from models.category_score_model import CategoryScoreGenerator
+from models.problem_score_model import ProblemScoreGenerator
+from commons.skillset import Skill
 from core.training_model_services import sync_overall_stat_for_user
 
 _es_size = 5000
+
+
+def update_problem_score(user_id, user_skill_level, updated_categories):
+    app.logger.info(f'update_problem_score called for: {user_id}, with skill: {user_skill_level}')
+    problem_score_generator = ProblemScoreGenerator()
+    problem_list = search_problems_filtered_by_categories(updated_categories)
+
+    for problem in problem_list:
+        problem_id = problem['id']
+        up_edge = get_user_problem_status(user_id, problem_id)
+        if up_edge is not None and up_edge['status'] == "SOLVED":
+            continue
+
+        if up_edge is None:
+            up_edge = {
+                "problem_id": problem_id,
+                "user_id": user_id,
+                "relevant_score": 0,
+                "status": "UNSOLVED"
+            }
+
+        dcat_list = problem.get('categories', [])
+        dcat_level_list = []
+
+        for cat in dcat_list:
+            category_id = cat['category_id']
+            if category_id in updated_categories:
+                uc_edge = updated_categories[category_id]
+            else:
+                uc_edge = get_user_category_data(user_id, category_id)
+                updated_categories[category_id] = uc_edge
+            dcat_level_list.append(uc_edge['skill_level'])
+        relevant_score = problem_score_generator.generate_score(int(float(problem['problem_difficulty'])), dcat_level_list, user_skill_level)
+        up_edge['relevant_score'] = relevant_score['score']
+        add_user_problem_status(user_id, problem_id, up_edge)
 
 
 def sync_problems(user_id, oj_problem_set):
@@ -82,8 +119,11 @@ def sync_problems(user_id, oj_problem_set):
             add_user_category_data(user_id, category_id, uc_edge)
 
         root_category_list = search_categories({"category_root": "root"}, 0, _es_size)
+        skill = Skill()
         user_skill = update_root_category_skill_for_user(user_id, root_category_list)
+        user_skill_level = skill.get_skill_level_from_skill(user_skill)
         sync_overall_stat_for_user(user_id, user_skill)
+        update_problem_score(user_id, user_skill_level, updated_categories)
     except Exception as e:
         raise e
 

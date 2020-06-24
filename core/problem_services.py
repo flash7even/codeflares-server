@@ -523,6 +523,45 @@ def search_problems(param, from_value, size_value, heavy = False):
         raise e
 
 
+def search_problems_filtered_by_categories(categories):
+    app.logger.info('search_problems_filtered_by_categories called')
+    try:
+        rs = requests.session()
+        should = []
+        for category_id in categories:
+            uc_edge = categories[category_id]
+            dif_level = float(uc_edge['skill_level'])
+            level_min = max(0.0, dif_level-1.5)
+            level_max = min(10.0, dif_level+1.5)
+            must = [
+                {'nested': {'path': 'categories', 'query': {'bool': {'must': [{'term': {'categories.category_id': category_id}}]}}}},
+                {"range": {"problem_difficulty": {"gte": level_min, "lte": level_max}}}
+            ]
+            item = {"bool": {"must": must}}
+            should.append(item)
+
+        query_json = {'query': {'match_all': {}}}
+        if len(should) > 0:
+            query_json = {'query': {'bool': {'should': should}}}
+
+        query_json['from'] = 0
+        query_json['size'] = _es_size
+        app.logger.debug('QUERY JSON: ' + json.dumps(query_json))
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        item_list = []
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                data = hit['_source']
+                data['id'] = hit['_id']
+                item_list.append(data)
+            return item_list
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        return item_list
+    except Exception as e:
+        raise e
+
+
 def get_problem_count_for_category(param):
     try:
         rs = requests.session()
