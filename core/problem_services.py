@@ -546,7 +546,6 @@ def search_problems_filtered_by_categories(categories):
 
         query_json['from'] = 0
         query_json['size'] = _es_size
-        app.logger.debug('QUERY JSON: ' + json.dumps(query_json))
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
         item_list = []

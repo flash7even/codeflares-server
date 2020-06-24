@@ -50,6 +50,7 @@ def update_problem_score(user_id, user_skill_level, updated_categories):
             dcat_level_list.append(uc_edge['skill_level'])
         relevant_score = problem_score_generator.generate_score(int(float(problem['problem_difficulty'])), dcat_level_list, user_skill_level)
         up_edge['relevant_score'] = relevant_score['score']
+        up_edge.pop('id', None)
         add_user_problem_status(user_id, problem_id, up_edge)
 
 
@@ -123,7 +124,8 @@ def sync_problems(user_id, oj_problem_set):
         user_skill = update_root_category_skill_for_user(user_id, root_category_list)
         user_skill_level = skill.get_skill_level_from_skill(user_skill)
         sync_overall_stat_for_user(user_id, user_skill)
-        update_problem_score(user_id, user_skill_level, updated_categories)
+        if len(updated_categories) > 0:
+            update_problem_score(user_id, user_skill_level, updated_categories)
     except Exception as e:
         raise e
 
