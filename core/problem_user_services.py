@@ -59,6 +59,7 @@ def sync_problems(user_id, oj_problem_set):
     try:
         category_score_generator = CategoryScoreGenerator()
         updated_categories = {}
+        root_category_solve_count = {}
 
         for problem_set in oj_problem_set:
             for problem in problem_set['problem_list']:
@@ -68,7 +69,7 @@ def sync_problems(user_id, oj_problem_set):
                 problem_id = problem_db[0]['id']
                 if len(problem_db) > 1:
                     app.logger.error('Multiple problem with same id found')
-                apply_solved_problem_for_user(user_id, problem_id, problem_db[0], updated_categories)
+                apply_solved_problem_for_user(user_id, problem_id, problem_db[0], updated_categories, root_category_solve_count)
 
         marked_categories = dict(updated_categories)
 
@@ -111,7 +112,6 @@ def sync_problems(user_id, oj_problem_set):
                 new_cont = category_score_generator.get_dependent_score(uc_edge['skill_level'], dependency_percentage)
                 cont_dx = new_cont - old_cont
                 dcat_uc_edge['relevant_score'] += cont_dx
-                dcat_uc_edge['solve_count'] += 1
                 updated_categories[dcat_id] = dcat_uc_edge
 
         for category_id in updated_categories:
@@ -122,7 +122,7 @@ def sync_problems(user_id, oj_problem_set):
 
         root_category_list = search_categories({"category_root": "root"}, 0, _es_size)
         skill = Skill()
-        user_skill = update_root_category_skill_for_user(user_id, root_category_list)
+        user_skill = update_root_category_skill_for_user(user_id, root_category_list, root_category_solve_count)
         user_skill_level = skill.get_skill_level_from_skill(user_skill)
         sync_overall_stat_for_user(user_id, user_skill)
         if len(updated_categories) > 0:

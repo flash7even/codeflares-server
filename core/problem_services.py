@@ -300,7 +300,7 @@ def add_user_problem_status(user_id, problem_id, data):
         raise Exception('Internal server error')
 
 
-def apply_solved_problem_for_user(user_id, problem_id, problem_details, updated_categories):
+def apply_solved_problem_for_user(user_id, problem_id, problem_details, updated_categories, root_category_solve_count):
     app.logger.info(f'apply_solved_problem_for_user for user_id: {user_id}, problem_id: {problem_id}')
     app.logger.info('current updated_categories: ' + json.dumps(updated_categories))
     try:
@@ -323,12 +323,19 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, updated_
         # Update dependent category skill
         problem_difficulty = problem_details['problem_difficulty']
         app.logger.info(f'problem_difficulty: {problem_difficulty}')
-        dep_cat_list = find_problem_dependency_list(problem_id)
+        dep_cat_list = problem_details.get('categories', [])
         cat_skill_model = CategorySkillGenerator()
+        marked_roots = {}
         for cat in dep_cat_list:
             app.logger.info(f'dept cat: {cat}')
             category_id = cat['category_id']
-            category_root = cat['category_info']['category_root']
+            category_details = get_category_details(category_id)
+            category_root = category_details['category_root']
+            if category_root not in marked_roots:
+                if category_root not in root_category_solve_count:
+                    root_category_solve_count[category_root] = 0
+                root_category_solve_count[category_root] += 1
+                marked_roots[category_root] = 1
             if category_id in updated_categories:
                 uc_edge = updated_categories[category_id]
             else:
@@ -355,13 +362,13 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, updated_
 
             dif_key = 'scd_' + str(int(problem_difficulty))
             uc_edge[dif_key] += 1
-            problem_factor = cat['category_info'].get('factor', 1)
+            problem_factor = category_details.get('factor', 1)
             added_skill = cat_skill_model.get_score_for_latest_solved_problem(problem_difficulty, uc_edge[dif_key], problem_factor)
             uc_edge['skill_value'] += added_skill
             uc_edge['solve_count'] += 1
             uc_edge['skill_title'] = skill_info.get_skill_title(uc_edge['skill_value'])
             uc_edge['skill_level'] = skill_info.get_skill_level_from_skill(uc_edge['skill_value'])
-            score_percentage = float(cat['category_info']['score_percentage'])
+            score_percentage = float(category_details['score_percentage'])
             uc_edge['skill_value_by_percentage'] = uc_edge['skill_value']*score_percentage/100
             app.logger.info(f'add uc_edge: {uc_edge}')
             updated_categories[category_id] = uc_edge
