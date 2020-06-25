@@ -70,7 +70,8 @@ def get_user_rating_history(user_id):
                 "hour": daytime[3],
                 "minute": daytime[4],
                 "second": daytime[5],
-            }
+            },
+            'created_at': rating_data['created_at']
         }
         rating_history.append(data)
     return rating_history

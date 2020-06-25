@@ -13,7 +13,7 @@ from core.user_services import get_user_details_by_handle_name
 from core.notification_services import add_notification
 from core.follower_services import get_follow_stat
 from core.rating_services import search_user_ratings
-
+from core.rating_services import get_user_rating_history
 _es_index_user_team_edge = 'cfs_user_team_edges'
 _es_index_team = 'cfs_teams'
 _es_type = '_doc'
@@ -357,26 +357,9 @@ def search_teams_for_user(user_handle, param):
         raise e
 
 
-def get_rating_history_codeforces(team_id):
-    try:
-        members = get_all_users_from_team(team_id)
-        handle_list = []
-        handle_wise_rating = []
-        history_list = []
-        cf_scrapper = CodeforcesScrapper()
-
-        for member in members:
-            user_handle = member['user_handle']
-            matched_user_list = search_user({'username': user_handle}, 0, 1)
-            if len(matched_user_list) > 0:
-                user_details = matched_user_list[0]
-                cf_handle = user_details.get('codeforces_handle', None)
-                if cf_handle:
-                    rating_history = cf_scrapper.get_user_rating_history(cf_handle)
-                    handle_list.append({'user_handle': user_handle})
-                    history_list.append(rating_history)
-
+def get_rating_comparison(history_list, handle_list):
         date_list = []
+        handle_wise_rating = []
 
         for idx in range(0, len(history_list)):
             history = history_list[idx]
@@ -402,15 +385,13 @@ def get_rating_history_codeforces(team_id):
                         idx += 1
                     else:
                         break
-
             handle_wise_rating.append(rating_list)
-
         rating_stat = []
         for date_idx in range(0, len(date_list)):
             day = datetime.date.fromtimestamp(date_list[date_idx])
 
             data = {
-                'epoc_time': date_list[date_idx],
+                'epoch_time': date_list[date_idx],
                 'date': {
                     "year": day.year,
                     "month": day.month,
@@ -421,12 +402,57 @@ def get_rating_history_codeforces(team_id):
 
             for c_idx in range(0, len(handle_wise_rating)):
                 data['rating_list'].append(handle_wise_rating[c_idx][date_idx])
-
             rating_stat.append(data)
 
         return {
             'handle_list': handle_list,
             'history': rating_stat
         }
+
+
+def get_rating_history_codeforces(team_id):
+    try:
+        members = get_all_users_from_team(team_id)
+        handle_list = []
+        history_list = []
+        cf_scrapper = CodeforcesScrapper()
+
+        for member in members:
+            user_handle = member['user_handle']
+            matched_user_list = search_user({'username': user_handle}, 0, 1)
+            if len(matched_user_list) > 0:
+                user_details = matched_user_list[0]
+                cf_handle = user_details.get('codeforces_handle', None)
+                if cf_handle:
+                    rating_history = cf_scrapper.get_user_rating_history(cf_handle)
+                    handle_list.append({'user_handle': user_handle})
+                    history_list.append(rating_history)
+        rating_history = get_rating_comparison(history_list, handle_list)
+        return rating_history
+    except Exception as e:
+        raise e
+
+
+def get_rating_history_codeflares(team_id):
+    try:
+        members = get_all_users_from_team(team_id)
+        handle_list = []
+        history_list = []
+
+        for member in members:
+            user_handle = member['user_handle']
+            matched_user_list = search_user({'username': user_handle}, 0, 1)
+            if len(matched_user_list) > 0:
+                user_details = matched_user_list[0]
+                userid = user_details['id']
+                rating_history = get_user_rating_history(userid)
+                for rating in rating_history:
+                    rating['newRating'] = rating['rating']
+                    rating['ratingUpdateTimeSeconds'] = rating['created_at']
+                handle_list.append({'user_handle': user_details['username']})
+                history_list.append(rating_history)
+        app.logger.debug(f'history_list: {json.dumps(history_list)}')
+        rating_history = get_rating_comparison(history_list, handle_list)
+        return rating_history
     except Exception as e:
         raise e

@@ -13,9 +13,9 @@ from commons.skillset import Skill
 
 api = Namespace('team', description='Namespace for team service')
 
-from core.team_services import add_team_member, delete_team_member, \
-    delete_all_users_from_team,\
-    search_teams_for_user, get_team_details, update_team_member, search_teams, get_rating_history_codeforces, add_team_members_bulk
+from core.team_services import add_team_member, delete_team_member, delete_all_users_from_team
+from core.team_services import search_teams_for_user, get_team_details, update_team_member, search_teams, get_rating_history_codeforces, add_team_members_bulk
+from core.team_services import get_rating_history_codeflares
 
 from core.sync_services import team_training_model_sync
 from core.job_services import add_pending_job
@@ -297,6 +297,9 @@ class RatingHistoryOnlineJudge(Resource):
         try:
             if platform == "codeforces":
                 result = get_rating_history_codeforces(team_id)
+                return result
+            if platform == "codeflares":
+                result = get_rating_history_codeflares(team_id)
                 return result
             return {}
         except Exception as e:
