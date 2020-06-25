@@ -26,8 +26,6 @@ def update_problem_score(user_id, user_skill_level, updated_categories):
     for problem in problem_list:
         problem_id = problem['id']
         up_edge = get_user_problem_status(user_id, problem_id)
-        if up_edge is not None and up_edge['status'] == "SOLVED":
-            continue
 
         if up_edge is None:
             up_edge = {
@@ -36,6 +34,9 @@ def update_problem_score(user_id, user_skill_level, updated_categories):
                 "relevant_score": 0,
                 "status": "UNSOLVED"
             }
+
+        if up_edge['status'] == "SOLVED":
+            continue
 
         dcat_list = problem.get('categories', [])
         dcat_level_list = []

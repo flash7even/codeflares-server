@@ -66,7 +66,7 @@ class CategoryScoreGenerator:
             cur_score = self.get_dependent_score(dep_cat_diff, avg_percentage)
             dependent_score += cur_score
 
-        own_diff_based_score = self.get_own_difficulty_based_score(own_diff, self.own_skill_percentage)
+        own_diff_based_score = self.get_own_difficulty_based_score(own_diff)
         final_score = dependent_score + own_diff_based_score
 
         return {
