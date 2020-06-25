@@ -13,6 +13,7 @@ from core.rating_services import add_user_ratings, get_user_rating_history
 from core.sync_services import user_problem_data_sync, user_training_model_sync
 from core.job_services import add_pending_job
 from core.rating_sync_services import user_list_sync, team_list_sync
+from commons.skillset import Skill
 
 api = Namespace('user', description='user related services')
 
@@ -186,9 +187,11 @@ class CreateUser(Resource):
                     app.logger.info('Username already exists')
                     return 'Username already exists', 200
 
+            skill = Skill()
             user_data['created_at'] = int(time.time())
             user_data['updated_at'] = int(time.time())
             user_data['skill_value'] = 0
+            user_data['skill_title'] = skill.get_skill_title(0)
             user_data['decreased_skill_value'] = 0
             user_data['total_score'] = 0
             user_data['target_score'] = 0

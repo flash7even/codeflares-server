@@ -9,6 +9,7 @@ from flask_jwt_extended.exceptions import *
 from flask_jwt_extended import jwt_required
 from jwt.exceptions import *
 from commons.jwt_helpers import access_required
+from commons.skillset import Skill
 
 api = Namespace('team', description='Namespace for team service')
 
@@ -170,9 +171,11 @@ class CreateTeam(Resource):
             rs = requests.session()
             data = request.get_json()
 
+            skill = Skill()
             data['created_at'] = int(time.time())
             data['updated_at'] = int(time.time())
             data['skill_value'] = 0
+            data['skill_title'] = skill.get_skill_title(0)
             data['decreased_skill_value'] = 0
             data['total_score'] = 0
             data['target_score'] = 0
