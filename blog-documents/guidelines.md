@@ -1,12 +1,14 @@
 
-### Features
+### Features & Models
 
 1. [Algorithm Database](#algorithmdatabase)
 1. [Problem Database](#problemdatabase)
+1. [Problem Score](#problemscore)
 1. [Individual Skill Generator](#individualskillgenerator)
 1. [Individual Training Model](#individualtrainingmodel)
 1. [Team Skill Generator](#teamskillgenerator)
 1. [Team Training Model](#teamtrainingmodel)
+1. [Rating System](#ratingsystem)
 1. [Automated Training Contest Generator](#automatedtrainingcontestgenerator)
 1. [Classroom Based Training](#classroombasedtraining)
 1. [Learning Resources](#learningresources)
@@ -48,22 +50,40 @@ by a factor which depends on the _problem-difficulty_ of the problem and the _fa
 
 You'll find the problem database section in [**Gateway -> Problems**](/problem/list/all/)
 
+#### Problem Score
+We have a problem score formula to calculate the score that a contestant receive after solving any problem.
+After solving any problem of difficulty d, a contestant receive **sqrt(d)** points. So for the difficulties
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10, a contestant receive the following scores:
+1, 2.82, 5.19, 8, 11.18, 14.69, 18.52, 22.62, 27, 31.62.
+
+###### Why this score is important?
+
+1. This score helps us to calculate the minimum efforts you need to give to improve your skill rating. So it
+directly affects the rating progress of a contestant.
+2. It also helps us to determine your skill. Your skill in any algorithms depends partially on the total amount of
+score you received solving problems from that particular algorithm.
+
+
 #### Individual Skill Generator
 The individual skill generator model generates your overall problem solving skill as well as your skill per each algorithm
 considering your problem solving record.
 
-###### How it works?
+##### How it works?
 
-1. Considering your problem solving record, we generate your skill for each of the second level algorithms.
-2. For any algorithm **X**, the skill of that algorithm depends on the problems that have some connections with the algorithm **X**.
+Considering your problem solving record, we generate your skill for each of the second level algorithms.
+
+For any algorithm **X**, the skill of that algorithm depends on the problems that have some connections with the algorithm **X**.
 Every solved problem of an user contribute to the skill of the algorithms which are connected to that algorithm.
-3. As explained in the **Problem Database** section, for any solved problem **P**, how much it'll contribute to the skill of a algorithm
+
+As explained in the **Problem Database** section, for any solved problem **P**, how much it'll contribute to the skill of a algorithm
 it depends on the following two factors: **problem-difficulty** and _**problem-category-connection-matrix**_.
 Using this factors for each solved problems, we generate a [**skill value**](/training/individual/#overallAlgorithmSkill) for all the second level algorithms.
-4. Now we generate the [**skill value**](/training/individual/#topicWiseSkill) for the **root level categories** using the skill value of the algorithms that fall under that particular
+
+Now we generate the [**skill value**](/training/individual/#topicWiseSkill) for the **root level categories** using the skill value of the algorithms that fall under that particular
 root category. We have a _**algorithm-percentage-matrix**_ which stores the information of how much an algorithm contribute to the overall
 skill value of a root category.
-5. Finally we generate the **overall current skill** of an user using our _**root-algorithm-percentage-matrix**_.
+
+Finally we generate the **overall current skill** of an user using our _**root-algorithm-percentage-matrix**_.
 Each entry of this matrix denotes how much a root category contribute to the **overall total skill** of a contestant.
 
 
@@ -93,11 +113,27 @@ from your [**User Settings**](/settings/update/).
 
 Then you'll be able to visit your team training page from [**Training -> Team Training**](/training/team/)
 
+#### Rating System
+We have a rating system to help the contestant to keep track of their progress which gets updated exactly once
+in a week (for now in every Friday). We recalculate the overall skill and total problem score of every contestants
+during this update. We also set a new problem score target for next week. If any contestants fail to reach
+their target in the next week, their rating gets decreased.
+
+Let's say after week **W**, the skill of a contestant is **X**, total problem score is **Y** and next week problem score
+target is **Z (Z > Y)**. Now, after week **(W+1)**, let's consider that the contestant's achieved total problem score is **P**.
+
+Now, if **(P >= Z)**, then the rating of the contestant gets increased following our regular rating formula.
+But if **(P < Z)**, then the rating of the contestant gets decreased by **sqrt(Z - P)**.
+
+More details about the rating system and the models we used will be published later on. We are also continuously
+working on improving the rating system gradually.
+
+
 #### Automated Training Contest Generator
 We also have a automated training contest generator for your practice. You can generate a contest for your individual practice,
 team practice or even for the classroom training purposes.
 
-###### How it works?
+##### How it works?
 
 1. You can generate a completely automated training contest for your practice. Make a request from our
 *Training Contest -> Create Training Contest* page providing the required information. We create a automated contest for
