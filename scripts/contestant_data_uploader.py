@@ -40,7 +40,7 @@ user_list = [
         "data": {
           "username" : "Labib666",
           "full_name" : "Labib Rashid",
-          "email" : "labib@gmail.com",
+          "email" : "ewmahadicd@gmail.com",
           "password" : "123456",
           "codeforces_handle" : "Labib666",
           "codechef_handle" : "labib666",
@@ -55,7 +55,7 @@ user_list = [
         "data": {
           "username" : "hasib",
           "full_name" : "Hasib Al Muhaimin",
-          "email" : "hasib@gmail.com",
+          "email" : "himuhasib@gmail.com",
           "password" : "123456",
           "codeforces_handle" : "hasib",
           "codechef_handle" : "hasib_mo",
@@ -85,7 +85,7 @@ user_list = [
         "data": {
           "username" : "aminul",
           "full_name" : "Aminul Haq",
-          "email" : "aminul@gmail.com",
+          "email" : "aminulhaq785@gmail.com",
           "password" : "123456",
           "codeforces_handle" : "aminul",
           "codechef_handle" : "aminul_haq",
@@ -100,7 +100,7 @@ user_list = [
         "data": {
           "username" : "kimbbakar",
           "full_name" : "Chowdhury Osman",
-          "email" : "kimbbakar@gmail.com",
+          "email" : "chowdhuryosman04@gmail.com",
           "password" : "123456",
           "codeforces_handle" : "kimbbakar",
           "codechef_handle" : "kimbbakar",
@@ -115,7 +115,7 @@ user_list = [
         "data": {
           "username" : "discofighter47",
           "full_name" : "Chowdhury Osman",
-          "email" : "discofighter47@gmail.com",
+          "email" : "mdzahidh119@gmail.com",
           "password" : "123456",
           "codeforces_handle" : "DiscoFighter47",
           "codechef_handle" : "discofighter47",
@@ -130,7 +130,7 @@ user_list = [
         "data": {
           "username" : "anirudha_ani",
           "full_name" : "Anirudha Ani",
-          "email" : "anirudha_ani@gmail.com",
+          "email" : "anirudhaprasun@gmail.com",
           "password" : "123456",
           "codeforces_handle" : "anirudha",
           "codechef_handle" : "anirudha_ani",
@@ -145,7 +145,7 @@ user_list = [
         "data": {
           "username" : "nur_islam",
           "full_name" : "Nur Islam",
-          "email" : "nur_islam@gmail.com",
+          "email" : "nurislam0333@gmail.com",
           "password" : "123456",
           "codeforces_handle" : "nur_islam",
           "codechef_handle" : "nurislam",
@@ -160,7 +160,7 @@ user_list = [
         "data": {
           "username" : "Sherlock221b",
           "full_name" : "Imran Hasan",
-          "email" : "sherlock221b@gmail.com",
+          "email" : "imran221b@gmail.com",
           "password" : "123456",
           "codeforces_handle" : "Sherlock221b",
           "codechef_handle" : "imran221b",
@@ -175,13 +175,27 @@ user_list = [
         "data": {
           "username" : "Alvee9",
           "full_name" : "Alvee Imam",
-          "email" : "alvee9@gmail.com",
+          "email" : "abdullah.alvee@gmail.com",
           "password" : "123456",
           "codeforces_handle" : "Alvee9",
           "codechef_handle" : "Alvee9",
           "spoj_handle" : "alvee9",
           "uva_handle" : "Alvee",
           "lightoj_handle" : "28734",
+          "user_role" : "admin"
+        }
+    },
+    {
+        "id": "112",
+        "data": {
+          "username" : "nuronial_block",
+          "full_name" : "Ahnaf Tahmid Chowdhury",
+          "email" : "ahnaf93@gmail.com",
+          "password" : "123456",
+          "codeforces_handle" : "nuronial_block",
+          "codechef_handle" : "leom10",
+          "spoj_handle" : "nuronial_block",
+          "uva_handle" : "nuronial_block",
           "user_role" : "admin"
         }
     }
