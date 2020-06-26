@@ -74,8 +74,8 @@ def create_app(instance_name):
 
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
     app.config['MAIL_PORT'] = 465
-    app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER')
-    app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASSWORD')
+    app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER', 'codeflares.team@gmail.com')
+    app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASSWORD', '123456')
     app.config['MAIL_USE_TLS'] = False
     app.config['MAIL_USE_SSL'] = True
 
@@ -87,6 +87,10 @@ def create_app(instance_name):
 
     @jwt.token_in_blacklist_loader
     def check_if_token_is_revoked(decrypted_token):
+        jti = decrypted_token['jti']
+        jti = redis_store.redis_prefix_jwt_token + jti
+        if redis_store.connection.exists(jti):
+            return True
         return False
 
     jwt.init_app(app)

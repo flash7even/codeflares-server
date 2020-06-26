@@ -142,7 +142,6 @@ class Logout(Resource):
     @jwt_required
     def post(self):
         app.logger.info("logout at called")
-        return {'message': 'alright'}, 200
         jti = get_raw_jwt()['jti']
         jti = redis_store.redis_prefix_jwt_token + jti
         redis_store.connection.set(jti, 1 , timedelta(minutes=app.config['JWT_ACCESS_TOKEN_EXPIRES_MINUTES']))
