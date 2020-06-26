@@ -5,6 +5,7 @@ astroid==2.2.5
 asyncio==3.4.3
 attrs==19.1.0
 beautifulsoup4==4.9.0
+blinker==1.4
 certifi==2019.3.9
 chardet==3.0.4
 Click==7.0
@@ -14,6 +15,7 @@ Django==2.2.1
 Flask==1.0.2
 Flask-Cors==3.0.7
 Flask-JWT-Extended==3.20.0
+Flask-Mail==0.9.1
 flask-restplus==0.12.1
 Flask-Script==2.0.6
 gunicorn==20.0.4

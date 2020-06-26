@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import os
 from flask import Blueprint
 from flask import Flask
 from flask_cors import CORS
@@ -70,6 +71,17 @@ def create_app(instance_name):
 
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 100000
     app.config['JWT_REFRESH_TOKEN_EXPIRES'] = 100000
+
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 465
+    app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER')
+    app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASSWORD')
+    app.config['MAIL_USE_TLS'] = False
+    app.config['MAIL_USE_SSL'] = True
+
+    print('MAIL USERNAME: ', app.config['MAIL_USERNAME'])
+    print('MAIL PASSWORD: ', app.config['MAIL_PASSWORD'])
+    print('MAIL_PORT: ', app.config['MAIL_PORT'])
 
     jwt = JWTManager()
 

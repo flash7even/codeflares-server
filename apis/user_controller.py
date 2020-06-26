@@ -14,6 +14,7 @@ from core.sync_services import user_problem_data_sync, user_training_model_sync
 from core.job_services import add_pending_job
 from core.rating_sync_services import user_list_sync, team_list_sync
 from commons.skillset import Skill
+from core.mail_services import send_email
 
 api = Namespace('user', description='user related services')
 
@@ -424,6 +425,20 @@ class Test(Resource):
             app.logger.info('user_list_sync done')
             team_list_sync()
             app.logger.info('team_list_sync done')
+            return {'message': 'success'}, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/send-email')
+class TestEmail(Resource):
+
+    @api.doc('Send email testing')
+    def post(self):
+        try:
+            app.logger.info('send email service called')
+            receiver_list = ['tarangokhan77@gmail.com']
+            send_email(receiver_list, 'Test Mail', 'This is a test mail')
             return {'message': 'success'}, 200
         except Exception as e:
             return {'message': str(e)}, 500
