@@ -714,3 +714,16 @@ class TestEmail(Resource):
             return {'message': 'success'}, 200
         except Exception as e:
             return {'message': str(e)}, 500
+
+
+@api.route('/generate-crypty-key')
+class GenerateKey(Resource):
+
+    @api.doc('generate crypto key')
+    def post(self):
+        try:
+            app.logger.info('generate-crypty-key service called')
+            flask_crypto.generate_key()
+            return {'message': 'success'}, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
