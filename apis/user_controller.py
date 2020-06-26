@@ -308,16 +308,10 @@ class ActivateUser(Resource):
                 user_data = redis_store.connection.get(redis_key)
                 user_data = user_data.replace("\'", "\"")
                 user_data = json.loads(user_data)
-                print(token_data)
-                print(user_data)
                 if user_data['email'] != token_data['email']:
-                    return {
-                        'message': 'Invalid token'
-                    }, 409
+                    return { 'message': 'Invalid token' }, 409
             else:
-                return {
-                    'message': 'Invalid token'
-                }, 409
+                return { 'message': 'Invalid token' }, 409
 
             search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
             should = [
@@ -354,9 +348,7 @@ class ActivateUser(Resource):
             return response, 500
 
         except Exception as e:
-            return {
-                'message': 'Invalid token'
-            }, 409
+            return { 'message': 'Invalid token' }, 409
 
 
 @api.route('/changepass/<string:user_id>')
@@ -386,6 +378,139 @@ class ChangePassword(Resource):
                     data = response['_source']
                     if data['password'] != old_pass:
                         return 'Wrong password', 409
+                    data['password'] = new_pass
+                    upd_response = rs.put(url=search_url, json=data, headers=_http_headers)
+                    if upd_response.ok:
+                        app.logger.info('Password has been updated')
+                        return 'updated', 200
+                else:
+                    app.logger.debug('User does not exist')
+                    return 'user not found', 404
+            app.logger.error('Elasticsearch error')
+            return 'internal server error', 500
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/forgotpass')
+class ForgotPassword(Resource):
+
+    @api.doc('update user password')
+    def post(self):
+        try:
+            rs = requests.session()
+            js_body = request.get_json()
+            user_email = js_body['email']
+            app.logger.info(f'Attempting to update password for user {user_email}')
+
+            search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
+            should = [
+                {'term': {'email': user_email}}
+            ]
+            query_params = {'query': {'bool': {'should': should}}}
+            response = rs.post(url=search_url, json=query_params, headers=_http_headers).json()
+            user_data = None
+            if 'hits' in response:
+                if response['hits']['total']['value'] == 1:
+                    user_data = response['hits']['hits'][0]['_source']
+                    user_data['id'] = response['hits']['hits'][0]['_id']
+
+            if user_data is None:
+                return {'message': 'user not found'}, 409
+
+            token_data = {
+                'username': user_data['username'],
+                'email': user_data['email'],
+                'token': create_random_token()
+            }
+            app.logger.debug(f'token_data: {token_data}')
+
+            encrypted_token = flask_crypto.encrypt_json(token_data)
+            app.logger.debug(f'encrypted_token 1: {encrypted_token}')
+            redis_key = app.config['REDIS_PREFIX_USER_PASSWORD'] + ':' + encrypted_token
+            redis_store.connection.set(redis_key, str(user_data), timedelta(minutes=app.config['USER_CONFIRM_PASS_TIMEOUT']))
+            activation_link = f'http://{app.config["WEB_HOST"]}/{app.config["WEB_HOST_USER_CONFIRM_PASS_URL"]}/{encrypted_token}'
+            message_body = f'Please click the below link to update your password:\n\n{activation_link}\n\nRegards,\nCodeflares Team'
+            app.logger.debug(f'message_body: {message_body}')
+            send_email([user_email], 'Password Change', message_body)
+            return {
+                'token': encrypted_token
+            }
+
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/confirmpasstoken/<string:encrypted_token>')
+class ConfirmPassToken(Resource):
+
+    @api.doc('Confirm token')
+    def post(self, encrypted_token):
+        app.logger.info('Confirm password token API called')
+        try:
+            app.logger.debug(f'encrypted_token: {encrypted_token}')
+            encrypted_token_encoded =  encrypted_token.encode()
+            token_data = flask_crypto.decrypt_json(encrypted_token_encoded)
+            redis_key = app.config['REDIS_PREFIX_USER_PASSWORD'] + ':' + encrypted_token
+
+            if redis_store.connection.exists(redis_key):
+                user_data = redis_store.connection.get(redis_key)
+                user_data = user_data.replace("\'", "\"")
+                user_data = json.loads(user_data)
+                if user_data['email'] != token_data['email']:
+                    return { 'message': 'Invalid token' }, 409
+            else:
+                return { 'message': 'Invalid token' }, 409
+
+            return {
+                'username': user_data['username'],
+                'user_id': user_data['id'],
+                'fullname': user_data['full_name'],
+                'email': user_data['email'],
+                'token': encrypted_token,
+                'status': 'confirmed'
+            }, 200
+
+        except Exception as e:
+            return { 'message': 'Invalid token' }, 409
+
+
+@api.route('/confirmpass/<string:user_id>/<string:encrypted_token>')
+class ConfirmPassword(Resource):
+
+    @api.doc('update user password')
+    def put(self, user_id, encrypted_token):
+        try:
+            app.logger.info(f'Attempting to update password for user {user_id}')
+            rs = requests.session()
+            encrypted_token_encoded =  encrypted_token.encode()
+            token_data = flask_crypto.decrypt_json(encrypted_token_encoded)
+            redis_key = app.config['REDIS_PREFIX_USER_PASSWORD'] + ':' + encrypted_token
+
+            if redis_store.connection.exists(redis_key):
+                user_data = redis_store.connection.get(redis_key)
+                user_data = user_data.replace("\'", "\"")
+                user_data = json.loads(user_data)
+                if user_data['email'] != token_data['email']:
+                    return { 'message': 'Invalid token' }, 409
+            else:
+                return { 'message': 'Invalid token' }, 409
+
+            redis_store.connection.delete(redis_key)
+
+            fields = ['new_password']
+            user_data = request.get_json()
+            for field in fields:
+                if user_data.get(field, None) is None:
+                    return 'bad request', 400
+
+            new_pass = md5(user_data['new_password'].encode(encoding='utf-8')).hexdigest()
+            search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, user_id)
+            response = rs.get(url=search_url, headers=_http_headers).json()
+
+            if 'found' in response:
+                if response['found']:
+                    data = response['_source']
                     data['password'] = new_pass
                     upd_response = rs.put(url=search_url, json=data, headers=_http_headers)
                     if upd_response.ok:
