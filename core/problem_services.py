@@ -331,6 +331,7 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, updated_
             category_id = cat['category_id']
             category_details = get_category_details(category_id)
             category_root = category_details['category_root']
+            app.logger.info(f'category_root: {category_root}')
             if category_root not in marked_roots:
                 if category_root not in root_category_solve_count:
                     root_category_solve_count[category_root] = 0
@@ -360,6 +361,7 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, updated_
                     key = 'scd_' + str(d)
                     uc_edge[key] = 0
 
+            app.logger.info(f'current uc_edge: {uc_edge}')
             dif_key = 'scd_' + str(int(problem_difficulty))
             uc_edge[dif_key] += 1
             problem_factor = category_details.get('factor', 1)
@@ -372,6 +374,7 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, updated_
             uc_edge['skill_value_by_percentage'] = uc_edge['skill_value']*score_percentage/100
             app.logger.info(f'add uc_edge: {uc_edge}')
             updated_categories[category_id] = uc_edge
+            app.logger.info(f'saved at category_id: {category_id}')
     except Exception as e:
         app.logger.error(f'Exception occurred: {e}')
         raise Exception('Internal server error')
