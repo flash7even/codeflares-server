@@ -1,5 +1,7 @@
 from hashlib import md5
 import time
+import random
+from datetime import timedelta
 import requests, json
 from flask import current_app as app, request
 from flask_restplus import Resource, Namespace
@@ -15,6 +17,9 @@ from core.job_services import add_pending_job
 from core.rating_sync_services import user_list_sync, team_list_sync
 from commons.skillset import Skill
 from core.mail_services import send_email
+from extensions import flask_crypto
+from extensions.flask_redis import redis_store
+from core.mail_services import send_email
 
 api = Namespace('user', description='user related services')
 
@@ -23,6 +28,7 @@ _http_headers = {'Content-Type': 'application/json'}
 _es_index = 'cfs_users'
 _es_type = '_doc'
 _es_size = 2000
+
 
 @api.errorhandler(NoAuthorizationError)
 def handle_auth_error(e):
@@ -78,6 +84,15 @@ def handler_user_load_error(e):
 @api.errorhandler(UserClaimsVerificationError)
 def handle_failed_user_claims_verification(e):
     return {'message': 'User claims verification failed'}, 400
+
+
+def create_random_token():
+    token = str(int(time.time()))
+    for i in range(0, 3):
+        rnd_num = str(random.randint(100000, 999999))
+        token = token + ':' + rnd_num
+    token = md5(token.encode(encoding='utf-8')).hexdigest()
+    return token
 
 
 @api.route('/<string:user_id>')
@@ -210,6 +225,138 @@ class CreateUser(Resource):
 
         except Exception as e:
             return {'message': str(e)}, 500
+
+
+@api.route('/register')
+class RegisterUser(Resource):
+
+    @staticmethod
+    def __validate_json(json_data):
+        mandatory_fields = ['username', 'password', 'email', 'full_name', 'user_role']
+        for key, value in json_data.items():
+            if key in mandatory_fields and not value:
+                raise KeyError('Mandatory field missing')
+        return json_data
+
+    @api.doc('create new user')
+    def post(self):
+        app.logger.info('Create user API called')
+        rs = requests.session()
+        data = request.get_json()
+
+        try:
+            user_data = self.__validate_json(data)
+            user_data['password'] = md5(user_data['password'].encode(encoding='utf-8')).hexdigest()
+        except (IOError, KeyError):
+            app.logger.warning('Bad request')
+            return 'bad request', 400
+
+        try:
+            search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
+            should = [
+                {'match': {'username': data['username']}},
+                {'term': {'email': data['email']}}
+            ]
+            query_params = {'query': {'bool': {'should': should}}}
+
+            response = rs.post(url=search_url, json=query_params, headers=_http_headers).json()
+
+            if 'hits' in response:
+                if response['hits']['total']['value'] == 1:
+                    app.logger.info('Username already exists')
+                    return 'Username or email already exists', 200
+
+            app.logger.debug('Check done')
+
+            token_data = {
+                'username': data['username'],
+                'email': data['email'],
+                'token': create_random_token()
+            }
+            app.logger.debug(f'token_data: {token_data}')
+
+            encrypted_token = flask_crypto.encrypt_json(token_data)
+            app.logger.debug(f'encrypted_token 1: {encrypted_token}')
+            redis_key = app.config['REDIS_PREFIX_USER_ACTIVATE'] + ':' + encrypted_token
+            redis_store.connection.set(redis_key, str(user_data), timedelta(minutes=app.config['USER_ACTIVATION_TIMEOUT']))
+            activation_link = f'http://{app.config["WEB_HOST"]}/{app.config["WEB_HOST_USER_ACTIVATION_URL"]}/{encrypted_token}'
+            message_body = f'Please click the below link to activate your account:\n\n{activation_link}\n\nRegards,\nCodeflares Team'
+            app.logger.debug(f'message_body: {message_body}')
+            send_email([data['email']], 'Account Activation', message_body)
+            return {
+                'token': encrypted_token
+            }
+
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/activate/<string:encrypted_token>')
+class ActivateUser(Resource):
+
+    @api.doc('Activate new user')
+    def post(self, encrypted_token):
+        app.logger.info('Activate user API called')
+        rs = requests.session()
+        try:
+            app.logger.debug(f'encrypted_token: {encrypted_token}')
+            encrypted_token_encoded =  encrypted_token.encode()
+            token_data = flask_crypto.decrypt_json(encrypted_token_encoded)
+            redis_key = app.config['REDIS_PREFIX_USER_ACTIVATE'] + ':' + encrypted_token
+
+            if redis_store.connection.exists(redis_key):
+                user_data = redis_store.connection.get(redis_key)
+                user_data = user_data.replace("\'", "\"")
+                user_data = json.loads(user_data)
+                print(token_data)
+                print(user_data)
+                if user_data['email'] != token_data['email']:
+                    return {
+                        'message': 'Invalid token'
+                    }, 409
+            else:
+                return {
+                    'message': 'Invalid token'
+                }, 409
+
+            search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
+            should = [
+                {'match': {'username': user_data['username']}},
+                {'term': {'email': user_data['email']}}
+            ]
+            query_params = {'query': {'bool': {'should': should}}}
+
+            response = rs.post(url=search_url, json=query_params, headers=_http_headers).json()
+
+            if 'hits' in response:
+                if response['hits']['total']['value'] == 1:
+                    app.logger.info('Username already exists')
+                    return 'Username or email already exists', 200
+
+            skill = Skill()
+            user_data['created_at'] = int(time.time())
+            user_data['updated_at'] = int(time.time())
+            user_data['skill_value'] = 0
+            user_data['skill_title'] = skill.get_skill_title(0)
+            user_data['decreased_skill_value'] = 0
+            user_data['total_score'] = 0
+            user_data['target_score'] = 0
+            user_data['solve_count'] = 0
+            user_data['contribution'] = 0
+            post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type)
+            response = rs.post(url=post_url, json=user_data, headers=_http_headers).json()
+
+            if 'result' in response:
+                if response['result'] == 'created':
+                    app.logger.info('Create user API completed')
+                    add_user_ratings(response['_id'], 0, 0)
+                    return response['_id'], 201
+            return response, 500
+
+        except Exception as e:
+            return {
+                'message': 'Invalid token'
+            }, 409
 
 
 @api.route('/changepass/<string:user_id>')

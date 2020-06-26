@@ -7,11 +7,14 @@ attrs==19.1.0
 beautifulsoup4==4.9.0
 blinker==1.4
 certifi==2019.3.9
+cffi==1.14.0
 chardet==3.0.4
 Click==7.0
 cluster==1.4.1.post2
 config==0.4.2
+cryptography==2.9.2
 Django==2.2.1
+fernet==1.0.1
 Flask==1.0.2
 Flask-Cors==3.0.7
 Flask-JWT-Extended==3.20.0
@@ -35,6 +38,8 @@ opencv-python==4.1.0.25
 paho-mqtt==1.4.0
 pandas==1.0.3
 Pillow==6.0.0
+pyaes==1.6.1
+pycparser==2.20
 pyee==7.0.1
 PyJWT==1.7.1
 pylint==2.3.1

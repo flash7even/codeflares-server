@@ -16,3 +16,4 @@ pyppeteer
 selenium
 gunicorn
 Flask-Mail
+cryptography

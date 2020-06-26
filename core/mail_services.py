@@ -14,10 +14,8 @@ def send_email(receiver_list, mail_subject, mail_body):
             recipients=receiver_list,
             body=mail_body
         )
-        app.logger.info(f'msg created')
-        app.logger.info(f'Send email now')
         mail = Mail(app)
         mail.send(msg)
         app.logger.info(f'Email sent')
     except Exception as e:
-        app.logger.error(f'Exception occurred: {e}')
+        raise e
