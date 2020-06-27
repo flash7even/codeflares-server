@@ -269,11 +269,16 @@ def generate_contest_standings(contest_id, user_list):
             'problem_stat': user_stat,
             'user_id': user_id,
             'user_handle': user_details['username'],
-            'score': str(round(score, 2))
+            'score': float(round(score, 2))
         }
         user_stat_list.append(data)
 
     user_stat_list.sort(key=lambda x: x.get('score'), reverse=True)
+
+    idx = 1
+    for data in user_stat_list:
+        data['rank'] = idx
+        idx += 1
 
     standings = {
         'problem_list': problem_list,
