@@ -84,6 +84,7 @@ def search_top_skilled_categoires_for_user(user_id, category_root, sort_field, s
             for hit in response['hits']['hits']:
                 item = hit['_source']
                 item['relevant_score'] = "{:.2f}".format(item['relevant_score'])
+                item['skill_value'] = "{:.2f}".format(item['skill_value'])
                 if heavy:
                     item['category_info'] = get_category_details(item['category_id'])
                 item['rank'] = rank
