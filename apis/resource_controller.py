@@ -98,6 +98,7 @@ class ResourceByID(Resource):
                 data['updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['updated_at']))
                 user_details = get_user_details(data['resource_writer'])
                 data['resource_writer_handle'] = user_details['username']
+                data['resource_writer_skill_color'] = user_details['skill_color']
                 data['vote_count'] = get_vote_count_list(data['resource_id'])
                 app.logger.info('Get resource_details method completed')
                 return data, 200

@@ -269,6 +269,7 @@ def generate_contest_standings(contest_id, user_list):
             'problem_stat': user_stat,
             'user_id': user_id,
             'user_handle': user_details['username'],
+            'user_skill_color': user_details['skill_color'],
             'score': float(round(score, 2))
         }
         user_stat_list.append(data)

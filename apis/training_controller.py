@@ -144,6 +144,7 @@ class TeamTrainingModel(Resource):
                 member[f] = user_public_info[f]
             store = {
                 'user_handle': member['user_handle'],
+                'skill_color': member['skill_color'],
                 'skill_list': skill_list
             }
             member_stat.append(store)

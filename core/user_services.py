@@ -5,6 +5,7 @@ import json
 from core.follower_services import get_follow_stat
 
 from core.rating_services import get_user_rating_history
+from commons.skillset import Skill
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -15,9 +16,16 @@ _es_size = 2000
 public_fields = ['username', 'first_name', 'last_name', 'full_name', 'skill_value', 'skill_title', 'solve_count']
 
 
+def get_skill_color(user_id):
+    user_details = get_user_details(user_id)
+    return user_details.get('skill_color', '#000000')
+
+
 def reformat_user_data(data):
+    skill = Skill()
     data['skill_value'] = data.get('skill_value', 0) - data.get('decreased_skill_value', 0)
     data['skill_value'] = float("{:.2f}".format(data['skill_value']))
+    data['skill_color'] = skill.get_color_from_skill_title(data.get('skill_title', 'NA'))
     data['decreased_skill_value'] = float("{:.2f}".format(data.get('decreased_skill_value', 0)))
     data['total_score'] = float("{:.2f}".format(data.get('total_score', 0)))
     data['target_score'] = float("{:.2f}".format(data.get('target_score', 0)))

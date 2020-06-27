@@ -3,7 +3,7 @@ Codeflares is neither an online judge, nor a contest platform. Rather, it's an a
 platform to help the contestants keep track of their progress statistics. It also suggest them the most relevant problems
 and algorithms they need to focus now based on their problem solving history and current skill. So you can see, our purposes
 are very different thant other online judges and contest platforms. To know more about our features please have a
-look on our guidelines.
+look at our guidelines.
 
 ##### Why there's no features like oj & contest hosting platform?
 There are already a lots of online judges and contest hosting platforms like codeforces, codechef, atcoder, uva, spoj and etc.

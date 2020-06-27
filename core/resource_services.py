@@ -62,6 +62,7 @@ def search_resource(param, from_val, size):
                 data['id'] = hit['_id']
                 user_details = get_user_details(data['resource_writer'])
                 data['resource_writer_handle'] = user_details['username']
+                data['resource_writer_skill_color'] = user_details['skill_color']
                 data['resource_id'] = hit['_id']
                 data['updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['updated_at']))
                 data['vote_count'] = get_vote_count_list(data['resource_id'])

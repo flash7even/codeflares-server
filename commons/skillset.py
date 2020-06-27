@@ -1,3 +1,4 @@
+from flask import current_app as app
 
 class Skill:
 
@@ -6,6 +7,7 @@ class Skill:
     skill_levels = [0, 8, 20, 35, 70, 120, 200, 320, 470, 670, 920, max_skill]
     weekly_min_score = [1, 3, 5.82, 9.01, 16.01, 24.37, 33.87, 44.39, 55.83, 68.14, 81.24, 100]
     score_table = [0, 1, 2.82, 5.19, 8, 11.18, 14.69, 18.52, 22.62, 27, 31.62]
+    color_codes = ['#cccccc', '#78ff78', '#76debb', '#aaabff', '#ff88ff', '#ffcc88', '#ffbb55', '#ff7777', '#ff3333', '#aa0201']
 
     skill_title = [
         'Level 00',
@@ -75,3 +77,18 @@ class Skill:
     def get_problem_score(self, dif):
         dif = int(dif)
         return self.score_table[dif]
+
+    def get_color_from_skill(self, skill):
+        skill_level = int(self.get_skill_level_from_skill(skill))
+        return self.color_codes[skill_level]
+
+    def get_color_from_level(self, skill_level):
+        return self.color_codes[skill_level-1]
+
+    def get_color_from_skill_title(self, skill_title):
+        if skill_title not in self.skill_title:
+            return self.color_codes[0]
+        for i in range(0, 10):
+            if self.skill_title[i] == skill_title:
+                return self.color_codes[i]
+        return self.color_codes[0]

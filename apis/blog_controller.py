@@ -12,7 +12,7 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('blog', description='Namespace for blog service')
 
-from core.user_services import get_user_details
+from core.user_services import get_user_details, get_skill_color
 from core.comment_services import get_comment_list, get_comment_count
 from core.vote_services import get_vote_count_list
 
@@ -97,6 +97,7 @@ class BlogByID(Resource):
                 data['updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['updated_at']))
                 user_details = get_user_details(data['blog_writer'])
                 data['blog_writer_handle'] = user_details['username']
+                data['blog_writer_skill_color'] = user_details['skill_color']
                 data['comment_list'] = get_comment_list(data['blog_id'])
                 data['vote_count'] = get_vote_count_list(data['blog_id'])
                 data['comment_count'] = get_comment_count(data['blog_id'])
@@ -218,6 +219,7 @@ class SearchBlog(Resource):
                 blog['comment_count'] = get_comment_count(blog['blog_id'])
                 if 'blog_writer' in blog:
                     user_details = get_user_details(blog['blog_writer'])
+                    blog['blog_writer_skill_color'] = user_details['skill_color']
                     blog['blog_writer_handle'] = user_details['username']
                 item_list.append(blog)
             print(item_list)

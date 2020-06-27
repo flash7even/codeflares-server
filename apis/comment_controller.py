@@ -95,6 +95,7 @@ class CommentByID(Resource):
                 data['updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['updated_at']))
                 user_details = get_user_details(data['comment_writer'])
                 data['comment_writer_handle'] = user_details['username']
+                data['comment_writer_skill_color'] = user_details['skill_color']
                 app.logger.info('Get comment_details method completed')
                 return data, 200
             app.logger.warning('Comment not found')
@@ -211,6 +212,7 @@ class SearchComment(Resource):
                 if 'comment_writer' in comment:
                     user_details = get_user_details(comment['comment_writer'])
                     comment['comment_writer_handle'] = user_details['username']
+                    comment['comment_writer_skill_color'] = user_details['skill_color']
                 item_list.append(comment)
             print(item_list)
             app.logger.info('Comment search method completed')

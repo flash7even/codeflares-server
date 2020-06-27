@@ -1,3 +1,6 @@
+Codeflares is an automated offline training platform for competitive programmers. We generate a efficient training plan
+for the contestants using their problem solving history. We also provide them with some statistical data and other
+features to help them completely focus on competitive training. You'll find more details about our features in the following section.
 
 ### Features & Models
 

@@ -6,7 +6,7 @@ from flask import current_app as app
 
 _http_headers = {'Content-Type': 'application/json'}
 
-from core.user_services import search_user, get_user_details
+from core.user_services import search_user, get_user_details, get_skill_color
 from scrappers.codeforces_scrapper import CodeforcesScrapper
 from core.classroom_services import search_task_lists, search_class_lists
 from core.user_services import get_user_details_by_handle_name
@@ -14,6 +14,7 @@ from core.notification_services import add_notification
 from core.follower_services import get_follow_stat
 from core.rating_services import search_user_ratings
 from core.rating_services import get_user_rating_history
+from commons.skillset import Skill
 _es_index_user_team_edge = 'cfs_user_team_edges'
 _es_index_team = 'cfs_teams'
 _es_type = '_doc'
@@ -21,8 +22,10 @@ _es_size = 100
 
 
 def reformat_team_data(data):
+    skill = Skill()
     data['skill_value'] = data.get('skill_value', 0) - data.get('decreased_skill_value', 0)
     data['skill_value'] = float("{:.2f}".format(data['skill_value']))
+    data['skill_color'] = skill.get_color_from_skill_title(data.get('skill_title'))
     data['decreased_skill_value'] = float("{:.2f}".format(data.get('decreased_skill_value', 0)))
     data['total_score'] = float("{:.2f}".format(data.get('total_score', 0)))
     data['target_score'] = float("{:.2f}".format(data.get('target_score', 0)))
@@ -141,6 +144,7 @@ def get_team_details(team_id):
                 data['class_list'] = search_class_lists({'classroom_id': team_id}, 0, 3)
                 user_details = get_user_details(data['team_leader_id'])
                 data['team_leader_handle'] = user_details['username']
+                data['team_leader_skill_color'] = user_details['skill_color']
                 data['follow_stat'] = get_follow_stat(data['id'])
                 data = reformat_team_data(data)
                 return data
@@ -185,6 +189,7 @@ def get_all_users_from_team(team_id):
             for hit in response['hits']['hits']:
                 data = hit['_source']
                 data['id'] = hit['_id']
+                data['skill_color'] = get_skill_color(data['user_id'])
                 if 'status' not in data:
                     data['status'] = 'pending'
                 item_list.append(data)
