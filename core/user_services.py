@@ -21,7 +21,7 @@ def get_skill_color(user_id):
     return user_details.get('skill_color', '#000000')
 
 
-def reformat_user_data(data):
+def reformat_user_data(data, rank = 1):
     skill = Skill()
     data['skill_value'] = data.get('skill_value', 0) - data.get('decreased_skill_value', 0)
     data['skill_value'] = float("{:.2f}".format(data['skill_value']))
@@ -224,7 +224,7 @@ def dtsearch_user(param, start, length, sort_by = 'updated_at', sort_order = 'de
                 user['solve_count'] = user.get('solve_count', 0)
                 user['contribution'] = user.get('contribution', 0)
                 rank += 1
-                user = reformat_user_data(user)
+                user = reformat_user_data(user, rank-1)
                 data.append(user)
             return {
                 'user_list': data,
