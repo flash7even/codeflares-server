@@ -47,6 +47,7 @@ def search_task_lists(param, from_val, size_val):
                 data['id'] = hit['_id']
                 user_details = get_user_details(data['task_added_by'])
                 data['task_added_by_user_handle'] = user_details['username']
+                data['task_added_by_user_skill_color'] = user_details['skill_color']
                 item_list.append(data)
         return item_list
 
@@ -83,6 +84,7 @@ def search_class_lists(param, from_val, size_val):
                 data['id'] = hit['_id']
                 user_details = get_user_details(data['class_moderator_id'])
                 data['class_moderator_id_user_handle'] = user_details['username']
+                data['class_moderator_skill_color'] = user_details['skill_color']
                 item_list.append(data)
         return item_list
 
