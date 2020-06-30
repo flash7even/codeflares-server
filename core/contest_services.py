@@ -47,6 +47,8 @@ def get_contest_details(contest_id):
                 data['id'] = response['_id']
                 setter_data = get_user_details(data['setter_id'])
                 data['setter_handle'] = setter_data['username']
+                data['setter_handle'] = setter_data['username']
+                data['user_skill_color'] = setter_data['skill_color']
                 data['problem_set'] = find_problem_set_for_contest(contest_id)
                 return data
             raise Exception('Contest not found')
