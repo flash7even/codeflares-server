@@ -16,6 +16,7 @@ from core.problem_services import get_problem_details, get_solved_problem_count_
 from core.user_category_edge_services import add_user_category_data, get_user_category_data
 from core.team_services import get_team_details, update_team_details
 from core.user_services import get_user_details_by_handle_name, update_user_details
+from commons.skillset import Skill
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -63,6 +64,7 @@ def generate_skill_value_for_user(user_id):
 
 def search_top_skilled_categoires_for_user(user_id, category_root, sort_field, size, heavy=False):
     try:
+        skill = Skill()
         rs = requests.session()
         must = [{'term': {'user_id': user_id}}]
 
@@ -84,7 +86,9 @@ def search_top_skilled_categoires_for_user(user_id, category_root, sort_field, s
             for hit in response['hits']['hits']:
                 item = hit['_source']
                 item['relevant_score'] = "{:.2f}".format(item['relevant_score'])
-                item['skill_value'] = "{:.2f}".format(item['skill_value'])
+                skill_value = float(item.get('skill_value', 0))
+                item['skill_value'] = "{:.2f}".format(skill_value)
+                item['skill_title'] = skill.get_skill_title(skill_value)
                 if heavy:
                     item['category_info'] = get_category_details(item['category_id'])
                 item['rank'] = rank
