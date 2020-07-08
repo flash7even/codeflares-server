@@ -20,12 +20,12 @@ features to help them completely focus on competitive training. You'll find more
 #### Algorithm Database
 We have a collection of algorithms that most of the contestants use frequently in problem solving.
 All these algorithms are divided into two levels. The first level is called the **root level** which contains only
-the [**root level categories**](/category/list/). And the second level is called the **child level** which consists of all the algorithms.
+the [*root level categories*](/category/list/). And the second level is called the **child level** which consists of all the algorithms.
 The child level algorithms are then divided into the root level categories.
 
 For example, some of the root level categories are: *Base Algorithms, Number Theory, Graph, Data Structure, Dynamic Programming, Geometry* etc.
-1. Some second level algorithms that fall under [**Number Theory**](/category/list/root/number_theory/): *GCD, LCM, Prime Number, Sieve, Prime Factorization* etc.
-1. Similarly, some second level algorithms that fall under [**Graph**](/category/list/root/graph/): *BFS, DFS, Dijkstra, Bellmanford, SCC, DAG* etc.
+1. Some second level algorithms that fall under [*Number Theory*](/category/list/root/number_theory/): *GCD, LCM, Prime Number, Sieve, Prime Factorization* etc.
+1. Similarly, some second level algorithms that fall under [*Graph*](/category/list/root/graph/): *BFS, DFS, Dijkstra, Bellmanford, SCC, DAG* etc.
 
 Most of the second level algorithms are somewhat dependent on some other second level algorithms. For example,
 
@@ -37,7 +37,7 @@ Based on these dependencies we have created a _**category-dependency-matrix**_. 
 an weighted DAG, where every edge **a -> (b, f)** in the DAG denotes that the algorithm **a** is dependent
 on the algorithm **b** with a factor **f** (_in range 1 to 10_).
 
-You'll find the problem database section in [**Gateway -> Categories**](/category/list/)
+You'll find the problem database section in [*Gateway -> Categories*](/category/list/)
 
 
 #### Problem Database
@@ -51,7 +51,7 @@ the problem **X** you need to learn the algorithm **Y** upto a certain level (*d
 At the same time it also means that if you can solve the problem **X** then your skill in algorithm **Y** will get increased
 by a factor which depends on the _problem-difficulty_ of the problem and the _factor_ of the connection.
 
-You'll find the problem database section in [**Gateway -> Problems**](/problem/list/all/)
+You'll find the problem database section in [*Gateway -> Problems*](/problem/list/all/)
 
 #### Problem Score
 We have a problem score formula to calculate the score that a contestant receive after solving any problem.
@@ -80,9 +80,9 @@ Every solved problem of an user contribute to the skill of the algorithms which 
 
 As explained in the **Problem Database** section, for any solved problem **P**, how much it'll contribute to the skill of a algorithm
 it depends on the following two factors: **problem-difficulty** and _**problem-category-connection-matrix**_.
-Using this factors for each solved problems, we generate a [**skill value**](/training/individual/#overallAlgorithmSkill) for all the second level algorithms.
+Using this factors for each solved problems, we generate a [*skill value*](/training/individual/#overallAlgorithmSkill) for all the second level algorithms.
 
-Now we generate the [**skill value**](/training/individual/#topicWiseSkill) for the **root level categories** using the skill value of the algorithms that fall under that particular
+Now we generate the [*skill value*](/training/individual/#topicWiseSkill) for the **root level categories** using the skill value of the algorithms that fall under that particular
 root category. We have a _**algorithm-percentage-matrix**_ which stores the information of how much an algorithm contribute to the overall
 skill value of a root category.
 
@@ -98,9 +98,9 @@ a problem or algorithm is relevant for you right now considering your current pr
 In the individual training model page, we suggest the top 5 problems and algorithms for you to approach in the upcoming week.
 If you don't like a problem or if you think you have already solve a similar problem before, then you have the option to
 move it to **blacklist** or you can **flag** it temporarily for 3 days. Of course, you have the option to undo this operations
-from the [**tasklist**](/flagged/problem/list/) on the top bar if you feel like trying the problem again later on.
+from the [*tasklist*](/flagged/problem/list/) on the top bar if you feel like trying the problem again later on.
 
-Individual Training Model can be found from [**Training -> Personal Training**](/training/individual/)
+Individual Training Model can be found from [*Training -> Personal Training*](/training/individual/)
 
 #### Team Skill Generator
 Our team skill generator model is similar to the Individual Skill Generator model. Here, we just consider all the solved problems
@@ -112,9 +112,9 @@ Our team training model is similar to the Individual Training Model. Here, it ju
 algorithm skill value generated by the **Team Skill Generator** model.
 
 To activate Team Training Model, you first need to set your current active team
-from your [**User Settings**](/settings/update/).
+from your [*User Settings*](/settings/update/).
 
-Then you'll be able to visit your team training page from [**Training -> Team Training**](/training/team/)
+Then you'll be able to visit your team training page from [*Training -> Team Training*](/training/team/)
 
 #### Rating System
 We have a rating system to help the contestant to keep track of their progress which gets updated exactly once
@@ -143,7 +143,7 @@ team practice or even for the classroom training purposes.
 you using our **randomized algorithm model** following ACM ICPC problem structure.
 2. You can also request for a customized contest adding some custom filters. For example, let's say you want a problem set where at least
 **M** problems must be from ***Data Structure*** with difficulty range **(u - v)** and **N** problems from ***Graph*** with
-difficulty range **(p - q)**. Add these options in the customized filter section in [**Create Training Contest**](/contest/add/) page. After you send your
+difficulty range **(p - q)**. Add these options in the customized filter section in [*Create Training Contest*](/contest/add/) page. After you send your
 request, we'll create a contest for you satisfying all the filters that you provided.
 
 Note: We generate the contests considering only the unsolved problems. For example, if you create a contest for a team, then we only
@@ -161,15 +161,15 @@ The person who creates the classroom becomes the moderator and has all the contr
 4. Set training contests for practice
 5. Classroom discussion
 
-You can create your classroom from [Classroom -> Create Classroom](/classroom/add/)
+You can create your classroom from [*Classroom -> Create Classroom*](/classroom/add/)
 
 #### Learning Resources
 Each problem and algorithm has a separate page where you can discuss about that particular problem or algorithm.
 There are also some statistics and resources list that will help the contestants to improve their knowledge. You can contribute there
 by sharing your knowledge and resources about that problem or algorithm.
 
-For more details, please checkout the problem page for [Anagram Division](/problem/view/lightoj-1158/) and
-the category page for [BFS](/category/view/bfs/).
+For more details, please checkout the problem page for [*Anagram Division*](/problem/view/lightoj-1158/) and
+the category page for [*BFS*](/category/view/bfs/).
 
 
 #### Blog
