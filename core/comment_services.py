@@ -34,6 +34,7 @@ def dfs_comment_tree(cur_node_id):
                 if 'comment_writer' in data:
                     user_details = get_user_details(data['comment_writer'])
                     data['comment_writer_handle'] = user_details['username']
+                    data['comment_writer_skill_color'] = user_details['skill_color']
                 data['comment_id'] = hit['_id']
                 data['vote_count'] = get_vote_count_list(data['comment_id'])
                 child_list = dfs_comment_tree(data['comment_id'])

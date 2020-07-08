@@ -48,7 +48,7 @@ def get_contest_details(contest_id):
                 setter_data = get_user_details(data['setter_id'])
                 data['setter_handle'] = setter_data['username']
                 data['setter_handle'] = setter_data['username']
-                data['user_skill_color'] = setter_data['skill_color']
+                data['setter_skill_color'] = setter_data['skill_color']
                 data['problem_set'] = find_problem_set_for_contest(contest_id)
                 return data
             raise Exception('Contest not found')
@@ -243,6 +243,7 @@ def search_contests(param, from_value, size_value):
                 data['id'] = hit['_id']
                 setter_data = get_user_details(data['setter_id'])
                 data['setter_handle'] = setter_data['username']
+                data['setter_skill_color'] = setter_data['skill_color']
                 item_list.append(data)
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
