@@ -14,6 +14,7 @@ from commons.skillset import Skill
 _http_headers = {'Content-Type': 'application/json'}
 
 _es_index_contest = 'cfs_contests'
+_es_index_announcement = 'cfs_contest_announcements'
 _es_index_contest_configs = 'cfs_contest_configs'
 _es_index_contest_problem_edges = 'cfs_contest_problem_edges'
 
@@ -319,5 +320,44 @@ def contest_standings(contest_id, user_id=None):
 
         standings = generate_contest_standings(contest_id, user_list)
         return standings
+    except Exception as e:
+        raise e
+
+
+def add_announcement(data):
+    try:
+        rs = requests.session()
+        data['created_at'] = int(time.time())
+        data['updated_at'] = int(time.time())
+        post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index_announcement, _es_type)
+        response = rs.post(url=post_url, json=data, headers=_http_headers).json()
+        if 'result' in response and response['result'] == 'created':
+            return response['_id']
+        raise Exception('ES Down')
+    except Exception as e:
+        raise e
+
+
+def get_announcements(contest_id):
+    try:
+        rs = requests.session()
+        must = [{'term': {'contest_id': contest_id}}]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = _es_size
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_announcement, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        item_list = []
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                data = hit['_source']
+                data['id'] = hit['_id']
+                if 'created_at' in data:
+                    data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
+                if 'updated_at' in data:
+                    data['updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['updated_at']))
+                item_list.append(data)
+            return item_list
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        return item_list
     except Exception as e:
         raise e

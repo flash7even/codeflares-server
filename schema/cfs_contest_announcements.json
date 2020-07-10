@@ -1,0 +1,26 @@
+{
+  "dynamic": "strict",
+  "properties": {
+    "announcement_ref": {
+      "type": "keyword"
+    },
+    "announcement": {
+      "type": "text"
+    },
+    "contest_id": {
+      "type": "keyword"
+    },
+    "created_at": {
+      "type": "long"
+    },
+    "created_by": {
+      "type": "keyword"
+    },
+    "updated_at": {
+      "type": "long"
+    },
+    "updated_by": {
+      "type": "keyword"
+    }
+  }
+}

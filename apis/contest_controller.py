@@ -12,8 +12,9 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('contest', description='Namespace for contest service')
 
-from core.contest_services import create_contest, create_problem_set, search_contests, find_problem_set_for_contest, \
-    reupload_problem_set_for_contest, get_contest_details, contest_standings
+from core.contest_services import create_contest, create_problem_set, search_contests, find_problem_set_for_contest
+from core.contest_services import reupload_problem_set_for_contest, get_contest_details, contest_standings
+from core.contest_services import add_announcement, get_announcements
 from core.user_services import get_user_details
 from core.team_services import search_teams_for_user
 
@@ -257,5 +258,34 @@ class StandingsUser(Resource):
             return {
                 "standings": standings
             }
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/announcement/')
+class CreateAnnouncement(Resource):
+
+    @api.doc('create contest announcement')
+    def post(self):
+        try:
+            app.logger.info('Create contest announcement api called')
+            data = request.get_json()
+            response = add_announcement(data)
+            return response
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/announcement/search/<string:contest_id>')
+class GetAnnouncement(Resource):
+
+    @api.doc('get contest announcement')
+    def get(self, contest_id):
+        try:
+            app.logger.info('get contest announcement api called')
+            data_list = get_announcements(contest_id)
+            return {
+                "announcement_list": data_list
+            }, 200
         except Exception as e:
             return {'message': str(e)}, 500
