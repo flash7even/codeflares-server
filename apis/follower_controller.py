@@ -178,11 +178,14 @@ class FollowerList(Resource):
                 {'term': {'user_id': user_id}}
             ]
             query_json = {'query': {'bool': {'must': must}}}
+            query_json['size'] = _es_size
+            query_json['sort'] = [{'updated_at': {'order': 'asc'}}]
             url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_followers, _es_type)
             response = rs.post(url=url, json=query_json, headers=_http_headers).json()
 
             if 'hits' in response:
                 item_list = []
+                order = 1
                 for hit in response['hits']['hits']:
                     data = hit['_source']
                     user_id = data['followed_by']
@@ -193,11 +196,16 @@ class FollowerList(Resource):
                         continue
                     user_data = {
                         'user_id': user_id,
+                        'order': order,
                         'user_handle': user_details['username'],
-                        'user_skill_color': user_details['skill_color'],
+                        'skill_value': user_details['skill_value'],
+                        'skill_color': user_details['skill_color'],
                     }
                     item_list.append(user_data)
-                return item_list
+                    order += 1
+                return {
+                    'follower_list': item_list
+                }
             return response, 500
 
         except Exception as e:
@@ -215,11 +223,14 @@ class FollowingList(Resource):
                 {'term': {'followed_by': user_id}}
             ]
             query_json = {'query': {'bool': {'must': must}}}
+            query_json['sort'] = [{'updated_at': {'order': 'asc'}}]
+            query_json['size'] = _es_size
             url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_followers, _es_type)
             response = rs.post(url=url, json=query_json, headers=_http_headers).json()
 
             if 'hits' in response:
                 item_list = []
+                order = 1
                 for hit in response['hits']['hits']:
                     data = hit['_source']
                     user_id = data['user_id']
@@ -232,13 +243,17 @@ class FollowingList(Resource):
                     print('user_details: ', user_details)
                     user_data = {
                         'user_id': user_id,
+                        'order': order,
                         'user_handle': user_details['username'],
-                        'user_skill_color': user_details['skill_color'],
+                        'skill_value': user_details['skill_value'],
+                        'skill_color': user_details['skill_color'],
                     }
                     item_list.append(user_data)
-                return item_list
+                    order += 1
+                return {
+                    'following_list': item_list
+                }
             return response, 500
 
         except Exception as e:
             return {'message': str(e)}, 500
-
