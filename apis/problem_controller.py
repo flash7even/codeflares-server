@@ -13,7 +13,7 @@ from commons.jwt_helpers import access_required
 api = Namespace('problem', description='Namespace for problem service')
 
 from core.problem_services import search_problems, search_problems_by_category, get_problem_details, search_problems_by_category_dt_search
-from core.problem_services import create_problem_id
+from core.problem_services import create_problem_id, get_problem_submission_history
 from core.category_services import get_category_id_from_name, get_category_details
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -298,5 +298,20 @@ class UserProblemByID(Resource):
             app.logger.info('Get problem_details api called')
             response = get_problem_details(problem_id, user_id)
             return response
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/submission/history/<string:problem_id>/<string:page>')
+class ProblemSubmission(Resource):
+
+    @api.doc('get problem submission history')
+    def get(self, problem_id, page):
+        try:
+            app.logger.info('Get problem_details api called')
+            response = get_problem_submission_history(problem_id, page*_es_size, _es_size)
+            return {
+                'submission_history': response
+            }
         except Exception as e:
             return {'message': str(e)}, 500

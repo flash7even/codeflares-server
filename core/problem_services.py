@@ -11,6 +11,7 @@ from core.comment_services import get_comment_list, get_comment_count
 from core.vote_services import get_vote_count_list
 from core.user_category_edge_services import get_user_category_data, add_user_category_data
 from models.category_skill_model import CategorySkillGenerator
+from core.user_services import get_user_details
 
 from commons.skillset import Skill
 
@@ -581,5 +582,33 @@ def get_problem_count_for_category(param):
         if 'hits' in response:
             return response['hits']['total']['value']
         return 0
+    except Exception as e:
+        raise e
+
+
+def get_problem_submission_history(problem_id, start, size):
+    try:
+        rs = requests.session()
+        must = [
+            {'term': {'problem_id': problem_id}},
+            {'term': {'status': SOLVED}},
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['from'] = start
+        query_json['size'] = size
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+
+        submission_list = []
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                edge = hit['_source']
+                user_id = edge['user_id']
+                user_data = get_user_details(user_id)
+                edge['user_handle'] = user_data['username']
+                edge['user_skill_color'] = user_data['skill_color']
+                submission_list.append(edge)
+            return submission_list
+        raise Exception('Elasticsearch down')
     except Exception as e:
         raise e
