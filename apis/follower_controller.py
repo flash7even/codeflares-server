@@ -10,6 +10,8 @@ from flask_jwt_extended import jwt_required
 from jwt.exceptions import *
 from commons.jwt_helpers import access_required
 
+from core.user_services import get_user_details
+
 api = Namespace('user_follower', description='Namespace for user_follower service')
 
 
@@ -82,29 +84,33 @@ class UserFollow(Resource):
     @access_required(access="ALL")
     @api.doc('update user_follower')
     def put(self, user_id):
-        app.logger.info('Follow api called')
-        print('user_id: ', user_id)
-        current_user = get_jwt_identity().get('id')
-        rs = requests.session()
-        data = {
-            'user_id': user_id,
-            'followed_by': current_user
-        }
+        try:
+            app.logger.info('Follow api called')
+            print('user_id: ', user_id)
+            current_user = get_jwt_identity().get('id')
+            rs = requests.session()
+            data = {
+                'user_id': user_id,
+                'followed_by': current_user
+            }
 
-        print('data: ', data)
+            print('data: ', data)
 
-        data['created_at'] = int(time.time())
-        data['updated_at'] = int(time.time())
+            data['created_at'] = int(time.time())
+            data['updated_at'] = int(time.time())
 
-        post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index_followers, _es_type)
-        response = rs.post(url=post_url, json=data, headers=_http_headers).json()
-        print('response: ', response)
+            post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index_followers, _es_type)
+            response = rs.post(url=post_url, json=data, headers=_http_headers).json()
+            print('response: ', response)
 
-        if 'result' in response and response['result'] == 'created':
-            app.logger.info('Create comment method completed')
-            return response['_id'], 201
-        app.logger.error('Elasticsearch down, response: ' + str(response))
-        return response, 500
+            if 'result' in response and response['result'] == 'created':
+                app.logger.info('Create comment method completed')
+                return response['_id'], 201
+            app.logger.error('Elasticsearch down, response: ' + str(response))
+            return response, 500
+
+        except Exception as e:
+            return {'message': str(e)}, 500
 
 
 @api.route('/unfollow/<string:user_id>')
@@ -113,16 +119,20 @@ class UserUnfollow(Resource):
     @access_required(access="ALL")
     @api.doc('update user_follower')
     def put(self, user_id):
-        current_user = get_jwt_identity().get('id')
-        rs = requests.session()
-        must = [
-            {'term': {'user_id': user_id}},
-            {'term': {'followed_by': current_user}},
-        ]
-        query_json = {'query': {'bool': {'must': must}}}
-        url = 'http://{}/{}/{}/_delete_by_query'.format(app.config['ES_HOST'], _es_index_followers, _es_type)
-        response = rs.post(url=url, json=query_json, headers=_http_headers).json()
-        return response, 200
+        try:
+            current_user = get_jwt_identity().get('id')
+            rs = requests.session()
+            must = [
+                {'term': {'user_id': user_id}},
+                {'term': {'followed_by': current_user}},
+            ]
+            query_json = {'query': {'bool': {'must': must}}}
+            url = 'http://{}/{}/{}/_delete_by_query'.format(app.config['ES_HOST'], _es_index_followers, _es_type)
+            response = rs.post(url=url, json=query_json, headers=_http_headers).json()
+            return response, 200
+
+        except Exception as e:
+            return {'message': str(e)}, 500
 
 
 @api.route('/status/<string:user_id>')
@@ -131,23 +141,104 @@ class FollowStatus(Resource):
     @access_required(access="ALL")
     @api.doc('Get user_follower')
     def get(self, user_id):
-        current_user = get_jwt_identity().get('id')
-        rs = requests.session()
-        must = [
-            {'term': {'user_id': user_id}},
-            {'term': {'followed_by': current_user}},
-        ]
-        query_json = {'query': {'bool': {'must': must}}}
-        url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_followers, _es_type)
-        response = rs.post(url=url, json=query_json, headers=_http_headers).json()
+        try:
+            current_user = get_jwt_identity().get('id')
+            rs = requests.session()
+            must = [
+                {'term': {'user_id': user_id}},
+                {'term': {'followed_by': current_user}},
+            ]
+            query_json = {'query': {'bool': {'must': must}}}
+            url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_followers, _es_type)
+            response = rs.post(url=url, json=query_json, headers=_http_headers).json()
 
-        if 'hits' in response:
-            if response['hits']['total']['value'] > 0:
+            if 'hits' in response:
+                if response['hits']['total']['value'] > 0:
+                    return {
+                        'status': 'following'
+                    }
                 return {
-                    'status': 'following'
+                    'status': 'unknown'
                 }
-            return {
-                'status': 'unknown'
-            }
 
-        return response, 500
+            return response, 500
+
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/search/follower/<string:user_id>')
+class FollowerList(Resource):
+
+    @api.doc('Get user follower list')
+    def get(self, user_id):
+        try:
+            rs = requests.session()
+            must = [
+                {'term': {'user_id': user_id}}
+            ]
+            query_json = {'query': {'bool': {'must': must}}}
+            url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_followers, _es_type)
+            response = rs.post(url=url, json=query_json, headers=_http_headers).json()
+
+            if 'hits' in response:
+                item_list = []
+                for hit in response['hits']['hits']:
+                    data = hit['_source']
+                    user_id = data['followed_by']
+                    try:
+                        user_details = get_user_details(user_id)
+                    except Exception as e:
+                        app.logger.error(f'User not found {user_id}')
+                        continue
+                    user_data = {
+                        'user_id': user_id,
+                        'user_handle': user_details['username'],
+                        'user_skill_color': user_details['skill_color'],
+                    }
+                    item_list.append(user_data)
+                return item_list
+            return response, 500
+
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/search/following/<string:user_id>')
+class FollowingList(Resource):
+
+    @api.doc('Get user following list')
+    def get(self, user_id):
+        try:
+            rs = requests.session()
+            must = [
+                {'term': {'followed_by': user_id}}
+            ]
+            query_json = {'query': {'bool': {'must': must}}}
+            url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_followers, _es_type)
+            response = rs.post(url=url, json=query_json, headers=_http_headers).json()
+
+            if 'hits' in response:
+                item_list = []
+                for hit in response['hits']['hits']:
+                    data = hit['_source']
+                    user_id = data['user_id']
+                    print('Find User: ', user_id)
+                    try:
+                        user_details = get_user_details(user_id)
+                    except Exception as e:
+                        app.logger.error(f'User not found {user_id}')
+                        continue
+                    print('user_details: ', user_details)
+                    user_data = {
+                        'user_id': user_id,
+                        'user_handle': user_details['username'],
+                        'user_skill_color': user_details['skill_color'],
+                    }
+                    item_list.append(user_data)
+                return item_list
+            return response, 500
+
+        except Exception as e:
+            return {'message': str(e)}, 500
+
