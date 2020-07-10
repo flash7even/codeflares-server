@@ -253,61 +253,71 @@ def search_contests(param, from_value, size_value):
 
 
 def generate_contest_standings(contest_id, user_list):
-    problem_list = find_problem_set_for_contest(contest_id)
-    user_stat_list = []
-    for user_id in user_list:
-        user_details = get_user_details_public(user_id)
-        user_stat = []
-        score = 0
-        for problem in problem_list:
-            problem_diff = int(float(problem['problem_difficulty']))
-            edge = get_user_problem_status(user_id, problem['id'])
-            if edge is None:
-                user_stat.append({'status': 'UNSOLVED'})
-            else:
-                user_stat.append({'status': edge['status']})
-                if edge['status'] == 'SOLVED':
-                    score += Skill.score_table[problem_diff]
-        data = {
-            'problem_stat': user_stat,
-            'user_id': user_id,
-            'user_handle': user_details['username'],
-            'user_skill_color': user_details['skill_color'],
-            'score': float(round(score, 2))
+    try:
+        problem_list = find_problem_set_for_contest(contest_id)
+        user_stat_list = []
+        for user_id in user_list:
+            try:
+                user_details = get_user_details_public(user_id)
+            except Exception as e:
+                app.logger.error(f'User not found for: {user_id}')
+                continue
+            user_stat = []
+            score = 0
+            for problem in problem_list:
+                problem_diff = int(float(problem['problem_difficulty']))
+                edge = get_user_problem_status(user_id, problem['id'])
+                if edge is None:
+                    user_stat.append({'status': 'UNSOLVED'})
+                else:
+                    user_stat.append({'status': edge['status']})
+                    if edge['status'] == 'SOLVED':
+                        score += Skill.score_table[problem_diff]
+            data = {
+                'problem_stat': user_stat,
+                'user_id': user_id,
+                'user_handle': user_details['username'],
+                'user_skill_color': user_details['skill_color'],
+                'score': float(round(score, 2))
+            }
+            user_stat_list.append(data)
+
+        user_stat_list.sort(key=lambda x: x.get('score'), reverse=True)
+
+        idx = 1
+        for data in user_stat_list:
+            data['rank'] = idx
+            idx += 1
+
+        standings = {
+            'problem_list': problem_list,
+            'user_list': user_list,
+            'user_stat': user_stat_list
         }
-        user_stat_list.append(data)
-
-    user_stat_list.sort(key=lambda x: x.get('score'), reverse=True)
-
-    idx = 1
-    for data in user_stat_list:
-        data['rank'] = idx
-        idx += 1
-
-    standings = {
-        'problem_list': problem_list,
-        'user_list': user_list,
-        'user_stat': user_stat_list
-    }
-    return standings
+        return standings
+    except Exception as e:
+        raise e
 
 
 def contest_standings(contest_id, user_id=None):
-    contest_details = get_contest_details(contest_id)
+    try:
+        contest_details = get_contest_details(contest_id)
 
-    user_list = []
-    if user_id:
-        user_list = get_following_list(user_id)
+        user_list = []
+        if user_id:
+            user_list = get_following_list(user_id)
 
-    if contest_details['contest_type'] == 'individual':
-        user_list.append(contest_details['contest_ref_id'])
-    else:
-        team_details = get_team_details(contest_details['contest_ref_id'])
-        team_members = team_details['member_list']
+        if contest_details['contest_type'] == 'individual':
+            user_list.append(contest_details['contest_ref_id'])
+        else:
+            team_details = get_team_details(contest_details['contest_ref_id'])
+            team_members = team_details['member_list']
 
-        for member in team_members:
-            if member['user_id'] not in user_list:
-                user_list.append(member['user_id'])
+            for member in team_members:
+                if member['user_id'] not in user_list:
+                    user_list.append(member['user_id'])
 
-    standings = generate_contest_standings(contest_id, user_list)
-    return standings
+        standings = generate_contest_standings(contest_id, user_list)
+        return standings
+    except Exception as e:
+        raise e
