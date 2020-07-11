@@ -80,7 +80,7 @@ class UvaScrapper:
                             'problem_id': problem_id,
                             'submission_list': [
                                 {
-                                    'submission_link': f'https://uhunt.onlinejudge.org/id/{username}',
+                                    'submission_link': f'https://uhunt.onlinejudge.org/id/{userid}',
                                     'submission_time': submission_time
                                 }
                             ]
