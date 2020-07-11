@@ -46,24 +46,26 @@ class CodeforcesScrapper:
             url = f'http://codeforces.com/api/user.status?handle={username}&from=1&count=1000000'
             submission_list = rs.get(url=url, headers=_http_headers).json()
             submission_list = submission_list['result']
-
             solved_problems = {}
 
             for submission in submission_list:
+                if 'verdict' not in submission or 'testset' not in submission:
+                    continue
                 if submission['verdict'] == 'OK' and submission['testset'] == 'TESTS':
                     problem = str(submission['problem']['contestId']) + '/' + str(submission['problem']['index'])
                     if problem not in solved_problems:
                         problem_data = {
                             'problem_id': problem,
-                            'submission_stat': []
+                            'submission_list': []
                         }
                         solved_problems[problem] = problem_data
 
                     sublink = {
                         'submission_time': int(submission['creationTimeSeconds']),
-                        'submission_link': f'https://codeforces.com/contest/{submission["contestId"]}/submission/{submission["id"]}'
+                        'submission_link': f'https://codeforces.com/contest/{submission["contestId"]}/submission/{submission["id"]}',
+                        'submission_id': submission["id"]
                     }
-                    solved_problems[problem]['submission_stat'].append(sublink)
+                    solved_problems[problem]['submission_list'].append(sublink)
             return {
                 'platform': 'codeforces',
                 'user_name': username,
@@ -71,11 +73,12 @@ class CodeforcesScrapper:
                 'solved_problems': solved_problems
             }
         except Exception as e:
+            print('Exception occurred: ', str(e))
             return {
                 'platform': 'codeforces',
                 'user_name': username,
                 'solved_count': 0,
-                'solved_problems': []
+                'solved_problems': {}
             }
 
     def get_submission_stat(self, username):

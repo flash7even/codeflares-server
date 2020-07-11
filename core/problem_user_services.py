@@ -87,14 +87,17 @@ def sync_problems(user_id, oj_problem_set):
         root_category_solve_count = {}
 
         for problem_set in oj_problem_set:
+            # Change here
             for problem in problem_set['problem_list']:
+                problem_stat = problem_set['problem_list'][problem]
+                submission_list = problem_stat['submission_list']
                 problem_db = search_problems({'problem_id': problem, 'oj_name': problem_set['oj_name']}, 0, 1)
                 if len(problem_db) == 0:
                     continue
                 problem_id = problem_db[0]['id']
                 if len(problem_db) > 1:
                     app.logger.error('Multiple problem with same id found')
-                apply_solved_problem_for_user(user_id, problem_id, problem_db[0], updated_categories, root_category_solve_count)
+                apply_solved_problem_for_user(user_id, problem_id, problem_db[0], submission_list, updated_categories, root_category_solve_count)
 
         app.logger.info('apply_solved_problem_for_user completed for all problems')
         marked_categories = dict(updated_categories)
@@ -184,17 +187,19 @@ def synch_user_problem(user_id):
             handle = user_info.get('codeforces_handle', None)
             print('Codeforces: ', handle)
             if handle:
-                problem_stat = codeforces.get_user_info(handle)
+                problem_stat = codeforces.get_user_info_heavy(handle)
                 oj_problem_set.append({
                     'problem_list': problem_stat['solved_problems'],
                     'oj_name': 'codeforces'
                 })
+                app.logger.info(f'codeforces problem_stat: {problem_stat}')
+                print('problem_stat: ',problem_stat)
 
         if 'codechef' in allowed_judges:
             handle = user_info.get('codechef_handle', None)
             print('codechef: ', handle)
             if handle:
-                problem_stat = codechef.get_user_info(handle)
+                problem_stat = codechef.get_user_info_heavy(handle)
                 oj_problem_set.append({
                     'problem_list': problem_stat['solved_problems'],
                     'oj_name': 'codechef'
@@ -204,7 +209,7 @@ def synch_user_problem(user_id):
             handle = user_info.get('uva_handle', None)
             print('uva: ', handle)
             if handle:
-                problem_stat = uva.get_user_info(handle)
+                problem_stat = uva.get_user_info_heavy(handle)
                 oj_problem_set.append({
                     'problem_list': problem_stat['solved_problems'],
                     'oj_name': 'uva'
@@ -214,7 +219,7 @@ def synch_user_problem(user_id):
             handle = user_info.get('spoj_handle', None)
             print('spoj: ', handle)
             if handle:
-                problem_stat = spoj.get_user_info(handle)
+                problem_stat = spoj.get_user_info_heavy(handle)
                 oj_problem_set.append({
                     'problem_list': problem_stat['solved_problems'],
                     'oj_name': 'spoj'
@@ -224,7 +229,7 @@ def synch_user_problem(user_id):
             handle = user_info.get('lightoj_handle', None)
             app.logger.info(f'lightoj handle: {handle}')
             if handle:
-                problem_stat = lightoj.get_user_info(handle)
+                problem_stat = lightoj.get_user_info_heavy(handle)
                 oj_problem_set.append({
                     'problem_list': problem_stat['solved_problems'],
                     'oj_name': 'lightoj'

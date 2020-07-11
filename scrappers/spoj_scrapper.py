@@ -38,6 +38,43 @@ class SpojScrapper:
                 'solved_problems': []
             }
 
+    def get_user_info_heavy(self, username):
+        try:
+            rs = requests.session()
+            url = f'http://www.spoj.com/users/{username}'
+            profile_page = rs.get(url=url, headers=_http_headers)
+            soup = BeautifulSoup(profile_page.text, 'html.parser')
+
+            solved_problems = {}
+            contentTable = soup.find('table', {"class": "table-condensed"})
+
+            for link in contentTable.findAll('a'):
+                problem_name = link.string
+                if problem_name is not None:
+                    problem_data = {
+                        'problem_id': problem_name,
+                        'submission_list': [
+                            {
+                                'submission_link': f'https://www.spoj.com/status/{problem_name},{username}/'
+                            }
+                        ]
+                    }
+                    solved_problems[problem_name] = problem_data
+
+            return {
+                'platform': 'spoj',
+                'user_name': username,
+                'solved_count': len(solved_problems),
+                'solved_problems': solved_problems
+            }
+        except Exception as e:
+            return {
+                'platform': 'spoj',
+                'user_name': username,
+                'solved_count': 0,
+                'solved_problems': {}
+            }
+
     def get_submission_stat(self, username):
         rs = requests.session()
         submission_list = []

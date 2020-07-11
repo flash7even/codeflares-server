@@ -13,11 +13,19 @@
     "status": {
       "type": "keyword"
     },
-    "submission_time": {
-      "type": "long"
-    },
-    "submission_link": {
-      "type": "text"
+    "submission_list": {
+      "type": "nested",
+      "properties": {
+        "submission_time": {
+          "type": "long"
+        },
+        "submission_link": {
+          "type": "text"
+        },
+        "submission_id": {
+          "type": "keyword"
+        }
+      }
     },
     "created_at": {
       "type": "long"

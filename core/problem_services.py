@@ -301,7 +301,7 @@ def add_user_problem_status(user_id, problem_id, data):
         raise Exception('Internal server error')
 
 
-def apply_solved_problem_for_user(user_id, problem_id, problem_details, updated_categories, root_category_solve_count):
+def apply_solved_problem_for_user(user_id, problem_id, problem_details, submission_list, updated_categories, root_category_solve_count):
     app.logger.info(f'apply_solved_problem_for_user for user_id: {user_id}, problem_id: {problem_id}')
     app.logger.info('current updated_categories: ' + json.dumps(updated_categories))
     try:
@@ -313,8 +313,10 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, updated_
         data = {
             'user_id': user_id,
             'problem_id': problem_id,
+            'submission_list': submission_list,
             'status': SOLVED
         }
+        # Insert User Problem Solved Status Here
         post_url = 'http://{}/{}/{}'.format(app.config['ES_HOST'], _es_index_problem_user, _es_type)
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
 

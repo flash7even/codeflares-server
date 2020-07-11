@@ -94,6 +94,43 @@ class CodechefScrapper:
                 'solved_problems': []
             }
 
+    def get_user_info_heavy(slef, username):
+        try:
+            rs = requests.session()
+            url = f'https://www.codechef.com/users/{username}'
+            profile_page = rs.get(url=url, headers=_http_headers)
+            soup = BeautifulSoup(profile_page.text, 'html.parser')
+
+            contentTable = soup.find('article')
+            solved_problems = {}
+
+            for link in contentTable.findAll('a', href=True):
+                problem_name = link.string
+                if problem_name is not None:
+                    problem_data = {
+                        'problem_id': problem_name,
+                        'submission_list': [
+                            {
+                                'submission_link': f'https://www.codechef.com{link["href"]}'
+                            }
+                        ]
+                    }
+                    solved_problems[problem_name] = problem_data
+
+            return {
+                'platform': 'codechef',
+                'user_name': username,
+                'solved_count': len(solved_problems),
+                'solved_problems': solved_problems
+            }
+        except Exception as e:
+            return {
+                'platform': 'codechef',
+                'user_name': username,
+                'solved_count': 0,
+                'solved_problems': {}
+            }
+
     def get_problem_stat(self, username):
         stat = self.get_user_info(username)
         print(stat)
@@ -116,5 +153,6 @@ if __name__ == '__main__':
     codechef_scrapper = CodechefScrapper()
     #resp = codechef_scrapper.get_user_info('tarango_khan')
     #print(json.dumps(resp))
-    codechef_stat = codechef_scrapper.get_problem_stat('tarango_khan')
-    print(codechef_stat)
+    # codechef_stat = codechef_scrapper.get_problem_stat('tarango_khan')
+    problem_stat_list = codechef_scrapper.get_user_info_heavy('tarango_khan')
+    print(problem_stat_list)
