@@ -5,6 +5,8 @@ from flask import current_app as app
 
 from commons.skillset import Skill
 
+from core.user_services import get_user_details
+
 _http_headers = {'Content-Type': 'application/json'}
 
 _es_index_user_category = 'cfs_user_category_edges'
@@ -131,3 +133,32 @@ def update_root_category_skill_for_user(user_id, root_category_list, root_catego
             uc_edge.pop('id', None)
             add_user_category_data(user_id, category_id, uc_edge)
     return user_skill_sum
+
+
+def get_category_toppers(category_id):
+    try:
+        rs = requests.session()
+        must = [
+            {'term': {'category_id': category_id}}
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = _es_size
+        query_json['sort'] = [{'skill_value': {'order': 'desc'}}]
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_user_category, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        if 'hits' in response:
+            item_list = []
+            rank = 1
+            for hit in response['hits']['hits']:
+                edge = hit['_source']
+                edge['id'] = hit['_id']
+                user_details = get_user_details(edge['user_id'])
+                edge['user_handle'] = user_details['username']
+                edge['user_skill_color'] = user_details['skill_color']
+                edge['skill_value'] = float("{:.2f}".format(edge.get('skill_value', 0)))
+                edge['rank'] = rank
+                rank += 1
+                item_list.append(edge)
+        return item_list
+    except Exception as e:
+        raise e

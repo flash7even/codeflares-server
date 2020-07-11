@@ -15,6 +15,7 @@ api = Namespace('category', description='Namespace for category service')
 from core.category_services import add_category_category_dependency, get_category_id_from_name, search_categories, get_category_details
 from core.category_services import create_category_id, calculate_dependency_percentage
 from core.training_model_services import category_wise_problem_solve_for_users
+from core.user_category_edge_services import get_category_toppers
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -295,6 +296,21 @@ class CategoryPostProcess(Resource):
             calculate_dependency_percentage()
             return {
                 "message": "success"
+            }
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/user/toppers/<string:category_id>')
+class CategoryToppers(Resource):
+
+    @api.doc('category post process')
+    def get(self, category_id):
+        try:
+            app.logger.info('category post-process api called')
+            edge_list = get_category_toppers(category_id)
+            return {
+                "topper_list": edge_list
             }
         except Exception as e:
             return {'message': str(e)}, 500
