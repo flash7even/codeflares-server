@@ -13,6 +13,12 @@
     "status": {
       "type": "keyword"
     },
+    "submission_time": {
+      "type": "long"
+    },
+    "submission_link": {
+      "type": "text"
+    },
     "created_at": {
       "type": "long"
     },

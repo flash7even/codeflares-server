@@ -40,6 +40,44 @@ class CodeforcesScrapper:
                 'solved_problems': []
             }
 
+    def get_user_info_heavy(self, username):
+        try:
+            rs = requests.session()
+            url = f'http://codeforces.com/api/user.status?handle={username}&from=1&count=1000000'
+            submission_list = rs.get(url=url, headers=_http_headers).json()
+            submission_list = submission_list['result']
+
+            solved_problems = {}
+
+            for submission in submission_list:
+                if submission['verdict'] == 'OK' and submission['testset'] == 'TESTS':
+                    problem = str(submission['problem']['contestId']) + '/' + str(submission['problem']['index'])
+                    if problem not in solved_problems:
+                        problem_data = {
+                            'problem_id': problem,
+                            'submission_stat': []
+                        }
+                        solved_problems[problem] = problem_data
+
+                    sublink = {
+                        'submission_time': int(submission['creationTimeSeconds']),
+                        'submission_link': f'https://codeforces.com/contest/{submission["contestId"]}/submission/{submission["id"]}'
+                    }
+                    solved_problems[problem]['submission_stat'].append(sublink)
+            return {
+                'platform': 'codeforces',
+                'user_name': username,
+                'solved_count': len(solved_problems),
+                'solved_problems': solved_problems
+            }
+        except Exception as e:
+            return {
+                'platform': 'codeforces',
+                'user_name': username,
+                'solved_count': 0,
+                'solved_problems': []
+            }
+
     def get_submission_stat(self, username):
         try:
             rs = requests.session()
@@ -91,5 +129,5 @@ class CodeforcesScrapper:
 if __name__ == '__main__':
     print('START RUNNING CODEFORCES SCRAPPER SCRIPT\n')
     codeforces_scrapper = CodeforcesScrapper()
-    resp = codeforces_scrapper.get_submission_stat('flash_7')
+    resp = codeforces_scrapper.get_user_info_heavy('cat_funeral')
     print(json.dumps(resp))
