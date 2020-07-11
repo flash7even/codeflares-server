@@ -47,8 +47,12 @@ def get_category_details(cat_id, user_id = None):
 
                 if user_id:
                     cat_info = get_user_category_data(user_id, data['category_id'])
-                    data['skill_value'] = "{:.2f}".format(float(cat_info['skill_value']))
-                    data['skill_title'] = cat_info['skill_title']
+                    if cat_info:
+                        data['skill_value'] = "{:.2f}".format(float(cat_info['skill_value']))
+                        data['skill_title'] = cat_info['skill_title']
+                    else:
+                        data['skill_value'] = 0
+                        data['skill_title'] = "NA"
                 return data
         return None
     except Exception as e:
