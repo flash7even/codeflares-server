@@ -38,6 +38,14 @@ def reformat_team_data(data):
     return data
 
 
+def get_user_team_access(user_id, team_id):
+    member_list = get_all_users_from_team(team_id)
+    for member in member_list:
+        if member['user_id'] == user_id:
+            return True
+    return False
+
+
 def get_team_rating_history(team_id):
     rating_list = search_user_ratings(team_id)
     rating_history = []
