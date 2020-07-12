@@ -308,11 +308,39 @@ class ProblemSubmission(Resource):
     @api.doc('get problem submission history')
     def get(self, problem_id, page):
         try:
-            app.logger.info('Get problem_details api called')
+            app.logger.info('Get submission history api called')
             response = get_problem_submission_history(problem_id, page*_es_size, _es_size)
             return {
-                'submission_history': response
+                'submission_history': response['submission_list']
             }
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/submission/history/dtsearch/<string:problem_id>')
+class ProblemSubmissionDTSearch(Resource):
+
+    @api.doc('get problem submission history dtsearch')
+    def post(self, problem_id):
+        try:
+            app.logger.info('Problem submission dtsearch api called')
+            param = request.get_json()
+            draw = param['draw']
+            start = param['start']
+            length = param['length']
+
+            response = get_problem_submission_history(problem_id, start, length)
+
+            resp = {
+                'draw': draw,
+                'recordsTotal': response['total'],
+                'recordsFiltered': response['total'],
+                'data': {
+                    'submission_history': response['submission_list']
+                },
+            }
+            print(resp)
+            return resp
         except Exception as e:
             return {'message': str(e)}, 500
 
@@ -328,5 +356,33 @@ class ProblemSubmission(Resource):
             return {
                 'submission_history': response
             }
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/user/submission/history/dtsearch/<string:user_id>')
+class ProblemSubmissionDTSearch(Resource):
+
+    @api.doc('get problem submission history')
+    def post(self, user_id):
+        try:
+            app.logger.info('Problem submission dtsearch api called')
+            param = request.get_json()
+            draw = param['draw']
+            start = param['start']
+            length = param['length']
+
+            response = get_user_problem_submission_history(user_id, start, length)
+
+            resp = {
+                'draw': draw,
+                'recordsTotal': response['total'],
+                'recordsFiltered': response['total'],
+                'data': {
+                    'submission_history': response['submission_list']
+                },
+            }
+            print(resp)
+            return resp
         except Exception as e:
             return {'message': str(e)}, 500

@@ -603,18 +603,21 @@ def get_problem_submission_history(problem_id, start, size):
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
 
         submission_list = []
+        resp = {}
         if 'hits' in response:
             order = 1
+            resp['total'] = response['hits']['total']['value']
             for hit in response['hits']['hits']:
                 edge = hit['_source']
                 user_id = edge['user_id']
                 user_data = get_user_details(user_id)
                 edge['user_handle'] = user_data['username']
                 edge['user_skill_color'] = user_data['skill_color']
-                edge['order'] = order
+                edge['order'] = order+start
                 submission_list.append(edge)
                 order += 1
-            return submission_list
+            resp['submission_list'] = submission_list
+            return resp
         raise Exception('Elasticsearch down')
     except Exception as e:
         raise e
@@ -635,19 +638,22 @@ def get_user_problem_submission_history(user_id, start, size):
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
 
         submission_list = []
+        resp = {}
         if 'hits' in response:
             order = 1
+            resp['total'] = response['hits']['total']['value']
             for hit in response['hits']['hits']:
                 edge = hit['_source']
                 user_id = edge['user_id']
                 user_data = get_user_details(user_id)
                 edge['user_handle'] = user_data['username']
                 edge['user_skill_color'] = user_data['skill_color']
-                edge['order'] = order
+                edge['order'] = order+start
                 edge['problem_details'] = get_problem_details(edge['problem_id'])
                 submission_list.append(edge)
                 order += 1
-            return submission_list
+            resp['submission_list'] = submission_list
+            return resp
         raise Exception('Elasticsearch down')
     except Exception as e:
         raise e
