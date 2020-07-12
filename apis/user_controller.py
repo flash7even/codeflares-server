@@ -219,7 +219,7 @@ class CreateUser(Resource):
             if 'result' in response:
                 if response['result'] == 'created':
                     app.logger.info('Create user API completed')
-                    add_user_ratings(response['_id'], 0, 0)
+                    # add_user_ratings(response['_id'], 0, 0)
                     return response['_id'], 201
             return response, 500
 
