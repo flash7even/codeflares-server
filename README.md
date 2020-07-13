@@ -16,7 +16,7 @@ rm geckodriver-v0.26.0-linux64.tar.gz
 
 ## Run Command
 
-* For multiple thread: gunicorn -w 16 -b localhost:5056 main:app
+* For multiple thread: gunicorn -w 16 -b 0.0.0.0:5056 main:app
 
 * For single thread: python main.py run
 
