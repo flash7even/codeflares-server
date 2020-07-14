@@ -51,6 +51,9 @@
     "source_link": {
       "type": "text"
     },
+    "active_status": {
+      "type": "keyword"
+    },
     "created_at": {
       "type": "long"
     },

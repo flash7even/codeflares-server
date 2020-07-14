@@ -99,6 +99,24 @@ class ProblemByID(Resource):
             rs = requests.session()
             post_data = request.get_json()
 
+            if 'category_dependency_list' in post_data:
+                categories = []
+                category_dependency_list = post_data['category_dependency_list']
+                post_data.pop('category_dependency_list', None)
+                for cat in category_dependency_list:
+                    category_id = cat.get('category_id', None)
+                    if category_id is None:
+                        category_id = get_category_id_from_name(cat['category_name'])
+                    category_details = get_category_details(category_id)
+                    edge = {
+                        'category_id': category_id,
+                        'dependency_factor': cat['factor'],
+                        'category_root': category_details['category_root'],
+                        'category_name': category_details['category_name'],
+                    }
+                    categories.append(edge)
+                post_data['categories'] = categories
+
             search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
             response = rs.get(url=search_url, headers=_http_headers).json()
             print(response)

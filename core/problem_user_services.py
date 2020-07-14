@@ -17,6 +17,8 @@ from core.training_model_services import sync_overall_stat_for_user
 
 _es_size = 5000
 
+approved = 'approved'
+
 
 def update_problem_score(user_id, user_skill_level, updated_categories):
     app.logger.info(f'update_problem_score called for: {user_id}, with skill: {user_skill_level}')
@@ -91,7 +93,7 @@ def sync_problems(user_id, oj_problem_set):
             for problem in problem_set['problem_list']:
                 problem_stat = problem_set['problem_list'][problem]
                 submission_list = problem_stat['submission_list']
-                problem_db = search_problems({'problem_id': problem, 'oj_name': problem_set['oj_name']}, 0, 1)
+                problem_db = search_problems({'problem_id': problem, 'oj_name': problem_set['oj_name'], 'active_status': approved}, 0, 1)
                 if len(problem_db) == 0:
                     continue
                 problem_id = problem_db[0]['id']

@@ -22,6 +22,8 @@ logger.addHandler(handler)
 rs = requests.session()
 _http_headers = {'Content-Type': 'application/json'}
 
+approved = 'approved'
+
 
 def check_existance(problem_id, oj_name):
     try:
@@ -93,6 +95,7 @@ def problem_list_extract(data, filename):
                 "source_link": str(source_link),
                 "problem_id": str(problem_id),
                 "oj_name": str(oj_name),
+                "active_status": approved,
                 "category_dependency_list": category_dependency_list
             }
 
