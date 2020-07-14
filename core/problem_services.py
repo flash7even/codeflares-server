@@ -432,7 +432,7 @@ def generate_query_params(param):
         must = []
         nested_must = []
         nested_fields = ['category_id', 'category_name', 'category_root']
-        keyword_fields = ['problem_title', 'problem_id', 'problem_difficulty', 'oj_name']
+        keyword_fields = ['problem_title', 'problem_id', 'problem_difficulty', 'oj_name', 'active_status']
         text_fields = ['problem_name']
 
         if 'category_id' in param:

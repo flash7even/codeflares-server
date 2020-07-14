@@ -88,9 +88,15 @@ class Login(Resource):
             app.logger.info("Bad request, authorization failed")
             return "bad request", 400
 
+        should = [
+            {'match': {'username': username}},
+            {'term': {'email': username}}
+        ]
+        must = [{'match': {'password': password}}]
+        must.append({'bool': {'should': should}})
         auth_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index, _es_type)
         auth_query = {
-            'query': {'bool': {'must': [{'match': {'username': username}}, {'match': {'password': password}}]}}}
+            'query': {'bool': {'must': must}}}
         response = rs.post(url=auth_url, json=auth_query, headers=_http_headers).json()
 
         if 'hits' in response:
