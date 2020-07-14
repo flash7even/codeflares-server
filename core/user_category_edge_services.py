@@ -152,7 +152,11 @@ def get_category_toppers(category_id):
             for hit in response['hits']['hits']:
                 edge = hit['_source']
                 edge['id'] = hit['_id']
-                user_details = get_user_details(edge['user_id'])
+                try:
+                    user_details = get_user_details(edge['user_id'])
+                except Exception as e:
+                    app.logger.error(f'User not found: {str(e)}')
+                    continue
                 edge['user_handle'] = user_details['username']
                 edge['user_skill_color'] = user_details['skill_color']
                 edge['skill_value'] = float("{:.2f}".format(edge.get('skill_value', 0)))
