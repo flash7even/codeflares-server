@@ -150,18 +150,22 @@ def sync_problems(user_id, oj_problem_set):
                 app.logger.info(f'dcat_uc_edge: {dcat_uc_edge}')
                 updated_categories[dcat_id] = dcat_uc_edge
 
+        app.logger.info('process of mark categories completed')
+
         for category_id in updated_categories:
             uc_edge = updated_categories[category_id]
             uc_edge.pop('old_skill_level', None)
             uc_edge.pop('id', None)
             add_user_category_data(user_id, category_id, uc_edge)
 
+        app.logger.info('updated root categories')
         root_category_list = search_categories({"category_root": "root"}, 0, _es_size)
         skill = Skill()
         user_skill = update_root_category_skill_for_user(user_id, root_category_list, root_category_solve_count)
         user_skill_level = skill.get_skill_level_from_skill(user_skill)
         app.logger.debug(f'Final user_skill: {user_skill}, user_skill_level: {user_skill_level}')
         sync_overall_stat_for_user(user_id, user_skill)
+        app.logger.info('sync_overall_stat_for_user completed')
         if len(updated_categories) > 0:
             update_problem_score(user_id, user_skill_level, updated_categories)
         app.logger.info(f'sync_problems completed for {user_id}')
@@ -229,7 +233,11 @@ def synch_user_problem(user_id):
             handle = user_info.get('lightoj_handle', None)
             app.logger.info(f'lightoj handle: {handle}')
             if handle:
-                problem_stat = lightoj.get_user_info_heavy(handle)
+                credentials = {
+                    'username': app.config['LIGHTOJ_USERNAME'],
+                    'password': app.config['LIGHTOJ_PASSWORD']
+                }
+                problem_stat = lightoj.get_user_info_heavy(handle, credentials)
                 oj_problem_set.append({
                     'problem_list': problem_stat['solved_problems'],
                     'oj_name': 'lightoj'

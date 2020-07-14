@@ -10,12 +10,8 @@ user_details_url = 'http://www.lightoj.com/volume_userstat.php?user_id='
 
 
 class LightOJScrapper:
-    credentials = {
-        'username': 'tarangokhan77@gmail.com',
-        'password': 'HeLLo@WoRLD2014'
-    }
 
-    def get_user_info(self, username):
+    def get_user_info(self, username, credentials):
         # app.logger.info(f'get_user_info called for: {username}')
         try:
             options = Options()
@@ -83,7 +79,7 @@ class LightOJScrapper:
             # app.logger.info(f'Return data: {json.dumps(data)}')
             return data
 
-    def get_user_info_heavy(self, username):
+    def get_user_info_heavy(self, username, credentials):
         # app.logger.info(f'get_user_info called for: {username}')
         try:
             options = Options()
@@ -164,8 +160,8 @@ if __name__ == '__main__':
     print('START RUNNING SPOJ SCRAPPER SCRIPT\n')
     loj_scrapper = LightOJScrapper()
     credentials = {
-        'username': 'tarangokhan77@gmail.com',
-        'password': 'HeLLo@WoRLD2014'
+        'username': app.config['LIGHTOJ_USERNAME'],
+        'password': app.config['LIGHTOJ_PASSWORD']
     }
-    resp = loj_scrapper.get_user_info_heavy('14826')
+    resp = loj_scrapper.get_user_info_heavy('14826', credentials)
     print(json.dumps(resp))
