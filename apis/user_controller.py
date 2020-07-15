@@ -115,6 +115,9 @@ class User(Resource):
             ignore_fields = ['username', 'password']
 
             app.logger.info('Update user API called, id: ' + str(user_id))
+            current_user = get_jwt_identity().get('id')
+            if user_id != current_user:
+                return {'message': 'bad request'}, 400
             rs = requests.session()
             user_data = request.get_json()
 
@@ -149,6 +152,9 @@ class User(Resource):
     def delete(self, user_id):
         try:
             app.logger.info('Delete user API called, id: ' + str(user_id))
+            current_user = get_jwt_identity().get('id')
+            if user_id != current_user:
+                return {'message': 'bad request'}, 400
             rs = requests.session()
             search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, user_id)
             app.logger.debug('Elasticsearch query : ' + str(search_url))
@@ -690,9 +696,14 @@ class SyncTrainingModel(Resource):
 @api.route('/rating-change')
 class Test(Resource):
 
+    @access_required(access="ALL")
     @api.doc('Sync user training model by id')
     def post(self):
         try:
+            current_user = get_jwt_identity().get('id')
+            user_details = get_user_details(current_user)
+            if user_details['user_role'] != 'admin':
+                return {'message': 'bad request'}, 400
             user_list_sync()
             app.logger.info('user_list_sync done')
             team_list_sync()
@@ -702,27 +713,18 @@ class Test(Resource):
             return {'message': str(e)}, 500
 
 
-@api.route('/send-email')
-class TestEmail(Resource):
-
-    @api.doc('Send email testing')
-    def post(self):
-        try:
-            app.logger.info('send email service called')
-            receiver_list = ['tarangokhan77@gmail.com']
-            send_email(receiver_list, 'Test Mail', 'This is a test mail')
-            return {'message': 'success'}, 200
-        except Exception as e:
-            return {'message': str(e)}, 500
-
-
 @api.route('/generate-crypty-key')
 class GenerateKey(Resource):
 
+    @access_required(access="ALL")
     @api.doc('generate crypto key')
     def post(self):
         try:
             app.logger.info('generate-crypty-key service called')
+            current_user = get_jwt_identity().get('id')
+            user_details = get_user_details(current_user)
+            if user_details['user_role'] != 'admin':
+                return {'message': 'bad request'}, 400
             flask_crypto.generate_key()
             return {'message': 'success'}, 200
         except Exception as e:
