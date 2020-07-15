@@ -14,7 +14,7 @@ from commons.jwt_helpers import access_required
 api = Namespace('training', description='Namespace for training service')
 
 from core.training_model_services import search_top_skilled_categoires_for_user, search_top_skilled_problems_for_user
-from core.team_services import get_all_users_from_team, get_team_details
+from core.team_services import get_all_users_from_team, get_team_details, get_user_team_access
 from core.user_services import get_user_details_by_handle_name, get_user_details_public
 
 
@@ -130,6 +130,9 @@ class TeamTrainingModel(Resource):
     @api.doc('get classroom model ')
     def get(self, team_id):
         app.logger.info('Get classroom training model api called')
+        current_user = get_jwt_identity().get('id')
+        if get_user_team_access(current_user, team_id) is False:
+            return {'message': 'bad request'}, 400
         team_details = get_team_details(team_id)
         member_stat = []
         member_list = team_details.get('member_list', [])
