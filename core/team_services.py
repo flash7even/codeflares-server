@@ -46,6 +46,13 @@ def get_user_team_access(user_id, team_id):
     return False
 
 
+def has_moderator_access(user_id, team_id):
+    team_details = get_team_details(team_id)
+    if team_details['team_leader_id'] != user_id:
+        return False
+    return True
+
+
 def get_team_rating_history(team_id):
     rating_list = search_user_ratings(team_id)
     rating_history = []

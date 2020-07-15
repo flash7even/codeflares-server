@@ -20,6 +20,7 @@ from core.team_services import get_rating_history_codeflares, get_user_team_acce
 from core.sync_services import team_training_model_sync
 from core.job_services import add_pending_job
 from core.rating_services import add_user_ratings
+from core.user_services import get_user_details_by_handle_name
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -87,14 +88,18 @@ def handle_failed_user_claims_verification(e):
 @api.route('/<string:team_id>')
 class TeamByID(Resource):
 
+    @access_required(access="ALL")
     @api.doc('get team details by id')
     def get(self, team_id):
-        app.logger.info('Get team_details method called')
-        print('team_id: ', team_id)
         try:
+            app.logger.info('Get team_details method called')
+            current_user = get_jwt_identity().get('id')
+            if get_user_team_access(current_user, team_id) is False:
+                return {'message': 'bad request'}, 400
+            print('team_id: ', team_id)
             team_info = get_team_details(team_id)
             return team_info, 200
-        
+
         except Exception as e:
             return {'message': str(e)}, 500
 
@@ -104,7 +109,7 @@ class TeamByID(Resource):
         try:
             app.logger.info('Update team_details method called')
             current_user = get_jwt_identity().get('id')
-            if get_user_team_access(current_user, team_id) is False:
+            if has_moderator_access(current_user, team_id) is False:
                 return {'message': 'bad request'}, 400
             rs = requests.session()
             post_data = request.get_json()
@@ -144,7 +149,7 @@ class TeamByID(Resource):
         try:
             app.logger.info('Delete team_details method called')
             current_user = get_jwt_identity().get('id')
-            if get_user_team_access(current_user, team_id) is False:
+            if has_moderator_access(current_user, team_id) is False:
                 return {'message': 'bad request'}, 400
             rs = requests.session()
             search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, team_id)
@@ -199,7 +204,6 @@ class CreateTeam(Resource):
             if 'result' in response and response['result'] == 'created':
                 add_team_members_bulk(member_list, response['_id'], data['team_type'], current_user)
                 app.logger.info('Create team method completed')
-                add_user_ratings(response['_id'], 0, 0)
                 return response['_id'], 201
             app.logger.error('Elasticsearch down, response: ' + str(response))
             return response, 500
@@ -219,7 +223,7 @@ class CreateTeam(Resource):
             data = request.get_json()
             team_id = data['team_id']
             current_user = get_jwt_identity().get('id')
-            if get_user_team_access(current_user, team_id) is False:
+            if has_moderator_access(current_user, team_id) is False:
                 return {'message': 'bad request'}, 400
             response = add_team_member(data)
             app.logger.info('Add team member method completed')
@@ -234,11 +238,11 @@ class CreateTeam(Resource):
         try:
             app.logger.info('Update team member method called')
             data = request.get_json()
+            print('provided data: ', data)
             team_id = data['team_id']
             current_user = get_jwt_identity().get('id')
-            if get_user_team_access(current_user, team_id) is False:
+            if has_moderator_access(current_user, team_id) is False:
                 return {'message': 'bad request'}, 400
-            print('provided data: ', data)
             response = update_team_member(data)
             app.logger.info('Update team member method completed')
             return response, 201
@@ -256,31 +260,13 @@ class CreateTeam(Resource):
         try:
             app.logger.info('Delete team member method called')
             current_user = get_jwt_identity().get('id')
-            if get_user_team_access(current_user, team_id) is False:
+            if has_moderator_access(current_user, team_id) is False:
                 return {'message': 'bad request'}, 400
             print('team_id: ', team_id, ' user_handle: ', user_handle)
             response = delete_team_member(team_id, user_handle)
             app.logger.info('Delete team member method completed')
             return response, 201
 
-        except Exception as e:
-            return {'message': str(e)}, 500
-
-
-@api.route('/search', defaults={'page': 0})
-@api.route('/search/<int:page>')
-class SearchTeam(Resource):
-
-    @api.doc('search team based on post parameters')
-    def post(self, page=0):
-        app.logger.info('Team search method called')
-        try:
-            param = request.get_json()
-            team_list = search_teams(param, page*_es_size, _es_size)
-            print('team_list: ', team_list)
-            return {
-                'team_list': team_list
-            }, 200
         except Exception as e:
             return {'message': str(e)}, 500
 
@@ -293,58 +279,15 @@ class SearchTeamForUser(Resource):
     def post(self, user_handle):
         app.logger.info('Team search method called')
         try:
+            current_user = get_jwt_identity().get('id')
+            user_details = get_user_details_by_handle_name(user_handle)
+            if user_details['id'] != current_user:
+                return {'message': 'bad request'}, 400
             param = request.get_json()
             print('param given: ', param)
             team_list = search_teams_for_user(user_handle, param)
             return {
                 'team_list': team_list
             }, 200
-        except Exception as e:
-            return {'message': str(e)}, 500
-
-
-@api.route('/rating-history/<string:team_id>/<string:platform>')
-class RatingHistoryOnlineJudge(Resource):
-
-    # @access_required(access="ALL")
-    @api.doc('get rating history')
-    def get(self, team_id, platform):
-        app.logger.info('Team search method called')
-        try:
-            if platform == "codeforces":
-                result = get_rating_history_codeforces(team_id)
-                return result
-            if platform == "codeflares":
-                result = get_rating_history_codeflares(team_id)
-                return result
-            return {}
-        except Exception as e:
-            return {'message': str(e)}, 500
-
-
-@api.route('/sync/<string:team_id>')
-class Sync(Resource):
-
-    @access_required(access="ALL")
-    @api.doc('Sync team by id')
-    def put(self, team_id):
-        app.logger.info('Sync team API called, id: ' + str(team_id))
-        try:
-            app.logger.debug('team_training_model_sync')
-            add_pending_job(team_id, 'TEAM_SYNC')
-        except Exception as e:
-            return {'message': str(e)}, 500
-
-
-@api.route('/sync/training-model/<string:team_id>')
-class SyncTrainingModel(Resource):
-
-    @access_required(access="ALL")
-    @api.doc('Sync team training model by id')
-    def put(self, team_id):
-        app.logger.info('Sync team training model API called, id: ' + str(team_id))
-        try:
-            team_training_model_sync(team_id)
-            app.logger.debug('team_training_model_sync done')
         except Exception as e:
             return {'message': str(e)}, 500
