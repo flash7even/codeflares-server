@@ -76,17 +76,13 @@ def create_app(instance_name):
 
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
     app.config['MAIL_PORT'] = 465
-    app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER', 'codeflares.team@gmail.com')
-    app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASSWORD', '123456')
+    app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER')
+    app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASSWORD')
     app.config['MAIL_USE_TLS'] = False
     app.config['MAIL_USE_SSL'] = True
 
-    app.config['LIGHTOJ_USERNAME'] = os.getenv('LIGHTOJ_USERNAME', 'codeflares.team@gmail.com')
-    app.config['LIGHTOJ_PASSWORD'] = os.getenv('LIGHTOJ_PASSWORD', '123456')
-
-    print('MAIL USERNAME: ', app.config['MAIL_USERNAME'])
-    print('MAIL PASSWORD: ', app.config['MAIL_PASSWORD'])
-    print('MAIL_PORT: ', app.config['MAIL_PORT'])
+    app.config['LIGHTOJ_USERNAME'] = os.getenv('LIGHTOJ_USERNAME')
+    app.config['LIGHTOJ_PASSWORD'] = os.getenv('LIGHTOJ_PASSWORD')
 
     jwt = JWTManager()
 

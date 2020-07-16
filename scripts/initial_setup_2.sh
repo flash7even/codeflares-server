@@ -1,5 +1,2 @@
-python3 category_uploader.py
-python3 category_dependency_uploader.py
-python3 problem_list_uploader.py
-python3 contest_config_uploader.py
-python3 team_data_uploader.py
+python3 user_sync.py
+python3 team_sync.py

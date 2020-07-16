@@ -26,8 +26,9 @@ rs = requests.session()
 _http_headers = {'Content-Type': 'application/json'}
 
 
-ADMIN_USER = 'flash_7'
-ADMIN_PASSWORD = '123456'
+ADMIN_USER = os.getenv('ADMIN_USERNAME')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
+
 access_token = None
 login_api = "http://localhost:5056/api/auth/login"
 user_probem_sync_api = "http://localhost:5056/api/user/sync/problem-data/"
