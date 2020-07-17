@@ -288,7 +288,6 @@ class SearchTeam(Resource):
 @api.route('/search/user/<string:user_handle>')
 class SearchTeamForUser(Resource):
 
-    @access_required(access="ALL")
     @api.doc('search team based on post parameters')
     def post(self, user_handle):
         app.logger.info('Team search method called')

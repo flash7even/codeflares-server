@@ -97,7 +97,6 @@ class IndividualTrainingModel(Resource):
 @api.route('/team/<string:team_id>')
 class TeamTrainingModel(Resource):
 
-    @access_required(access="ALL")
     @api.doc('get training model for currently logged in user')
     def post(self, team_id):
         app.logger.info('Get individual training model api called')
