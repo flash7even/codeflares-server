@@ -320,7 +320,7 @@ class UserProblemByID(Resource):
             return {'message': str(e)}, 500
 
 
-@api.route('/submission/history/<string:problem_id>/<string:page>')
+@api.route('/submission/history/<string:problem_id>/<int:page>')
 class ProblemSubmission(Resource):
 
     @api.doc('get problem submission history')
@@ -363,7 +363,7 @@ class ProblemSubmissionDTSearch(Resource):
             return {'message': str(e)}, 500
 
 
-@api.route('/user/submission/history/<string:user_id>/<string:page>')
+@api.route('/user/submission/history/<string:user_id>/<int:page>')
 class ProblemSubmission(Resource):
 
     @api.doc('get problem submission history')
@@ -386,6 +386,7 @@ class ProblemSubmissionDTSearch(Resource):
         try:
             app.logger.info('Problem submission dtsearch api called')
             param = request.get_json()
+            print(json.dumps(param))
             draw = param['draw']
             start = param['start']
             length = param['length']
