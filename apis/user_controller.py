@@ -285,7 +285,7 @@ class RegisterUser(Resource):
             app.logger.debug(f'encrypted_token 1: {encrypted_token}')
             redis_key = app.config['REDIS_PREFIX_USER_ACTIVATE'] + ':' + encrypted_token
             redis_store.connection.set(redis_key, str(user_data), timedelta(minutes=app.config['USER_ACTIVATION_TIMEOUT']))
-            activation_link = f'http://{app.config["WEB_HOST"]}/{app.config["WEB_HOST_USER_ACTIVATION_URL"]}/{encrypted_token}'
+            activation_link = f'{app.config["WEB_HOST"]}/{app.config["WEB_HOST_USER_ACTIVATION_URL"]}/{encrypted_token}'
             message_body = f'Please click the below link to activate your account:\n\n{activation_link}\n\nRegards,\nCodeflares Team'
             app.logger.debug(f'message_body: {message_body}')
             send_email([data['email']], 'Account Activation', message_body)
@@ -435,7 +435,7 @@ class ForgotPassword(Resource):
             app.logger.debug(f'encrypted_token 1: {encrypted_token}')
             redis_key = app.config['REDIS_PREFIX_USER_PASSWORD'] + ':' + encrypted_token
             redis_store.connection.set(redis_key, str(user_data), timedelta(minutes=app.config['USER_CONFIRM_PASS_TIMEOUT']))
-            activation_link = f'http://{app.config["WEB_HOST"]}/{app.config["WEB_HOST_USER_CONFIRM_PASS_URL"]}/{encrypted_token}'
+            activation_link = f'{app.config["WEB_HOST"]}/{app.config["WEB_HOST_USER_CONFIRM_PASS_URL"]}/{encrypted_token}'
             message_body = f'Please click the below link to update your password:\n\n{activation_link}\n\nRegards,\nCodeflares Team'
             app.logger.debug(f'message_body: {message_body}')
             send_email([user_email], 'Password Change', message_body)
