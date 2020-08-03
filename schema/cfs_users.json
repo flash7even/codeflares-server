@@ -16,6 +16,12 @@
       "user_role": {
         "type": "keyword"
       },
+      "university": {
+        "type": "keyword"
+      },
+      "country": {
+        "type": "keyword"
+      },
       "first_name": {
         "type": "text"
       },
