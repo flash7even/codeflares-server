@@ -31,6 +31,7 @@ from .contact_us_controller import api as contact_us_ns
 from .job_controller import api as job_ns
 from .rating_controller import api as rating_ns
 from .classroom_controller import api as classroom_ns
+from .support_controller import api as support_ns
 
 blueprint = Blueprint('api', Config.APPNAME, url_prefix='/api')
 
@@ -60,6 +61,7 @@ api.add_namespace(follower_ns, path='/follower')
 api.add_namespace(contact_us_ns, path='/contact/us')
 api.add_namespace(job_ns, path='/job')
 api.add_namespace(rating_ns, path='/rating')
+api.add_namespace(support_ns, path='/support')
 
 
 def create_app(instance_name):
