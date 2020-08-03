@@ -19,6 +19,9 @@
     "resource_owner": {
       "type": "keyword"
     },
+    "resource_link": {
+      "type": "keyword"
+    },
     "created_at": {
       "type": "long"
     },
