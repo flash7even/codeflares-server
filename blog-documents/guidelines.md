@@ -55,16 +55,17 @@ You'll find the problem database section in [*Gateway -> Problems*](/problem/lis
 
 #### Problem Score
 We have a problem score formula to calculate the score that a contestant receive after solving any problem.
-After solving any problem of difficulty d, a contestant receive **sqrt(d)** points. So for the difficulties
-1, 2, 3, 4, 5, 6, 7, 8, 9, 10, a contestant receive the following scores:
-1, 2.82, 5.19, 8, 11.18, 14.69, 18.52, 22.62, 27, 31.62.
+After solving any problem of difficulty **d**, a contestant receive **sqrt(d)** points. So for the difficulties
+**1, 2, 3, 4, 5, 6, 7, 8, 9, 10**, a contestant receive the following scores:
+**1, 2.82, 5.19, 8, 11.18, 14.69, 18.52, 22.62, 27, 31.62.**
 
 ###### Why this score is important?
 
-1. This score helps us to calculate the minimum efforts you need to give to improve your skill rating. So it
+1. This score helps us to calculate the minimum efforts you need to put to improve your skill rating. So it
 directly affects the rating progress of a contestant.
-2. It also helps us to determine your skill. Your skill in any algorithms depends partially on the total amount of
-score you received solving problems from that particular algorithm.
+2. It also helps us to determine your skill level. Your skill level in any algorithm depends partially on the total amount of
+score you received solving the problems from that particular algorithm. For example, the more difficult problem you solve from Segment Tree,
+the more it increases your skill in Segment Tree, Data Structure and eventually in your total algorithm skill level.
 
 
 #### Individual Skill Generator
@@ -78,11 +79,14 @@ Considering your problem solving record, we generate your skill for each of the 
 For any algorithm **X**, the skill of that algorithm depends on the problems that have some connections with the algorithm **X**.
 Every solved problem of an user contribute to the skill of the algorithms which are connected to that algorithm.
 
-As explained in the **Problem Database** section, for any solved problem **P**, how much it'll contribute to the skill of a algorithm
-it depends on the following two factors: **problem-difficulty** and _**problem-category-connection-matrix**_.
-Using this factors for each solved problems, we generate a [*skill value*](/training/individual/#overallAlgorithmSkill) for all the second level algorithms.
+As explained in the **Problem Database** section, for any solved problem **P**, how much it'll contribute to the skill of a algorithm,
+that depends on the following two factors: **problem-difficulty** and _**problem-category-connection-matrix**_.
 
-Now we generate the [*skill value*](/training/individual/#topicWiseSkill) for the **root level categories** using the skill value of the algorithms that fall under that particular
+Using this factors for each solved problems, we generate a [*skill value*](/training/individual/#overallAlgorithmSkill) for all the second level algorithms
+which are directly connected to those solved problems.
+
+After processing the second level algorithms, then we generate the [*skill value*](/training/individual/#topicWiseSkill) for the **root level categories**
+using the skill value of the algorithms that fall under that particular
 root category. We have a _**algorithm-percentage-matrix**_ which stores the information of how much an algorithm contribute to the overall
 skill value of a root category.
 
@@ -92,10 +96,26 @@ Each entry of this matrix denotes how much a root category contribute to the **o
 
 #### Individual Training Model
 Our individual training model is based on the algorithm skill value we generated in the previous models. Using the algorithm skill,
-our training model generates a **relevant-score** for each problem and algorithm. This **relevant-score** denotes how much
+our training model generates a **relevant-score** for each problems and algorithms. This **relevant-score** denotes how much
 a problem or algorithm is relevant for you right now considering your current problem solving skill.
 
-In the individual training model page, we suggest the top 5 problems and algorithms for you to approach in the upcoming week.
+Let's see an example of why this training model for the problems is really important for the contestants.
+
+Let's say your current skill level in **Segment Tree** is somewhere between **5.5** to **6.0**.
+Considering your current skill, which problems from segment tree would be more relevant for you to solve right now?
+Problem having difficulty **1 - 2** will be too much easier for you, and at the same time, problem having difficulty **9 - 10** will be lot more
+harder for you. So none of these problems would be actually relevant for you to solve right now if you focus on improving your skill. Rather,
+problems having difficulty **5 - 7** might be more beneficial for your skill.
+
+Similarly, let's say you want to learn **Dijkstra** algorithm right now but you don't have have much knowledge about **DFS**, **BFS**, **Basic STL** etc.
+So trying to learn Dijkstra right now would be a really bad idea. Instead, your focus should be more on solving problems from **DFS**, **BFS** and
+**Basic STL** first and after gaining a moderate skill in those algorithms, then you can focus on **Dijkstra** algorithm.
+
+Our training model evaluates your relevant score considering your current skill level in each of the algorithms. It is
+built in a way so that, if you continue solving problems and focus on learning the algorithms following this models,
+your skill will gradually increase in those algorithms.
+
+In the individual training model page, we suggest the top **10** problems and algorithms for you to approach in the upcoming week.
 If you don't like a problem or if you think you have already solve a similar problem before, then you have the option to
 move it to **blacklist** or you can **flag** it temporarily for 3 days. Of course, you have the option to undo this operations
 from the [*tasklist*](/flagged/problem/list/) on the top bar if you feel like trying the problem again later on.
