@@ -91,7 +91,7 @@ class ProblemByID(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
 
-    @access_required(access="ALL")
+    @access_required(access="moderator")
     @api.doc('update problem by id')
     def put(self, problem_id):
         try:
@@ -140,7 +140,7 @@ class ProblemByID(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
 
-    @access_required(access="ALL")
+    @access_required(access="moderator")
     @api.doc('delete problem by id')
     def delete(self, problem_id):
         try:
@@ -164,7 +164,7 @@ class ProblemByID(Resource):
 @api.route('/')
 class CreateProblem(Resource):
 
-    #@access_required(access="ALL")
+    @access_required(access="ALL")
     @api.doc('create problem')
     def post(self):
         try:

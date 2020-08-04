@@ -80,6 +80,7 @@ def handle_failed_user_claims_verification(e):
 @api.route('/<string:job_id>')
 class UpdateJob(Resource):
 
+    @access_required(access="admin")
     @api.doc('update job_id based on post parameters')
     def put(self, job_id):
         try:

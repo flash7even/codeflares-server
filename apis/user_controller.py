@@ -112,7 +112,8 @@ class User(Resource):
     @api.doc('update user by id')
     def put(self, user_id):
         try:
-            ignore_fields = ['username', 'password']
+            ignore_fields = ['username', 'password', 'user_role', 'email', 'skill_value',
+                             'skill_title', 'solve_count', 'total_score', 'target_score']
 
             app.logger.info('Update user API called, id: ' + str(user_id))
             current_user = get_jwt_identity().get('id')
@@ -170,6 +171,44 @@ class User(Resource):
             return {'message': str(e)}, 500
 
 
+@api.route('/admin/action/<string:user_id>')
+class AdminUserControl(Resource):
+
+    @access_required(access="admin")
+    @api.doc('update user by id')
+    def put(self, user_id):
+        try:
+            app.logger.info('Update user API called, id: ' + str(user_id))
+            allowed_fields = ['user_role', 'password', 'username', 'email']
+
+            rs = requests.session()
+            user_data = request.get_json()
+
+            search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, user_id)
+            response = rs.get(url=search_url, headers=_http_headers).json()
+
+            if 'found' in response:
+                if response['found']:
+                    user = response['_source']
+                    for key in user_data:
+                        if key in allowed_fields and user_data[key]:
+                            user[key] = user_data[key]
+
+                    app.logger.debug('Elasticsearch query : ' + str(search_url))
+                    response = rs.put(url=search_url, json=user, headers=_http_headers).json()
+                    app.logger.debug('Elasticsearch response :' + str(response))
+                    if 'result' in response:
+                        app.logger.info('Update user API completed')
+                        return response['result'], 200
+                app.logger.info('User not found')
+                return 'not found', 404
+            app.logger.error('Elasticsearch down')
+            return response, 500
+
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
 @api.route('/')
 class CreateUser(Resource):
 
@@ -181,6 +220,7 @@ class CreateUser(Resource):
                 raise KeyError('Mandatory field missing')
         return json_data
 
+    @access_required(access="admin")
     @api.doc('create new user')
     def post(self):
         app.logger.info('Create user API called')
@@ -652,7 +692,7 @@ class SearchUser(Resource):
 @api.route('/sync/<string:user_id>')
 class Sync(Resource):
 
-    @access_required(access="ALL")
+    @access_required(access="admin")
     @api.doc('Sync user by id')
     def put(self, user_id):
         app.logger.info('Sync user API called, id: ' + str(user_id))
@@ -666,7 +706,7 @@ class Sync(Resource):
 @api.route('/sync/problem-data/<string:user_id>')
 class SyncProblemData(Resource):
 
-    @access_required(access="ALL")
+    @access_required(access="admin")
     @api.doc('Sync user problem data by id')
     def put(self, user_id):
         app.logger.info('Sync user problem data API called, id: ' + str(user_id))
@@ -681,7 +721,7 @@ class SyncProblemData(Resource):
 @api.route('/sync/training-model/<string:user_id>')
 class SyncTrainingModel(Resource):
 
-    @access_required(access="ALL")
+    @access_required(access="admin")
     @api.doc('Sync user training model by id')
     def put(self, user_id):
         app.logger.info('Sync user training model API called, id: ' + str(user_id))
@@ -696,7 +736,7 @@ class SyncTrainingModel(Resource):
 @api.route('/rating-change')
 class Test(Resource):
 
-    @access_required(access="ALL")
+    @access_required(access="admin")
     @api.doc('Sync user training model by id')
     def post(self):
         try:
@@ -716,7 +756,7 @@ class Test(Resource):
 @api.route('/generate-crypty-key')
 class GenerateKey(Resource):
 
-    @access_required(access="ALL")
+    @access_required(access="admin")
     @api.doc('generate crypto key')
     def post(self):
         try:

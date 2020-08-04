@@ -92,7 +92,7 @@ class CategoryByID(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
 
-    @access_required(access="ALL")
+    @access_required(access="moderator")
     @api.doc('update category by id')
     def put(self, category_id):
         try:
@@ -123,7 +123,7 @@ class CategoryByID(Resource):
         except Exception as e:
             return {'message': str(e)}, 500
 
-    @access_required(access="ALL")
+    @access_required(access="moderator")
     @api.doc('delete category by id')
     def delete(self, category_id):
         try:
@@ -147,7 +147,7 @@ class CategoryByID(Resource):
 @api.route('/')
 class CreateCategory(Resource):
 
-    #@access_required(access="ALL")
+    @access_required(access="moderator")
     @api.doc('create category')
     def post(self):
         try:

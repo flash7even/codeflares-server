@@ -75,7 +75,7 @@ def handle_failed_user_claims_verification(e):
 @api.route('/')
 class CreateRating(Resource):
 
-    @access_required(access="ALL")
+    @access_required(access="root")
     @api.doc('create rating')
     def post(self):
         app.logger.info('Create rating method called')

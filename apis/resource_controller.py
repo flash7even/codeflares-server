@@ -107,7 +107,7 @@ class ResourceByID(Resource):
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
-    @access_required(access="ALL")
+    @access_required(access="moderator")
     @api.doc('update resource by id')
     def put(self, resource_id):
         app.logger.info('Update resource_details method called')
@@ -135,7 +135,7 @@ class ResourceByID(Resource):
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
-    @access_required(access="ALL")
+    @access_required(access="moderator")
     @api.doc('delete resource by id')
     def delete(self, resource_id):
         app.logger.info('Delete resource_details method called')
@@ -156,7 +156,7 @@ class ResourceByID(Resource):
 @api.route('/')
 class CreateResource(Resource):
 
-    @access_required(access="ALL")
+    @access_required(access="moderator")
     @api.doc('create resource')
     def post(self):
         try:

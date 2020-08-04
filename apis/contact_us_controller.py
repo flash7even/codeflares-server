@@ -96,7 +96,7 @@ class ContactUsByID(Resource):
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
-    @access_required(access="ALL")
+    @access_required(access="moderator")
     @api.doc('update contact_us by id')
     def put(self, contact_us_id):
         app.logger.info('Update contact_us_details method called')
@@ -124,7 +124,7 @@ class ContactUsByID(Resource):
         app.logger.error('Elasticsearch down, response: ' + str(response))
         return response, 500
 
-    @access_required(access="ALL")
+    @access_required(access="moderator")
     @api.doc('delete contact_us by id')
     def delete(self, contact_us_id):
         app.logger.info('Delete contact_us_details method called')

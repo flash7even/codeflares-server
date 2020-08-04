@@ -96,6 +96,10 @@ def create_app(instance_name):
             return True
         return False
 
+    @jwt.user_claims_loader
+    def add_claims_to_access_token(identity):
+        return {'role': identity['user_role']}
+
     jwt.init_app(app)
     app.register_blueprint(blueprint)
 
