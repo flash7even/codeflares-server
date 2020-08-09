@@ -94,8 +94,8 @@ class CreateVote(Resource):
                 if f not in mandatory_fields:
                     return {'message': 'bad request'}, 400
             response = add_vote(data)
-            app.logger.debug('VOTE DATA: ' + json.dumps(data))
-            app.logger.debug('VOTE RESPONSE: ' + json.dumps(response))
+            app.logger.info('VOTE DATA: ' + json.dumps(data))
+            app.logger.info('VOTE RESPONSE: ' + json.dumps(response))
             return response
         except Exception as e:
             raise e

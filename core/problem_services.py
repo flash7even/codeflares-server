@@ -178,7 +178,7 @@ def get_total_problem_score_for_user(user_list):
         score_sum = 0
         marked_problem = {}
         for user_id in user_list:
-            app.logger.debug(f'check for user: {user_id}')
+            app.logger.info(f'check for user: {user_id}')
             must = [
                 {'term': {'user_id': user_id}},
                 {'term': {'status': SOLVED}}

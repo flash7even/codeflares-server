@@ -471,7 +471,7 @@ def get_rating_history_codeflares(team_id):
                     rating['ratingUpdateTimeSeconds'] = rating['created_at']
                 handle_list.append({'user_handle': user_details['username']})
                 history_list.append(rating_history)
-        app.logger.debug(f'history_list: {json.dumps(history_list)}')
+        app.logger.info(f'history_list: {json.dumps(history_list)}')
         rating_history = get_rating_comparison(history_list, handle_list)
         return rating_history
     except Exception as e:

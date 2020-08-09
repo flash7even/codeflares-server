@@ -123,9 +123,9 @@ class User(Resource):
             user_data = request.get_json()
 
             search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, user_id)
-            app.logger.debug('Elasticsearch query : ' + str(search_url))
+            app.logger.info('Elasticsearch query : ' + str(search_url))
             response = rs.get(url=search_url, headers=_http_headers).json()
-            app.logger.debug('Elasticsearch response :' + str(response))
+            app.logger.info('Elasticsearch response :' + str(response))
 
             if 'found' in response:
                 if response['found']:
@@ -134,9 +134,9 @@ class User(Resource):
                         if key not in ignore_fields and user_data[key]:
                             user[key] = user_data[key]
 
-                    app.logger.debug('Elasticsearch query : ' + str(search_url))
+                    app.logger.info('Elasticsearch query : ' + str(search_url))
                     response = rs.put(url=search_url, json=user, headers=_http_headers).json()
-                    app.logger.debug('Elasticsearch response :' + str(response))
+                    app.logger.info('Elasticsearch response :' + str(response))
                     if 'result' in response:
                         app.logger.info('Update user API completed')
                         return response['result'], 200
@@ -158,9 +158,9 @@ class User(Resource):
                 return {'message': 'bad request'}, 400
             rs = requests.session()
             search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, user_id)
-            app.logger.debug('Elasticsearch query : ' + str(search_url))
+            app.logger.info('Elasticsearch query : ' + str(search_url))
             response = rs.delete(url=search_url, headers=_http_headers).json()
-            app.logger.debug('Elasticsearch response :' + str(response))
+            app.logger.info('Elasticsearch response :' + str(response))
             if 'found' in response:
                 app.logger.info('Delete user API completed')
                 return response['result'], 200
@@ -194,9 +194,9 @@ class AdminUserControl(Resource):
                         if key in allowed_fields and user_data[key]:
                             user[key] = user_data[key]
 
-                    app.logger.debug('Elasticsearch query : ' + str(search_url))
+                    app.logger.info('Elasticsearch query : ' + str(search_url))
                     response = rs.put(url=search_url, json=user, headers=_http_headers).json()
-                    app.logger.debug('Elasticsearch response :' + str(response))
+                    app.logger.info('Elasticsearch response :' + str(response))
                     if 'result' in response:
                         app.logger.info('Update user API completed')
                         return response['result'], 200
@@ -312,22 +312,22 @@ class RegisterUser(Resource):
                     app.logger.info('Username already exists')
                     return 'Username or email already exists', 200
 
-            app.logger.debug('Check done')
+            app.logger.info('Check done')
 
             token_data = {
                 'username': data['username'],
                 'email': data['email'],
                 'token': create_random_token()
             }
-            app.logger.debug(f'token_data: {token_data}')
+            app.logger.info(f'token_data: {token_data}')
 
             encrypted_token = flask_crypto.encrypt_json(token_data)
-            app.logger.debug(f'encrypted_token 1: {encrypted_token}')
+            app.logger.info(f'encrypted_token 1: {encrypted_token}')
             redis_key = app.config['REDIS_PREFIX_USER_ACTIVATE'] + ':' + encrypted_token
             redis_store.connection.set(redis_key, str(user_data), timedelta(minutes=app.config['USER_ACTIVATION_TIMEOUT']))
             activation_link = f'{app.config["WEB_HOST"]}/{app.config["WEB_HOST_USER_ACTIVATION_URL"]}/{encrypted_token}'
             message_body = f'Please click the below link to activate your account:\n\n{activation_link}\n\nRegards,\nCodeflares Team'
-            app.logger.debug(f'message_body: {message_body}')
+            app.logger.info(f'message_body: {message_body}')
             send_email([data['email']], 'Account Activation', message_body)
             return {
                 'token': encrypted_token
@@ -345,7 +345,7 @@ class ActivateUser(Resource):
         app.logger.info('Activate user API called')
         rs = requests.session()
         try:
-            app.logger.debug(f'encrypted_token: {encrypted_token}')
+            app.logger.info(f'encrypted_token: {encrypted_token}')
             encrypted_token_encoded =  encrypted_token.encode()
             token_data = flask_crypto.decrypt_json(encrypted_token_encoded)
             redis_key = app.config['REDIS_PREFIX_USER_ACTIVATE'] + ':' + encrypted_token
@@ -430,7 +430,7 @@ class ChangePassword(Resource):
                         app.logger.info('Password has been updated')
                         return 'updated', 200
                 else:
-                    app.logger.debug('User does not exist')
+                    app.logger.info('User does not exist')
                     return 'user not found', 404
             app.logger.error('Elasticsearch error')
             return 'internal server error', 500
@@ -469,15 +469,15 @@ class ForgotPassword(Resource):
                 'email': user_data['email'],
                 'token': create_random_token()
             }
-            app.logger.debug(f'token_data: {token_data}')
+            app.logger.info(f'token_data: {token_data}')
 
             encrypted_token = flask_crypto.encrypt_json(token_data)
-            app.logger.debug(f'encrypted_token 1: {encrypted_token}')
+            app.logger.info(f'encrypted_token 1: {encrypted_token}')
             redis_key = app.config['REDIS_PREFIX_USER_PASSWORD'] + ':' + encrypted_token
             redis_store.connection.set(redis_key, str(user_data), timedelta(minutes=app.config['USER_CONFIRM_PASS_TIMEOUT']))
             activation_link = f'{app.config["WEB_HOST"]}/{app.config["WEB_HOST_USER_CONFIRM_PASS_URL"]}/{encrypted_token}'
             message_body = f'Please click the below link to update your password:\n\n{activation_link}\n\nRegards,\nCodeflares Team'
-            app.logger.debug(f'message_body: {message_body}')
+            app.logger.info(f'message_body: {message_body}')
             send_email([user_email], 'Password Change', message_body)
             return {
                 'token': encrypted_token
@@ -494,7 +494,7 @@ class ConfirmPassToken(Resource):
     def post(self, encrypted_token):
         app.logger.info('Confirm password token API called')
         try:
-            app.logger.debug(f'encrypted_token: {encrypted_token}')
+            app.logger.info(f'encrypted_token: {encrypted_token}')
             encrypted_token_encoded =  encrypted_token.encode()
             token_data = flask_crypto.decrypt_json(encrypted_token_encoded)
             redis_key = app.config['REDIS_PREFIX_USER_PASSWORD'] + ':' + encrypted_token
@@ -563,7 +563,7 @@ class ConfirmPassword(Resource):
                         app.logger.info('Password has been updated')
                         return 'updated', 200
                 else:
-                    app.logger.debug('User does not exist')
+                    app.logger.info('User does not exist')
                     return 'user not found', 404
             app.logger.error('Elasticsearch error')
             return 'internal server error', 500

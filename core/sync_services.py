@@ -64,24 +64,24 @@ def user_training_model_sync(user_id):
 
 def team_training_model_sync(team_id):
     app.logger.info(f'team_training_model_sync service called for team: {team_id}')
-    app.logger.debug('sync sync_category_score_for_team')
+    app.logger.info('sync sync_category_score_for_team')
     sync_category_score_for_team(team_id)
-    app.logger.debug('sync sync_root_category_score_for_team')
+    app.logger.info('sync sync_root_category_score_for_team')
     skill_value = sync_root_category_score_for_team(team_id)
-    app.logger.debug('sync sync_overall_stat_for_team')
+    app.logger.info('sync sync_overall_stat_for_team')
     sync_overall_stat_for_team(team_id, skill_value)
     skill = Skill()
     user_skill_level = skill.get_skill_level_from_skill(skill_value)
-    app.logger.debug('sync get_skill_level_from_skill done')
+    app.logger.info('sync get_skill_level_from_skill done')
     sync_problem_score_for_team(team_id, user_skill_level)
-    app.logger.debug('sync sync_problem_score_for_team done')
+    app.logger.info('sync sync_problem_score_for_team done')
 
     team_details = get_team_details(team_id)
-    app.logger.debug(f' end team_details{team_details}')
+    app.logger.info(f' end team_details{team_details}')
     member_list = team_details.get('member_list', [])
     for member in member_list:
         member_details = get_user_details_by_handle_name(member['user_handle'])
-        app.logger.debug(f' member_details {member_details}')
+        app.logger.info(f' member_details {member_details}')
         notification_data = {
             'user_id': member_details['id'],
             'sender_id': 'System',
@@ -90,6 +90,6 @@ def team_training_model_sync(team_id):
             'notification_text': 'Training model for your team ' + team_details['team_name'] + ' has been synced by',
             'status': 'UNREAD',
         }
-        app.logger.debug(f' add_notification {notification_data}')
+        app.logger.info(f' add_notification {notification_data}')
         add_notification(notification_data)
     app.logger.info(f'team_training_model_sync service completed')
