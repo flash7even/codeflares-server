@@ -12,6 +12,7 @@ from core.user_category_edge_services import get_user_category_data
 from core.comment_services import get_comment_list, get_comment_count
 from core.resource_services import search_resource
 from core.vote_services import get_vote_count_list
+from commons.skillset import Skill
 
 _es_index_category = 'cfs_categories'
 _es_index_category_dependency = 'cfs_category_dependencies'
@@ -27,6 +28,7 @@ def create_category_id(category_name):
 
 
 def get_category_details(cat_id, user_id = None):
+    app.logger.info(f'get_category_details function called for cat_id: {cat_id}, user_id: {user_id}')
     try:
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_category, _es_type, cat_id)
@@ -48,11 +50,14 @@ def get_category_details(cat_id, user_id = None):
                 if user_id:
                     cat_info = get_user_category_data(user_id, data['category_id'])
                     if cat_info:
-                        data['skill_value'] = "{:.2f}".format(float(cat_info['skill_value']))
-                        data['skill_title'] = cat_info['skill_title']
+                        skill_value = float(cat_info.get('skill_value', 0))
+                        data['skill_value'] = "{:.2f}".format(skill_value)
+                        skill = Skill()
+                        data['skill_title'] = skill.get_skill_title(skill_value)
                     else:
                         data['skill_value'] = 0
                         data['skill_title'] = "NA"
+                app.logger.info('get_category_details completed')
                 return data
         return None
     except Exception as e:
