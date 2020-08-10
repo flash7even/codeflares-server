@@ -52,3 +52,17 @@ class GetCountry(Resource):
             }, 200
         except Exception as e:
             return {'message': str(e)}, 500
+
+
+@api.route('/online-judges')
+class GetCountry(Resource):
+
+    @api.doc('get oj list')
+    def get(self):
+        try:
+            app.logger.info('Get oj list api called')
+            with open('./datasets/storage/oj_list.json') as json_file:
+                data = json.load(json_file)
+                return data, 200
+        except Exception as e:
+            return {'message': str(e)}, 500

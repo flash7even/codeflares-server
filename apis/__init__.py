@@ -13,7 +13,6 @@ from config import Config, instances
 from .auth_controller import api as auth_ns
 from .category_controller import api as cat_ns
 from .problem_controller import api as prob_ns
-from .onlinejudge_controller import api as oj_ns
 from .user_controller import api as user_ns
 from .training_controller import api as train_ns
 from .team_controller import api as team_ns
@@ -44,7 +43,6 @@ api.add_namespace(auth_ns, path='/auth')
 api.add_namespace(user_ns, path='/user')
 api.add_namespace(prob_ns, path='/problem')
 api.add_namespace(cat_ns, path='/category')
-api.add_namespace(oj_ns, path='/oj')
 api.add_namespace(train_ns, path='/training')
 api.add_namespace(team_ns, path='/team')
 api.add_namespace(classroom_ns, path='/classroom')

@@ -1,0 +1,24 @@
+{
+  "oj_list" : [
+    {
+      "name": "Codeforces",
+      "title": "codeforces"
+    },
+    {
+      "name": "Codechef",
+      "title": "codechef"
+    },
+    {
+      "name": "Light OJ",
+      "title": "lightoj"
+    },
+    {
+      "name": "SPOJ",
+      "title": "spoj"
+    },
+    {
+      "name": "UVA",
+      "title": "uva"
+    }
+  ]
+}
