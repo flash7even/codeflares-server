@@ -197,7 +197,7 @@ class CreateProblem(Resource):
             response = rs.post(url=post_url, json=data, headers=_http_headers).json()
             app.logger.info('Problem Created Successfully')
 
-            if 'result' in response and response['result'] == 'created':
+            if 'result' in response:
                 app.logger.info('Create problem api completed')
                 return response['_id'], 201
             app.logger.error('Elasticsearch down, response: ' + str(response))
