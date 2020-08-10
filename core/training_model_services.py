@@ -443,7 +443,7 @@ def sync_overall_stat_for_team(team_id, skill_value = None):
             'solve_count': int(solve_count),
             'skill_title': skill_title,
         }
-        app.logger.debug('Team final stat to update: ' + json.dumps(skill_data))
+        app.logger.info('Team final stat to update: ' + json.dumps(skill_data))
         update_team_details(team_id, skill_data)
     except Exception as e:
         raise e

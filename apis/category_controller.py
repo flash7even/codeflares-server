@@ -88,6 +88,7 @@ class CategoryByID(Resource):
         try:
             app.logger.info('Get category_details api called')
             data = get_category_details(category_id)
+            app.logger.info('Get category_details api completed')
             return data
         except Exception as e:
             return {'message': str(e)}, 500

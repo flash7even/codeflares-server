@@ -2,7 +2,7 @@ import os
 
 appname = 'codeflares'
 basedir = os.path.abspath(os.path.dirname(__file__))
-version = '0.0.1-alpha'
+version = '0.0.1'
 
 
 class Config:
@@ -12,7 +12,6 @@ class Config:
     DEBUG = False
     TESTING = False
     VERSION = version
-    STATIC_ROOT = os.getenv('STATIC_ROOT', './static')
 
 
 class DevelopmentConfig(Config):
@@ -28,7 +27,7 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     ENV = 'production'
-    DEBUG = False
+    DEBUG = True
 
 
 instances = dict(

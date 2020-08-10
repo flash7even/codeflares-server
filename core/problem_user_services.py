@@ -165,7 +165,7 @@ def sync_problems(user_id, oj_problem_set):
         skill = Skill()
         user_skill = update_root_category_skill_for_user(user_id, root_category_list, root_category_solve_count)
         user_skill_level = skill.get_skill_level_from_skill(user_skill)
-        app.logger.debug(f'Final user_skill: {user_skill}, user_skill_level: {user_skill_level}')
+        app.logger.info(f'Final user_skill: {user_skill}, user_skill_level: {user_skill_level}')
         sync_overall_stat_for_user(user_id, user_skill)
         app.logger.info('sync_overall_stat_for_user completed')
         if len(updated_categories) > 0:

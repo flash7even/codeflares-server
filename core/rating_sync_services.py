@@ -28,11 +28,11 @@ def user_list_sync():
         details_info = get_user_details(id)
         skill_value = details_info.get('skill_value', 0)
         solve_count = details_info.get('solve_count', 0)
-        app.logger.debug(f'skill_value: {skill_value}, solve_count: {solve_count}')
+        app.logger.info(f'skill_value: {skill_value}, solve_count: {solve_count}')
         previous_problem_score = details_info['total_score']
-        app.logger.debug(f'previous_problem_score: {previous_problem_score}')
+        app.logger.info(f'previous_problem_score: {previous_problem_score}')
         current_problem_score = get_total_problem_score_for_user([id])
-        app.logger.debug(f'current_problem_score: {current_problem_score}')
+        app.logger.info(f'current_problem_score: {current_problem_score}')
 
         updated_data = {
             'total_score': current_problem_score
@@ -40,17 +40,17 @@ def user_list_sync():
         decrease_factor = 0
         if current_problem_score < previous_problem_score + details_info['target_score']:
             decrease_amount = previous_problem_score + details_info['target_score'] - current_problem_score
-            app.logger.debug(f'decrease_amount: {decrease_amount}')
+            app.logger.info(f'decrease_amount: {decrease_amount}')
             decrease_factor = math.sqrt(decrease_amount)
 
         skill = Skill()
         updated_data['decreased_skill_value'] = details_info['decreased_skill_value'] + decrease_factor
         current_skill = skill_value - updated_data['decreased_skill_value']
-        app.logger.debug(f'current_skill: {current_skill}')
+        app.logger.info(f'current_skill: {current_skill}')
         current_skill_level = skill.get_skill_level_from_skill(current_skill)
-        app.logger.debug(f'decrease_amount: {current_skill_level}')
+        app.logger.info(f'decrease_amount: {current_skill_level}')
         updated_data['target_score'] = skill.generate_next_week_prediction(current_skill_level)
-        app.logger.debug(f'updated_data: {updated_data}')
+        app.logger.info(f'updated_data: {updated_data}')
         add_user_ratings(id, current_skill, solve_count)
         update_user_details(id, updated_data)
     app.logger.info(f'user_list_sync completed')

@@ -103,7 +103,7 @@ class ContestByID(Resource):
             rs = requests.session()
             post_data = request.get_json()
 
-            app.logger.debug('post_data for contest update: ' + json.dumps(post_data))
+            app.logger.info('post_data for contest update: ' + json.dumps(post_data))
 
             if 'problem_list' in post_data:
                 reupload_problem_set_for_contest(contest_id, post_data['problem_list'])

@@ -106,8 +106,9 @@ def find_problem_set_for_contest(contest_id):
                 problem_details = get_problem_details(data['problem_id'])
                 problem_details['problem_order'] = data['problem_order']
                 item_list.append(problem_details)
+            return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
-        return item_list
+        raise Exception('Elasticsearch down')
     except Exception as e:
         raise e
 

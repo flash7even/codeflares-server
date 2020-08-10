@@ -329,7 +329,7 @@ class Sync(Resource):
     def put(self, team_id):
         app.logger.info('Sync team API called, id: ' + str(team_id))
         try:
-            app.logger.debug('team_training_model_sync')
+            app.logger.info('team_training_model_sync')
             add_pending_job(team_id, 'TEAM_SYNC')
         except Exception as e:
             return {'message': str(e)}, 500
@@ -344,6 +344,6 @@ class SyncTrainingModel(Resource):
         app.logger.info('Sync team training model API called, id: ' + str(team_id))
         try:
             team_training_model_sync(team_id)
-            app.logger.debug('team_training_model_sync done')
+            app.logger.info('team_training_model_sync done')
         except Exception as e:
             return {'message': str(e)}, 500

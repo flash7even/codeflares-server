@@ -73,9 +73,9 @@ def update_pending_job(job_id, updated_job_type):
             if response['found']:
                 data = response['_source']
                 data['status'] = updated_job_type
-                app.logger.debug('Elasticsearch query : ' + str(url))
+                app.logger.info('Elasticsearch query : ' + str(url))
                 response = rs.put(url=url, json=data, headers=_http_headers).json()
-                app.logger.debug('Elasticsearch response :' + str(response))
+                app.logger.info('Elasticsearch response :' + str(response))
                 if 'result' in response:
                     app.logger.info('update_pending_job completed')
                     return response['result']
