@@ -1,4 +1,5 @@
 import logging
+import os
 import re, json
 from logging.handlers import TimedRotatingFileHandler
 import requests
@@ -64,8 +65,9 @@ team_list = [
     }
 ]
 
-ADMIN_USER = 'flash_7'
-ADMIN_PASSWORD = '123456'
+
+ADMIN_USER = os.getenv('ADMIN_USERNAME')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
 login_api = "http://localhost:5056/api/auth/login"
 
 

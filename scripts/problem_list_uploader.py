@@ -22,16 +22,43 @@ logger.addHandler(handler)
 rs = requests.session()
 _http_headers = {'Content-Type': 'application/json'}
 
+login_api = "http://localhost:5056/api/auth/login"
+ADMIN_USER = os.getenv('ADMIN_USERNAME')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
 approved = 'approved'
+access_token = None
+
+
+def get_access_token():
+    global rs
+    login_data = {
+        "username": ADMIN_USER,
+        "password": ADMIN_PASSWORD
+    }
+    response = rs.post(url=login_api, json=login_data, headers=_http_headers).json()
+    return response['access_token']
+
+
+def get_header():
+    global rs
+    global access_token
+    if access_token is None:
+        access_token = get_access_token()
+    auth_headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {access_token}'
+    }
+    return auth_headers
 
 
 def check_existance(problem_id, oj_name):
     try:
+        auth_header = get_header()
         json_data = {}
         json_data["problem_id"] = problem_id
         json_data["oj_name"] = oj_name
         s_url = "http://localhost:5056/api/problem/search/raw/0"
-        response = rs.post(url=s_url, json=json_data, headers=_http_headers).json()
+        response = rs.post(url=s_url, json=json_data, headers=auth_header).json()
         if 'problem_list' in response:
             problem_list = response['problem_list']
             if len(problem_list) > 0:
@@ -47,8 +74,9 @@ def add_problem_list(data, filename):
             logger.error('PROBLEM ALREADY EXISTS: ' + json.dumps(data) + ' filename: ' + str(filename))
             return
 
+        auth_header = get_header()
         url = "http://localhost:5056/api/problem/"
-        response = rs.post(url=url, json=data, headers=_http_headers).json()
+        response = rs.post(url=url, json=data, headers=auth_header).json()
         logger.debug('response: ' + json.dumps(response))
     except Exception as e:
         raise e
