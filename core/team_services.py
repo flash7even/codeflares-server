@@ -112,7 +112,8 @@ def add_team_members_bulk(member_list, team_id, team_type, logged_in_user):
                     'status': 'UNREAD',
                 }
 
-            add_notification(notification_data)
+            if member_details['id'] != logged_in_user:
+                add_notification(notification_data)
 
     except Exception as e:
         raise e

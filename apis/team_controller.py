@@ -234,11 +234,7 @@ class CreateTeam(Resource):
         try:
             app.logger.info('Update team member method called')
             data = request.get_json()
-            team_id = data['team_id']
-            current_user = get_jwt_identity().get('id')
-            if get_user_team_access(current_user, team_id) is False:
-                return {'message': 'bad request'}, 400
-            print('provided data: ', data)
+            app.logger.info(f'provided data: {data}')
             response = update_team_member(data)
             app.logger.info('Update team member method completed')
             return response, 201

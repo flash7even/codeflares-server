@@ -239,10 +239,6 @@ class CreateTeam(Resource):
             app.logger.info('Update team member method called')
             data = request.get_json()
             print('provided data: ', data)
-            team_id = data['team_id']
-            current_user = get_jwt_identity().get('id')
-            if has_moderator_access(current_user, team_id) is False:
-                return {'message': 'bad request'}, 400
             response = update_team_member(data)
             app.logger.info('Update team member method completed')
             return response, 201
