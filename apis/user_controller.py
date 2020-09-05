@@ -692,7 +692,6 @@ class SearchUser(Resource):
 @api.route('/sync/<string:user_id>')
 class Sync(Resource):
 
-    @access_required(access="admin")
     @api.doc('Sync user by id')
     def put(self, user_id):
         app.logger.info('Sync user API called, id: ' + str(user_id))
