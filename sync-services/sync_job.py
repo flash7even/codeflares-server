@@ -809,6 +809,7 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
             uc_edge[dif_key] += 1
             problem_factor = category_details.get('factor', 1)
             added_skill = cat_skill_model.get_score_for_latest_solved_problem(problem_difficulty, uc_edge[dif_key], problem_factor)
+            logger.info(f'found get_score_for_latest_solved_problem: {added_skill}')
             uc_edge['skill_value'] += added_skill
             uc_edge['solve_count'] += 1
             uc_edge['skill_title'] = skill_info.get_skill_title(uc_edge['skill_value'])
@@ -818,6 +819,7 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
             logger.info(f'add uc_edge: {uc_edge}')
             updated_categories[category_id] = uc_edge
             logger.info(f'saved at category_id: {category_id}')
+            logger.info('apply_solved_problem_for_user completed')
     except Exception as e:
         logger.error(f'Exception occurred: {e}')
         raise Exception('Internal server error')
@@ -841,6 +843,7 @@ def sync_problems(user_id, oj_problem_set):
                 problem_stat = problem_set['problem_list'][problem]
                 submission_list = problem_stat['submission_list']
                 problem_db = search_problems({'problem_id': problem, 'oj_name': problem_set['oj_name'], 'active_status': approved}, 0, 1)
+                logger.info(f'problem_db found in es: {problem_db}')
                 if len(problem_db) == 0:
                     continue
                 problem_id = problem_db[0]['id']
@@ -850,6 +853,7 @@ def sync_problems(user_id, oj_problem_set):
 
         logger.info('apply_solved_problem_for_user completed for all problems')
         marked_categories = dict(updated_categories)
+        logger.info(f'marked_categories: {marked_categories}')
 
         for category_id in marked_categories:
             logger.info(f'category id inside marked_categories: {category_id}')
@@ -909,6 +913,7 @@ def sync_problems(user_id, oj_problem_set):
 
         logger.info('updated root categories')
         root_category_list = search_categories({"category_root": "root"}, 0, _es_size)
+        logger.info(f'root_category_list: {root_category_list}')
         skill = Skill()
         user_skill = update_root_category_skill_for_user(user_id, root_category_list, root_category_solve_count)
         user_skill_level = skill.get_skill_level_from_skill(user_skill)
@@ -923,6 +928,7 @@ def sync_problems(user_id, oj_problem_set):
 
 
 def synch_user_problem(user_id):
+    logger.info(f'synch_user_problem for user_id: {user_id}')
     try:
         uva = UvaScrapper()
         codeforces = CodeforcesScrapper()
@@ -948,6 +954,8 @@ def synch_user_problem(user_id):
                 logger.info(f'codeforces problem_stat: {problem_stat}')
                 print('problem_stat: ',problem_stat)
 
+        print('codeforces scrapping completed')
+
         if 'codechef' in allowed_judges:
             handle = user_info.get('codechef_handle', None)
             print('codechef: ', handle)
@@ -957,6 +965,8 @@ def synch_user_problem(user_id):
                     'problem_list': problem_stat['solved_problems'],
                     'oj_name': 'codechef'
                 })
+
+        print('codechef scrapping completed')
 
         if 'uva' in allowed_judges:
             handle = user_info.get('uva_handle', None)
@@ -968,6 +978,8 @@ def synch_user_problem(user_id):
                     'oj_name': 'uva'
                 })
 
+        print('uva scrapping completed')
+
         if 'spoj' in allowed_judges:
             handle = user_info.get('spoj_handle', None)
             print('spoj: ', handle)
@@ -977,6 +989,8 @@ def synch_user_problem(user_id):
                     'problem_list': problem_stat['solved_problems'],
                     'oj_name': 'spoj'
                 })
+
+        print('spoj scrapping completed')
 
         if 'lightoj' in allowed_judges:
             handle = user_info.get('lightoj_handle', None)
@@ -991,6 +1005,8 @@ def synch_user_problem(user_id):
                     'problem_list': problem_stat['solved_problems'],
                     'oj_name': 'lightoj'
                 })
+
+        print('lightoj scrapping completed')
 
         sync_problems(user_id, oj_problem_set)
 
@@ -1067,12 +1083,14 @@ def db_job():
 
 
 cron_job = BackgroundScheduler(daemon=True)
-cron_job.add_job(db_job, 'interval', seconds=15)
+cron_job.add_job(db_job, 'interval', seconds=6000)
 cron_job.start()
 
 
 if __name__ == '__main__':
     logger.info('Sync Job Script successfully started running')
     print('Sync Job Script successfully started running')
+    print('Run initial job')
+    db_job()
     while(1):
         pass

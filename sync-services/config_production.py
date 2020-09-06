@@ -1,4 +1,5 @@
 class ConfigProduction:
+    SERVER_HOST = 'http://localhost:5056/api'
     ES_HOST = 'localhost:9200'
     REDIS_HOST = '127.0.0.1'
     REDIS_PORT = '6379'
