@@ -28,14 +28,15 @@ _http_headers = {'Content-Type': 'application/json'}
 
 ADMIN_USER = os.getenv('ADMIN_USERNAME')
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
+SERVER_HOST = 'http://localhost:5000/api'
 
 access_token = None
-login_api = "http://localhost:5056/api/auth/login"
-user_probem_sync_api = "http://localhost:5056/api/user/sync/problem-data/"
-user_training_model_sync_api = "http://localhost:5056/api/user/sync/training-model/"
-team_training_model_sync_api = "http://localhost:5056/api/team/sync/training-model/"
-job_search_url = "http://localhost:5056/api/job/search"
-job_url = "http://localhost:5056/api/job/"
+login_api = f'{SERVER_HOST}/auth/login'
+user_probem_sync_api = f'{SERVER_HOST}/user/sync/problem-data/'
+user_training_model_sync_api = f'{SERVER_HOST}/user/sync/training-model/'
+team_training_model_sync_api = f'{SERVER_HOST}/team/sync/training-model/'
+job_search_url = f'{SERVER_HOST}/job/search'
+job_url = f'{SERVER_HOST}/job/'
 
 
 def get_access_token():

@@ -15,6 +15,8 @@ from core.follower_services import get_follow_stat
 from core.rating_services import search_user_ratings
 from core.rating_services import get_user_rating_history
 from commons.skillset import Skill
+from core.job_services import last_completed_job_time
+
 _es_index_user_team_edge = 'cfs_user_team_edges'
 _es_index_team = 'cfs_teams'
 _es_type = '_doc'
@@ -31,6 +33,8 @@ def reformat_team_data(data):
     data['target_score'] = float("{:.2f}".format(data.get('target_score', 0)))
     data['next_week_target'] = float("{:.2f}".format(data['total_score'] + data['target_score']))
     data['solve_count'] = data.get('solve_count', 0)
+    if 'last_synced_time' in data and data['last_synced_time'] != "NA":
+        data['last_synced_time'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['last_synced_time']))
     if 'created_at' in data:
         data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
     if 'updated_at' in data:
@@ -162,6 +166,7 @@ def get_team_details(team_id):
                 data['team_leader_handle'] = user_details['username']
                 data['team_leader_skill_color'] = user_details['skill_color']
                 data['follow_stat'] = get_follow_stat(data['id'])
+                data['last_synced_time'] = last_completed_job_time(team_id)
                 data = reformat_team_data(data)
                 return data
             raise Exception('Team not found')
