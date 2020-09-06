@@ -29,7 +29,7 @@ class CategoryScoreGenerator:
         score = min_score + range_dif * (1.0 - (diff - min_diff))
         score = score*percentage/100.0
         score = score*self.dependent_percentage/100.0
-        print(f'Final score: {score}')
+        # print(f'Final score: {score}')
         return score
 
     def get_own_difficulty_based_score(self, diff):

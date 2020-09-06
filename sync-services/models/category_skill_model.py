@@ -20,7 +20,7 @@ class CategorySkillGenerator:
 
     def get_score_for_latest_solved_problem(self, difficulty, solve_count_order, problem_factor):
         difficulty = int(difficulty)
-        print(f'get_score_for_latest_solved_problem called, difficulty: {difficulty}, solve_count_order: {solve_count_order}')
+        # print(f'get_score_for_latest_solved_problem called, difficulty: {difficulty}, solve_count_order: {solve_count_order}')
 
         limit = self.group_bound[difficulty]
         group_len = self.group_table[difficulty]
@@ -36,7 +36,7 @@ class CategorySkillGenerator:
                 group_order += 1
         mty_factor = (1.0/group_order)**(self.n)
         score = Skill.score_table[difficulty] * mty_factor * float(problem_factor)
-        print(f'generated score: {score}')
+        # print(f'generated score: {score}')
         return score
 
     def generate_skill(self, solved_table, problem_factor):

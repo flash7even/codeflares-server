@@ -17,7 +17,7 @@ def check_pending_job(user_id):
 
 def add_pending_job(user_id):
     redis_user_pending_job_key = f'{app.config["REDIS_PREFIX_USER_PENDING_JOB"]}:{user_id}'
-    redis_store.connection.set(redis_user_pending_job_key, 1)
+    redis_store.connection.set(redis_user_pending_job_key, 1, timedelta(minutes=app.config["REDIS_PREFIX_USER_JOB_PENDING_TIME"]))
 
 
 def remove_pending_job(user_id):

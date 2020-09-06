@@ -11,30 +11,30 @@ user_details_url = 'http://www.lightoj.com/volume_userstat.php?user_id='
 class LightOJScrapper:
 
     def get_user_info(self, username, credentials):
-        # app.logger.info(f'get_user_info called for: {username}')
+        # print(f'get_user_info called for: {username}')
         try:
             options = Options()
             options.headless = True
             driver = webdriver.Firefox(options=options)
             driver.get(login_url)
-            # app.logger.info('go to login page')
+            # print('go to login page')
 
             elem = driver.find_element_by_name("myuserid")
             elem.clear()
-            elem.send_keys(self.credentials['username'])
+            elem.send_keys(credentials['username'])
 
             elem = driver.find_element_by_name("mypassword")
             elem.clear()
-            elem.send_keys(self.credentials['password'])
+            elem.send_keys(credentials['password'])
 
             elem.send_keys(Keys.ENTER)
-            # app.logger.info('login completed')
+            # print('login completed')
 
             url = user_details_url + username
 
             driver.get(url)
             page_source = driver.page_source
-            # app.logger.info('received problem statistics for user')
+            # print('received problem statistics for user')
             soup = BeautifulSoup(page_source, 'html.parser')
 
             tables = soup.findAll("table")
@@ -57,7 +57,7 @@ class LightOJScrapper:
                 if problem is not None:
                     problems.append(problem)
 
-            # app.logger.info(f'solved problem list: {json.dumps(problems)}')
+            # print(f'solved problem list: {json.dumps(problems)}')
             driver.quit()
 
             return {
@@ -67,42 +67,42 @@ class LightOJScrapper:
                 'solved_problems': problems
             }
         except Exception as e:
-            # app.logger.info(f'Exception occurred, could not manage to get user statistics from lightoj')
-            # app.logger.info(f'Exception: {str(e)}')
+            print(f'Exception occurred, could not manage to get user statistics from lightoj')
+            print(f'Exception: {str(e)}')
             data = {
                 'platform': 'lightoj',
                 'user_name': username,
                 'solved_count': 0,
                 'solved_problems': []
             }
-            # app.logger.info(f'Return data: {json.dumps(data)}')
+            print(f'Return data: {json.dumps(data)}')
             return data
 
     def get_user_info_heavy(self, username, credentials):
-        # app.logger.info(f'get_user_info called for: {username}')
+        # print(f'get_user_info called for: {username}')
         try:
             options = Options()
             options.headless = True
             driver = webdriver.Firefox(options=options)
             driver.get(login_url)
-            # app.logger.info('go to login page')
+            # print('go to login page')
 
             elem = driver.find_element_by_name("myuserid")
             elem.clear()
-            elem.send_keys(self.credentials['username'])
+            elem.send_keys(credentials['username'])
 
             elem = driver.find_element_by_name("mypassword")
             elem.clear()
-            elem.send_keys(self.credentials['password'])
+            elem.send_keys(credentials['password'])
 
             elem.send_keys(Keys.ENTER)
-            # app.logger.info('login completed')
+            # print('login completed')
 
             url = user_details_url + username
 
             driver.get(url)
             page_source = driver.page_source
-            # app.logger.info('received problem statistics for user')
+            # print('received problem statistics for user')
             soup = BeautifulSoup(page_source, 'html.parser')
 
             tables = soup.findAll("table")
@@ -133,7 +133,7 @@ class LightOJScrapper:
                     }
                     solved_problems[problem] = problem_data
 
-            # app.logger.info(f'solved problem list: {json.dumps(solved_problems)}')
+            # print(f'solved problem list: {json.dumps(solved_problems)}')
             driver.quit()
 
             return {
@@ -143,13 +143,13 @@ class LightOJScrapper:
                 'solved_problems': solved_problems
             }
         except Exception as e:
-            # app.logger.info(f'Exception occurred, could not manage to get user statistics from lightoj')
-            # app.logger.info(f'Exception: {str(e)}')
+            print(f'Exception occurred, could not manage to get user statistics from lightoj')
+            print(f'Exception: {str(e)}')
             data = {
                 'platform': 'lightoj',
                 'user_name': username,
                 'solved_count': 0,
                 'solved_problems': {}
             }
-            # app.logger.info(f'Return data: {json.dumps(data)}')
+            print(f'Return data: {json.dumps(data)}')
             return data

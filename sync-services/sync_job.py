@@ -181,7 +181,7 @@ def get_user_details(user_id):
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(config.ES_HOST, _es_index_user, _es_type, user_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
-        print('response: ', response)
+        # print('response: ', response)
         if 'found' in response:
             if response['found']:
                 data = response['_source']
@@ -220,7 +220,7 @@ def generate_skill_value_for_user(user_id):
     query_json = {'query': {'bool': {'must': must}}}
     query_json['size'] = _es_size
 
-    logger.info('generate_skill_value_for_user query_json: ' + json.dumps(query_json))
+    # logger.info('generate_skill_value_for_user query_json: ' + json.dumps(query_json))
     search_url = 'http://{}/{}/{}/_search'.format(config.ES_HOST, _es_index_user_category, _es_type)
     response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
     logger.info('generate_skill_value_for_user response: ' + str(response))
@@ -234,7 +234,7 @@ def generate_skill_value_for_user(user_id):
             data = hit['_source']
             skill_value += data['skill_value_by_percentage']
 
-    logger.info('skill_value found: ' + str(skill_value))
+    # logger.info('skill_value found: ' + str(skill_value))
     return skill_value
 
 
@@ -308,7 +308,7 @@ def get_user_category_data(user_id, category_id):
 
 
 def get_category_details(cat_id, user_id = None):
-    logger.info(f'get_category_details function called for cat_id: {cat_id}, user_id: {user_id}')
+    # logger.info(f'get_category_details function called for cat_id: {cat_id}, user_id: {user_id}')
     try:
         rs = requests.session()
         search_url = 'http://{}/{}/{}/{}'.format(config.ES_HOST, _es_index_category, _es_type, cat_id)
@@ -328,7 +328,7 @@ def get_category_details(cat_id, user_id = None):
                     else:
                         data['skill_value'] = 0
                         data['skill_title'] = "NA"
-                logger.info('get_category_details completed')
+                # logger.info('get_category_details completed')
                 return data
         return None
     except Exception as e:
@@ -404,7 +404,7 @@ def search_categories(param, from_value, size_value, heavy = False):
         must = []
         keyword_fields = ['category_title', 'category_root']
         user_id = param.get('user_id', None)
-        print('search_categories: body: ', param)
+        # print('search_categories: body: ', param)
         param.pop('user_id', None)
 
         minimum_difficulty = 0
@@ -440,10 +440,10 @@ def search_categories(param, from_value, size_value, heavy = False):
 
         query_json['from'] = from_value
         query_json['size'] = size_value
-        print('query_json: ', json.dumps(query_json))
+        # print('query_json: ', json.dumps(query_json))
         search_url = 'http://{}/{}/{}/_search'.format(config.ES_HOST, _es_index_category, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        # print('response: ', response)
+        # # print('response: ', response)
         item_list = []
         if 'hits' in response:
             for hit in response['hits']['hits']:
@@ -464,7 +464,7 @@ def search_categories(param, from_value, size_value, heavy = False):
 
 
 def update_root_category_skill_for_user(user_id, root_category_list, root_category_solve_count):
-    logger.info(f'update_root_category_skill_for_user called for: {user_id}')
+    # logger.info(f'update_root_category_skill_for_user called for: {user_id}')
     rs = requests.session()
     user_skill_sum = 0
     for cat in root_category_list:
@@ -481,7 +481,7 @@ def update_root_category_skill_for_user(user_id, root_category_list, root_catego
             category_name = cat['category_name']
             new_solve_count = root_category_solve_count.get(category_name, 0)
             uc_edge = get_user_category_data(user_id, category_id)
-            logger.info(f'uc_edge from es: {uc_edge}')
+            # logger.info(f'uc_edge from es: {uc_edge}')
             if uc_edge is None:
                 uc_edge = {
                     "category_id": category_id,
@@ -501,7 +501,7 @@ def update_root_category_skill_for_user(user_id, root_category_list, root_catego
             score_percentage = float(cat['score_percentage'])
             uc_edge['skill_value_by_percentage'] = uc_edge['skill_value'] * score_percentage / 100
             user_skill_sum += uc_edge['skill_value_by_percentage']
-            logger.info(f'add uc_edge: {uc_edge}')
+            # logger.info(f'add uc_edge: {uc_edge}')
             uc_edge.pop('id', None)
             add_user_category_data(user_id, category_id, uc_edge)
     return user_skill_sum
@@ -589,7 +589,7 @@ def search_problems(param, from_value, size_value, heavy = False):
 
 
 def search_problems_filtered_by_categories(categories):
-    logger.info('search_problems_filtered_by_categories called')
+    # logger.info('search_problems_filtered_by_categories called')
     try:
         rs = requests.session()
         should = []
@@ -620,7 +620,7 @@ def search_problems_filtered_by_categories(categories):
                 data['id'] = hit['_id']
                 item_list.append(data)
             return item_list
-        logger.error('Elasticsearch down, response: ' + str(response))
+        # logger.error('Elasticsearch down, response: ' + str(response))
         return item_list
     except Exception as e:
         raise e
@@ -681,15 +681,15 @@ def add_user_problem_status(user_id, problem_id, data):
 
 
 def update_problem_score(user_id, user_skill_level, updated_categories):
-    logger.info(f'update_problem_score called for: {user_id}, with skill: {user_skill_level}')
+    # logger.info(f'update_problem_score called for: {user_id}, with skill: {user_skill_level}')
     problem_score_generator = ProblemScoreGenerator()
     problem_list = search_problems_filtered_by_categories(updated_categories)
-    logger.info(f'problem_list found of size {len(problem_list)}')
+    # logger.info(f'problem_list found of size {len(problem_list)}')
 
     for problem in problem_list:
         problem_id = problem['id']
         up_edge = get_user_problem_status(user_id, problem_id)
-        logger.info(f'initial up_edge {up_edge}')
+        # logger.info(f'initial up_edge {up_edge}')
 
         if up_edge is None:
             up_edge = {
@@ -702,13 +702,13 @@ def update_problem_score(user_id, user_skill_level, updated_categories):
         if up_edge['status'] == "SOLVED":
             continue
 
-        logger.info(f'after non check, up_edge {up_edge}')
+        # logger.info(f'after non check, up_edge {up_edge}')
         dcat_list = problem.get('categories', [])
         dcat_level_list = []
-        logger.info(f'dcat_list: {dcat_list}')
+        # logger.info(f'dcat_list: {dcat_list}')
 
         for cat in dcat_list:
-            logger.info(f'cat: {cat}')
+            # logger.info(f'cat: {cat}')
             category_id = cat['category_id']
             if category_id in updated_categories:
                 uc_edge = updated_categories[category_id]
@@ -730,20 +730,20 @@ def update_problem_score(user_id, user_skill_level, updated_categories):
                         key = 'scd_' + str(d)
                         uc_edge[key] = 0
                 updated_categories[category_id] = uc_edge
-            logger.info(f'uc_edge: {uc_edge}')
+            # logger.info(f'uc_edge: {uc_edge}')
             dcat_level_list.append(uc_edge['skill_level'])
-        logger.info(f'dcat_level_list: {dcat_level_list}')
+        # logger.info(f'dcat_level_list: {dcat_level_list}')
         relevant_score = problem_score_generator.generate_score(int(float(problem['problem_difficulty'])), dcat_level_list, user_skill_level)
         up_edge['relevant_score'] = relevant_score['score']
         up_edge.pop('id', None)
-        logger.info(f'final up_edge {up_edge}')
+        # logger.info(f'final up_edge {up_edge}')
         add_user_problem_status(user_id, problem_id, up_edge)
-        logger.info(f'user problem status added')
+        # logger.info(f'user problem status added')
 
 
 def apply_solved_problem_for_user(user_id, problem_id, problem_details, submission_list, updated_categories, root_category_solve_count):
-    logger.info(f'apply_solved_problem_for_user for user_id: {user_id}, problem_id: {problem_id}')
-    logger.info('current updated_categories: ' + json.dumps(updated_categories))
+    # logger.info(f'apply_solved_problem_for_user for user_id: {user_id}, problem_id: {problem_id}')
+    # logger.info('current updated_categories: ' + json.dumps(updated_categories))
     try:
         skill_info = Skill()
         up_edge = get_user_problem_status(user_id, problem_id)
@@ -765,16 +765,16 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
 
         # Update dependent category skill
         problem_difficulty = problem_details['problem_difficulty']
-        logger.info(f'problem_difficulty: {problem_difficulty}')
+        # logger.info(f'problem_difficulty: {problem_difficulty}')
         dep_cat_list = problem_details.get('categories', [])
         cat_skill_model = CategorySkillGenerator()
         marked_roots = {}
         for cat in dep_cat_list:
-            logger.info(f'dept cat: {cat}')
+            # logger.info(f'dept cat: {cat}')
             category_id = cat['category_id']
             category_details = get_category_details(category_id)
             category_root = category_details['category_root']
-            logger.info(f'category_root: {category_root}')
+            # logger.info(f'category_root: {category_root}')
             if category_root not in marked_roots:
                 if category_root not in root_category_solve_count:
                     root_category_solve_count[category_root] = 0
@@ -787,7 +787,7 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
                 if uc_edge:
                     uc_edge['old_skill_level'] = uc_edge['skill_level']
                     uc_edge.pop('id', None)
-            logger.info(f'uc_edge from es: {uc_edge}')
+            # logger.info(f'uc_edge from es: {uc_edge}')
             if uc_edge is None:
                 uc_edge = {
                     "category_id": category_id,
@@ -804,22 +804,22 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
                     key = 'scd_' + str(d)
                     uc_edge[key] = 0
 
-            logger.info(f'current uc_edge: {uc_edge}')
+            # logger.info(f'current uc_edge: {uc_edge}')
             dif_key = 'scd_' + str(int(problem_difficulty))
             uc_edge[dif_key] += 1
             problem_factor = category_details.get('factor', 1)
             added_skill = cat_skill_model.get_score_for_latest_solved_problem(problem_difficulty, uc_edge[dif_key], problem_factor)
-            logger.info(f'found get_score_for_latest_solved_problem: {added_skill}')
+            # logger.info(f'found get_score_for_latest_solved_problem: {added_skill}')
             uc_edge['skill_value'] += added_skill
             uc_edge['solve_count'] += 1
             uc_edge['skill_title'] = skill_info.get_skill_title(uc_edge['skill_value'])
             uc_edge['skill_level'] = skill_info.get_skill_level_from_skill(uc_edge['skill_value'])
             score_percentage = float(category_details['score_percentage'])
             uc_edge['skill_value_by_percentage'] = uc_edge['skill_value']*score_percentage/100
-            logger.info(f'add uc_edge: {uc_edge}')
+            # logger.info(f'add uc_edge: {uc_edge}')
             updated_categories[category_id] = uc_edge
-            logger.info(f'saved at category_id: {category_id}')
-            logger.info('apply_solved_problem_for_user completed')
+            # logger.info(f'saved at category_id: {category_id}')
+            # logger.info('apply_solved_problem_for_user completed')
     except Exception as e:
         logger.error(f'Exception occurred: {e}')
         raise Exception('Internal server error')
@@ -843,7 +843,6 @@ def sync_problems(user_id, oj_problem_set):
                 problem_stat = problem_set['problem_list'][problem]
                 submission_list = problem_stat['submission_list']
                 problem_db = search_problems({'problem_id': problem, 'oj_name': problem_set['oj_name'], 'active_status': approved}, 0, 1)
-                logger.info(f'problem_db found in es: {problem_db}')
                 if len(problem_db) == 0:
                     continue
                 problem_id = problem_db[0]['id']
@@ -856,23 +855,23 @@ def sync_problems(user_id, oj_problem_set):
         logger.info(f'marked_categories: {marked_categories}')
 
         for category_id in marked_categories:
-            logger.info(f'category id inside marked_categories: {category_id}')
+            # logger.info(f'category id inside marked_categories: {category_id}')
             uc_edge = marked_categories[category_id]
-            logger.info(f'uc_edge 1: {uc_edge}')
+            # logger.info(f'uc_edge 1: {uc_edge}')
             # UPDATE OWN CONTRIBUTION
             old_cont = category_score_generator.get_own_difficulty_based_score(uc_edge['old_skill_level'])
             new_cont = category_score_generator.get_own_difficulty_based_score(uc_edge['skill_level'])
             cont_dx = new_cont - old_cont
             uc_edge['relevant_score'] += cont_dx
-            logger.info(f'uc_edge 2: {uc_edge}')
+            # logger.info(f'uc_edge 2: {uc_edge}')
             updated_categories[category_id] = uc_edge
             # UPDATE DEPENDENT CATEGORY CONTRIBUTION
             dependent_cat_list = find_dependent_category_list(category_id)
-            logger.info(f'dependent_cat_list: {dependent_cat_list}')
+            # logger.info(f'dependent_cat_list: {dependent_cat_list}')
             for dcat in dependent_cat_list:
                 dcat_id = dcat['category_id']
                 dcat_category_root = dcat['category_info']['category_root']
-                logger.info(f'dcat_category_root: {dcat_category_root}')
+                # logger.info(f'dcat_category_root: {dcat_category_root}')
                 if dcat_id in updated_categories:
                     dcat_uc_edge = updated_categories[dcat_id]
                 else:
@@ -937,14 +936,14 @@ def synch_user_problem(user_id):
         lightoj = LightOJScrapper()
 
         user_info = get_user_details(user_id)
-        print('user_info: ', user_info)
+        # print('user_info: ', user_info)
         allowed_judges = ['codeforces', 'uva', 'codechef', 'spoj', 'lightoj']
 
         oj_problem_set = []
 
         if 'codeforces' in allowed_judges:
             handle = user_info.get('codeforces_handle', None)
-            print('Codeforces: ', handle)
+            # print('Codeforces: ', handle)
             if handle:
                 problem_stat = codeforces.get_user_info_heavy(handle)
                 oj_problem_set.append({
@@ -952,13 +951,13 @@ def synch_user_problem(user_id):
                     'oj_name': 'codeforces'
                 })
                 logger.info(f'codeforces problem_stat: {problem_stat}')
-                print('problem_stat: ',problem_stat)
+                # print('problem_stat: ',problem_stat)
 
-        print('codeforces scrapping completed')
+        # print('codeforces scrapping completed')
 
         if 'codechef' in allowed_judges:
             handle = user_info.get('codechef_handle', None)
-            print('codechef: ', handle)
+            # print('codechef: ', handle)
             if handle:
                 problem_stat = codechef.get_user_info_heavy(handle)
                 oj_problem_set.append({
@@ -966,11 +965,11 @@ def synch_user_problem(user_id):
                     'oj_name': 'codechef'
                 })
 
-        print('codechef scrapping completed')
+        # print('codechef scrapping completed')
 
         if 'uva' in allowed_judges:
             handle = user_info.get('uva_handle', None)
-            print('uva: ', handle)
+            # print('uva: ', handle)
             if handle:
                 problem_stat = uva.get_user_info_heavy(handle)
                 oj_problem_set.append({
@@ -978,11 +977,11 @@ def synch_user_problem(user_id):
                     'oj_name': 'uva'
                 })
 
-        print('uva scrapping completed')
+        # print('uva scrapping completed')
 
         if 'spoj' in allowed_judges:
             handle = user_info.get('spoj_handle', None)
-            print('spoj: ', handle)
+            # print('spoj: ', handle)
             if handle:
                 problem_stat = spoj.get_user_info_heavy(handle)
                 oj_problem_set.append({
@@ -990,23 +989,25 @@ def synch_user_problem(user_id):
                     'oj_name': 'spoj'
                 })
 
-        print('spoj scrapping completed')
+        # print('spoj scrapping completed')
 
         if 'lightoj' in allowed_judges:
             handle = user_info.get('lightoj_handle', None)
             logger.info(f'lightoj handle: {handle}')
+            # print(f'lightoj handle: {handle}')
             if handle:
                 credentials = {
                     'username': os.getenv('LIGHTOJ_USERNAME'),
                     'password': os.getenv('LIGHTOJ_PASSWORD')
                 }
                 problem_stat = lightoj.get_user_info_heavy(handle, credentials)
+                # print('problem_stat: ', problem_stat)
                 oj_problem_set.append({
                     'problem_list': problem_stat['solved_problems'],
                     'oj_name': 'lightoj'
                 })
 
-        print('lightoj scrapping completed')
+        # print('lightoj scrapping completed')
 
         sync_problems(user_id, oj_problem_set)
 
@@ -1046,11 +1047,11 @@ def search_job():
     global rs
     auth_header = get_header()
     logger.debug('search_job called')
-    print('job_search_url: ', job_search_url)
-    print('auth_header: ', auth_header)
+    # print('job_search_url: ', job_search_url)
+    # print('auth_header: ', auth_header)
     response = rs.post(url=job_search_url, json={'status': 'PENDING'}, headers=auth_header).json()
     logger.debug('response: ' + str(response))
-    print(response)
+    # print(response)
     return response['job_list']
 
 
@@ -1089,8 +1090,8 @@ cron_job.start()
 
 if __name__ == '__main__':
     logger.info('Sync Job Script successfully started running')
-    print('Sync Job Script successfully started running')
-    print('Run initial job')
+    # print('Sync Job Script successfully started running')
+    # print('Run initial job')
     db_job()
     while(1):
         pass
