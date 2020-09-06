@@ -4,6 +4,8 @@ import requests
 from flask import current_app as app
 import random
 
+from core.redis_services import add_new_job
+
 _http_headers = {'Content-Type': 'application/json'}
 
 _es_index_jobs = 'cfs_sync_jobs'
@@ -42,6 +44,10 @@ def search_jobs(job_status, size):
 def add_pending_job(job_ref_id, job_type):
     try:
         app.logger.info('Create job method called')
+
+        if add_new_job(job_ref_id) is False:
+            return {'message': 'failed'}
+
         rs = requests.session()
         data = {
             'job_ref_id': job_ref_id,

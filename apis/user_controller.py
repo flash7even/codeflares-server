@@ -20,6 +20,7 @@ from core.mail_services import send_email
 from extensions import flask_crypto
 from extensions.flask_redis import redis_store
 from core.mail_services import send_email
+from core.redis_services import remove_pending_job
 
 api = Namespace('user', description='user related services')
 
@@ -696,8 +697,8 @@ class Sync(Resource):
     def put(self, user_id):
         app.logger.info('Sync user API called, id: ' + str(user_id))
         try:
-            add_pending_job(user_id, 'USER_SYNC')
-            return {'message': 'success'}, 200
+            response = add_pending_job(user_id, 'USER_SYNC')
+            return response, 200
         except Exception as e:
             return {'message': str(e)}, 500
 
@@ -711,6 +712,7 @@ class SyncProblemData(Resource):
         app.logger.info('Sync user problem data API called, id: ' + str(user_id))
         try:
             user_problem_data_sync(user_id)
+            remove_pending_job(user_id)
             app.logger.info('user_problem_data_sync done')
             return {'message': 'success'}, 200
         except Exception as e:

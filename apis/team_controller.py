@@ -8,8 +8,10 @@ from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended.exceptions import *
 from flask_jwt_extended import jwt_required
 from jwt.exceptions import *
+
 from commons.jwt_helpers import access_required
 from commons.skillset import Skill
+from core.redis_services import remove_pending_job
 
 api = Namespace('team', description='Namespace for team service')
 
@@ -340,6 +342,7 @@ class SyncTrainingModel(Resource):
         app.logger.info('Sync team training model API called, id: ' + str(team_id))
         try:
             team_training_model_sync(team_id)
+            remove_pending_job(team_id)
             app.logger.info('team_training_model_sync done')
         except Exception as e:
             return {'message': str(e)}, 500
