@@ -79,6 +79,7 @@ def update_pending_job(job_id, updated_job_type):
             if response['found']:
                 data = response['_source']
                 data['status'] = updated_job_type
+                data['updated_at'] = int(time.time())
                 app.logger.info('Elasticsearch query : ' + str(url))
                 response = rs.put(url=url, json=data, headers=_http_headers).json()
                 app.logger.info('Elasticsearch response :' + str(response))
@@ -87,5 +88,29 @@ def update_pending_job(job_id, updated_job_type):
                     return response['result']
             app.logger.info('job not found')
         raise Exception('ES Down')
+    except Exception as e:
+        raise e
+
+
+def last_completed_job_time(job_ref_id):
+    try:
+        app.logger.info('last_completed_job_time called')
+        rs = requests.session()
+        must = [
+            {'term': {'status': COMPLETED}},
+            {'term': {'job_ref_id': job_ref_id}},
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['sort'] = [{'created_at': {'order': 'desc'}}]
+        query_json['size'] = 1
+        search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_jobs, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                data = hit['_source']
+                return data['updated_at']
+            return 'NA'
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        raise Exception('Internal server error')
     except Exception as e:
         raise e

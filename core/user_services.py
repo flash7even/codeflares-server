@@ -2,10 +2,11 @@ import requests
 from flask import current_app as app
 import time
 import json
-from core.follower_services import get_follow_stat
 
+from core.follower_services import get_follow_stat
 from core.rating_services import get_user_rating_history
 from commons.skillset import Skill
+from core.job_services import last_completed_job_time
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -32,6 +33,8 @@ def reformat_user_data(data, rank = 1):
     data['next_week_target'] = float("{:.2f}".format(data['total_score'] + data['target_score']))
     data['solve_count'] = data.get('solve_count', 0)
     data['contribution'] = data.get('contribution', 0)
+    if 'last_synced_time' in data and data['last_synced_time'] != "NA":
+        data['last_synced_time'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['last_synced_time']))
     if 'created_at' in data:
         data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
     if 'updated_at' in data:
@@ -68,6 +71,7 @@ def get_user_details(user_id):
                 data['id'] = response['_id']
                 data['follow_stat'] = get_follow_stat(user_id)
                 data['follow_stat'] = get_follow_stat(user_id)
+                data['last_synced_time'] = last_completed_job_time(user_id)
                 data = reformat_user_data(data)
                 return data
         raise Exception('User not found')
@@ -180,6 +184,7 @@ def search_user(param, from_val, to_val, sort_by = 'updated_at', sort_order = 'd
                 user['follow_stat'] = follow_stat
                 user['rating_history'] = get_user_rating_history(user['id'])
                 user['rank'] = rank
+                user['last_synced_time'] = last_completed_job_time(user['id'])
                 rank += 1
                 user = reformat_user_data(user)
                 data.append(user)
