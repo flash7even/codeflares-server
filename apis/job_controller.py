@@ -102,7 +102,7 @@ class SearchJob(Resource):
             app.logger.info('UserJob search api called')
             param = request.get_json()
             print('param; ', param)
-            job_list = search_jobs(param)
+            job_list = search_jobs(param, page, _es_size)
             return {
                 'job_list': job_list
             }

@@ -5,6 +5,7 @@ from flask import current_app as app
 import random
 
 from core.redis_services import add_new_job
+from commons.skillset import Skill
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -30,6 +31,8 @@ def get_user_details(user_id):
         if 'found' in response:
             if response['found']:
                 data = response['_source']
+                skill = Skill()
+                data['skill_color'] = skill.get_color_from_skill_title(data.get('skill_title', 'NA'))
                 return data
         raise Exception('User not found')
     except Exception as e:
@@ -45,7 +48,8 @@ def get_team_details(team_id):
         if 'found' in response:
             if response['found']:
                 data = response['_source']
-                data['id'] = response['_id']
+                skill = Skill()
+                data['skill_color'] = skill.get_color_from_skill_title(data.get('skill_title'))
                 return data
             raise Exception('Team not found')
         app.logger.error('Elasticsearch down, response: ' + str(response))
@@ -55,7 +59,7 @@ def get_team_details(team_id):
         raise e
 
 
-def search_jobs(param):
+def search_jobs(param, page, size):
     try:
         app.logger.info('search_jobs called')
         rs = requests.session()
@@ -73,7 +77,8 @@ def search_jobs(param):
         if 'sort_order' in param:
             query_json['sort'] = [{'created_at': {'order': param['sort_order']}}]
 
-        query_json['size'] = _es_size
+        query_json['from'] = page*size
+        query_json['size'] = size
         print('query_json: ', query_json)
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_jobs, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
@@ -87,6 +92,10 @@ def search_jobs(param):
                     data['ref_details'] = get_user_details(data['job_ref_id'])
                 if data['job_type'] == TEAM_SYNC:
                     data['ref_details'] = get_team_details(data['job_ref_id'])
+                if 'created_at' in data:
+                    data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))
+                if 'updated_at' in data:
+                    data['updated_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['updated_at']))
                 item_list.append(data)
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
