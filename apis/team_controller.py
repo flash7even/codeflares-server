@@ -22,6 +22,7 @@ from core.team_services import get_rating_history_codeflares, get_user_team_acce
 from core.sync_services import team_training_model_sync
 from core.job_services import add_pending_job
 from core.rating_services import add_user_ratings
+from core.user_services import get_user_details
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -327,8 +328,12 @@ class Sync(Resource):
     def put(self, team_id):
         app.logger.info('Sync team API called, id: ' + str(team_id))
         try:
+            logged_in_user = get_jwt_identity().get('id')
+            logged_in_user_details = get_user_details(logged_in_user)
+            logged_in_user_role = logged_in_user_details.get('user_role', None)
             app.logger.info('team_training_model_sync')
-            add_pending_job(team_id, 'TEAM_SYNC')
+            add_pending_job(team_id, logged_in_user_role, 'TEAM_SYNC')
+            return {'message': 'success'}, 200
         except Exception as e:
             return {'message': str(e)}, 500
 
