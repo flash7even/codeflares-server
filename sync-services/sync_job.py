@@ -68,6 +68,8 @@ _es_index_problem_user = 'cfs_user_problem_edges'
 _es_index_user_category = 'cfs_user_category_edges'
 _es_index_category_dependency = 'cfs_category_dependencies'
 _es_user_user_notification = 'cfs_notifications'
+_es_index_user_team_edge = 'cfs_user_team_edges'
+_es_index_team = 'cfs_teams'
 _es_type = '_doc'
 _es_size = 2000
 
@@ -126,6 +128,8 @@ def add_new_job(user_id):
 
 
 
+
+
 ######################### AUTH SERVICES #########################
 
 
@@ -153,6 +157,8 @@ def get_header():
 
 
 
+
+
 ######################### NOTIFICATION SERVICES #########################
 
 
@@ -174,7 +180,26 @@ def add_notification(data):
 
 
 
+
+
 ######################### USER SERVICES #########################
+
+
+
+def get_user_details_by_handle_name(username):
+    try:
+        rs = requests.session()
+        query_json = {'query': {'bool': {'must': [{'match': {'username': username}}]}}}
+        search_url = 'http://{}/{}/{}/_search'.format(config.ES_HOST, _es_index_user, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                user = hit['_source']
+                user['id'] = hit['_id']
+                return user
+        return None
+    except Exception as e:
+        raise e
 
 
 def get_user_details(user_id):
@@ -284,7 +309,50 @@ def update_user_details(user_id, user_data):
 
 
 
+
+
 ######################### CATEGORY SERVICES #########################
+
+
+
+def find_category_dependency_list_for_multiple_categories(category_list):
+    try:
+        dependent_categories = []
+        for category in category_list:
+            dep_list = find_category_dependency_list(category)
+            for category_data in dep_list:
+                category_id = category_data['category_id']
+                if category_id not in dependent_categories:
+                    dependent_categories.append(category_id)
+        return dependent_categories
+    except Exception as e:
+        raise e
+
+
+def find_category_dependency_list(category_id_1):
+    try:
+        rs = requests.session()
+        must = [
+            {'term': {'category_id_1': category_id_1}}
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = _es_size
+        search_url = 'http://{}/{}/{}/_search'.format(config.ES_HOST, _es_index_category_dependency, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        item_list = []
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                category = hit['_source']
+                category.pop('category_id_1', None)
+                category['category_info'] = get_category_details(category['category_id_2'])
+                category['category_id'] = category['category_id_2']
+                category.pop('category_id_2', None)
+                item_list.append(category)
+            return item_list
+        logger.error('Elasticsearch down, response: ' + str(response))
+        return item_list
+    except Exception as e:
+        raise e
 
 
 def get_user_category_data(user_id, category_id):
@@ -510,66 +578,81 @@ def update_root_category_skill_for_user(user_id, root_category_list, root_catego
 
 
 
+
+
 ######################### PROBLEM SERVICES #########################
 
 
+
+def available_problems_for_user(user_id):
+    try:
+        param = {
+            'active_status': approved
+        }
+        problem_list = search_problems(param, 0, _es_size)
+        available_list = []
+        for problem in problem_list:
+            edge = get_user_problem_status(user_id, problem['id'])
+            if edge is None:
+                available_list.append(problem)
+            else:
+                status = edge.get('status', None)
+                if status == UNSOLVED:
+                    available_list.append(problem)
+        return available_list
+    except Exception as e:
+        raise e
+
+
+def find_problem_dependency_list(problem_id):
+    try:
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(config.ES_HOST, _es_index_problem, _es_type, problem_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        item_list = []
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                categories = data.get('categories', [])
+                for category in categories:
+                    category['category_info'] = get_category_details(category['category_id'])
+                    item_list.append(category)
+        return item_list
+    except Exception as e:
+        raise e
+
+
 def generate_query_params(param):
-    if 'filter' in param and param['filter']:
-        should = []
-        nested_should = []
-        nested_should.append({'term': {'categories.category_id': param['filter']}})
-        nested_should.append({'term': {'categories.category_name': param['filter']}})
-        nested_should.append({'term': {'categories.category_root': param['filter']}})
-        should.append({'term': {'problem_title': param['filter']}})
-        should.append({'match': {'problem_name': param['filter']}})
-        should.append({'term': {'oj_name': param['filter']}})
-        should.append({'nested': {'path': 'categories', 'query': {'bool': {'should': nested_should}}}})
-        query_json = {'query': {'bool': {'should': should}}}
-        return query_json
-    else:
-        must = []
-        nested_must = []
-        nested_fields = ['category_id', 'category_name', 'category_root']
-        keyword_fields = ['problem_title', 'problem_id', 'problem_difficulty', 'oj_name', 'active_status']
-        text_fields = ['problem_name']
+    must = []
+    nested_must = []
+    keyword_fields = ['problem_title', 'problem_id', 'problem_difficulty', 'oj_name', 'active_status']
+    text_fields = ['problem_name']
 
-        if 'category_id' in param:
-            nested_must.append({'term': {'categories.category_id': param['category_id']}})
-        if 'category_name' in param:
-            nested_must.append({'term': {'categories.category_name': param['category_name']}})
-        if 'category_root' in param:
-            nested_must.append({'term': {'categories.category_root': param['category_root']}})
+    if 'category_id' in param:
+        nested_must.append({'term': {'categories.category_id': param['category_id']}})
+    if 'category_name' in param:
+        nested_must.append({'term': {'categories.category_name': param['category_name']}})
+    if 'category_root' in param:
+        nested_must.append({'term': {'categories.category_root': param['category_root']}})
 
-        minimum_difficulty = 0
-        maximum_difficulty = 100
+    if len(nested_must) > 0:
+        must.append({'nested': {'path': 'categories', 'query': {'bool': {'must': nested_must}}}})
 
-        if 'minimum_difficulty' in param and param['minimum_difficulty']:
-            minimum_difficulty = int(param['minimum_difficulty'])
+    for f in keyword_fields:
+        if f in param:
+            must.append({'term': {f: param[f]}})
 
-        if 'maximum_difficulty' in param and param['maximum_difficulty']:
-            maximum_difficulty = int(param['maximum_difficulty'])
+    for f in text_fields:
+        if f in param:
+            must.append({'match': {f: param[f]}})
 
-        if minimum_difficulty > 0 or maximum_difficulty < 100:
-            must.append({"range": {"problem_difficulty": {"gte": minimum_difficulty, "lte": maximum_difficulty}}})
-
-        if len(nested_must) > 0:
-            must.append({'nested': {'path': 'categories', 'query': {'bool': {'must': nested_must}}}})
-
-        for f in keyword_fields:
-            if f in param:
-                must.append({'term': {f: param[f]}})
-
-        for f in text_fields:
-            if f in param:
-                must.append({'match': {f: param[f]}})
-
-        query_json = {'query': {'match_all': {}}}
-        if len(must) > 0:
-            query_json = {'query': {'bool': {'must': must}}}
-        return query_json
+    query_json = {'query': {'match_all': {}}}
+    if len(must) > 0:
+        query_json = {'query': {'bool': {'must': must}}}
+    return query_json
 
 
-def search_problems(param, from_value, size_value, heavy = False):
+def search_problems(param, from_value, size_value):
     try:
         rs = requests.session()
         query_json = generate_query_params(param)
@@ -833,7 +916,8 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
 
 
 
-######################### SYNC SERVICES #########################
+
+######################### USER SYNC SERVICES #########################
 
 
 def sync_problems(user_id, oj_problem_set):
@@ -1035,20 +1119,445 @@ def user_problem_data_sync(user_id):
     add_notification(notification_data)
 
 
+
+
+
+
+######################### TEAM SERVICES #########################
+
+
+
+
+def update_team_details(team_id, post_data):
+    try:
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(config.ES_HOST, _es_index_team, _es_type, team_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                for key, value in post_data.items():
+                    data[key] = value
+                data['updated_at'] = int(time.time())
+                response = rs.put(url=search_url, json=data, headers=_http_headers).json()
+                if 'result' in response:
+                    return response['result']
+                else:
+                    logger.error('Elasticsearch down, response: ' + str(response))
+                    return response
+            return {'message': 'not found'}
+        logger.error('Elasticsearch down, response: ' + str(response))
+        return response
+
+    except Exception as e:
+        raise e
+
+
+def get_all_users_from_team(team_id):
+    try:
+        rs = requests.session()
+        must = [
+            {'term': {'team_id': team_id}},
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = _es_size
+        search_url = 'http://{}/{}/{}/_search'.format(config.ES_HOST, _es_index_user_team_edge, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        item_list = []
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                data = hit['_source']
+                data['id'] = hit['_id']
+                item_list.append(data)
+        return item_list
+    except Exception as e:
+        raise e
+
+
+def get_team_details(team_id):
+    try:
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(config.ES_HOST, _es_index_team, _es_type, team_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                data['id'] = response['_id']
+                data['member_list'] = get_all_users_from_team(team_id)
+                return data
+            raise Exception('Team not found')
+        logger.error('Elasticsearch down, response: ' + str(response))
+        raise Exception('Internal server error')
+
+    except Exception as e:
+        raise e
+
+
+
+
+
+
+
+######################### TEAM SYNC SERVICES #########################
+
+
+
+
+def find_problems_for_user_by_status_filtered(status, user_id):
+    try:
+        rs = requests.session()
+        should = []
+        for s in status:
+            should.append({'term': {'status': s}})
+
+        must = [
+            {'term': {'user_id': user_id}},
+            {"bool": {"should": should}}
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = _es_max_solved_problem
+        search_url = 'http://{}/{}/{}/_search'.format(config.ES_HOST, _es_index_problem_user, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+
+        problem_list = []
+        if 'hits' in response:
+            for hit in response['hits']['hits']:
+                edge = hit['_source']
+                problem_list.append(edge['problem_id'])
+        return problem_list
+    except Exception as e:
+        raise e
+
+
+def category_wise_problem_solve_for_users(user_list):
+    try:
+        solved_problems = []
+        for user_id in user_list:
+            cur_list = find_problems_for_user_by_status_filtered(['SOLVED'], user_id)
+            for problem in cur_list:
+                if problem not in solved_problems:
+                    solved_problems.append(problem)
+
+        cnt_dict = {}
+        category_list = search_categories({}, 0, _es_size)
+        for category in category_list:
+            category_id = category['category_id']
+            param = {
+                "category_id": category_id,
+                'active_status': approved
+            }
+            problem_list = search_problems(param, 0, _es_size)
+            for problem in problem_list:
+                problem_id = problem['id']
+                problem_diff = int(float(problem['problem_difficulty']))
+                if category_id not in cnt_dict:
+                    cnt_dict[category_id] = {
+                        'total_count': 0,
+                        'difficulty_wise_count': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    }
+                if problem_id in solved_problems:
+                    cnt_dict[category_id]['difficulty_wise_count'][problem_diff] += 1
+                    cnt_dict[category_id]['total_count'] += 1
+        for cat in category_list:
+            cat_id = cat['category_id']
+            cat['solved_stat'] = cnt_dict.get(cat_id, {'total_count': 0, 'difficulty_wise_count': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]})
+        return category_list
+    except Exception as e:
+        raise e
+
+
+def generate_sync_data_for_category(user_id, category):
+    try:
+        category_skill_generator = CategorySkillGenerator()
+        factor = float(category.get('factor', 1))
+        skill_stat = category_skill_generator.generate_skill(category['solved_stat']['difficulty_wise_count'], factor)
+
+        dependent_skill_level = []
+        dependent_categories = find_category_dependency_list(category['category_id'])
+        for dcat in dependent_categories:
+            category_details = get_user_category_data(user_id, dcat['category_id'])
+            category_level = 0
+            if category_details:
+                category_level = category_details.get('skill_level', 0)
+            dependent_skill_level.append(category_level)
+
+        category_score_generator = CategoryScoreGenerator()
+        cat_score = category_score_generator.generate_score(dependent_skill_level, skill_stat['level'])
+        skill_obj = Skill()
+
+        category_percentage = float(category.get('score_percentage', 100))
+
+        data = {
+            'relevant_score': cat_score['score'],
+            'skill_value': skill_stat['skill'],
+            'skill_value_by_percentage': float(skill_stat['skill'])*category_percentage/100.0,
+            'skill_level': skill_stat['level'],
+            'skill_title': skill_obj.get_skill_title(skill_stat['skill']),
+            'solve_count': category['solved_stat']['total_count'],
+            'category_root': category['category_root'],
+        }
+
+        return data
+    except Exception as e:
+        raise e
+
+
+def sync_category_score_for_team(team_id):
+    try:
+        team_details = get_team_details(team_id)
+        user_list = []
+        for member in team_details['member_list']:
+            user_details = get_user_details_by_handle_name(member['user_handle'])
+            if user_details is None:
+                continue
+            user_list.append(user_details['id'])
+
+        category_list = category_wise_problem_solve_for_users(user_list)
+        for category in category_list:
+            if category['category_root'] == 'root':
+                continue
+            data = generate_sync_data_for_category(team_id, category)
+            add_user_category_data(team_id, category['category_id'], data)
+    except Exception as e:
+        raise e
+
+
+def root_category_solved_count_by_solved_problem_list(solve_problems):
+    try:
+        root_solved_count = {}
+        for problem in solve_problems:
+            dependent_categories = find_problem_dependency_list(problem)
+            for category in dependent_categories:
+                if 'category_info' in category and category['category_info']:
+                    category_root = category['category_info']['category_root']
+                    if category_root not in root_solved_count:
+                        root_solved_count[category_root] = 0
+                    root_solved_count[category_root] += 1
+        return root_solved_count
+    except Exception as e:
+        raise e
+
+
+def generate_sync_data_for_root_category(user_id, category, root_solved_count):
+    try:
+        rs = requests.session()
+        skill_obj = Skill()
+        must = [
+            {'term': {'category_root': category['category_name']}},
+            {'term': {'user_id': user_id}}
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        aggregate = {
+            "skill_value_by_percentage": {"sum": {"field": "skill_value_by_percentage"}}
+        }
+        query_json['aggs'] = aggregate
+        query_json['size'] = 0
+
+        search_url = 'http://{}/{}/{}/_search'.format(config.ES_HOST, _es_index_user_category, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+
+        if 'aggregations' not in response:
+            raise Exception('Internal server error')
+
+        skill_value = response['aggregations']['skill_value_by_percentage']['value']
+        root_category_percentage = float(category.get('score_percentage', 100))
+        skill_value_by_percentage_sum = skill_value*root_category_percentage/100
+        skill_level = skill_obj.get_skill_level_from_skill(skill_value)
+
+        data = {
+            'relevant_score': -1,
+            'skill_value': skill_value,
+            'skill_value_by_percentage': skill_value_by_percentage_sum,
+            'skill_level': skill_level,
+            'skill_title': skill_obj.get_skill_title(skill_level),
+            'solve_count': root_solved_count.get(category['category_name'], 0),
+            'category_root': 'root',
+        }
+        return data
+    except Exception as e:
+        raise e
+
+
+def sync_root_category_score_for_team(team_id):
+    try:
+        team_details = get_team_details(team_id)
+        solved_problems = []
+        for member in team_details['member_list']:
+            user_details = get_user_details_by_handle_name(member['user_handle'])
+            if user_details is None:
+                continue
+            user_id = user_details['id']
+            problem_list = find_problems_for_user_by_status_filtered(['SOLVED'], user_id)
+            for problem in problem_list:
+                if problem not in solved_problems:
+                    solved_problems.append(problem)
+
+        root_solved_count = root_category_solved_count_by_solved_problem_list(solved_problems)
+        category_list = search_categories({'category_root': 'root'}, 0, 100)
+        skill_value = 0
+        for category in category_list:
+            data = generate_sync_data_for_root_category(team_id, category, root_solved_count)
+            add_user_category_data(team_id, category['category_id'], data)
+            skill_value += data['skill_value_by_percentage']
+
+        return skill_value
+    except Exception as e:
+        raise e
+
+
+def sync_overall_stat_for_team(team_id, skill_value = None):
+    try:
+        team_details = get_team_details(team_id)
+        mark_problem = {}
+        solve_count = 0
+        for member in team_details['member_list']:
+            user_details = get_user_details_by_handle_name(member['user_handle'])
+            if user_details is None:
+                continue
+            user_id = user_details['id']
+            problem_list = find_problems_for_user_by_status_filtered(['SOLVED'], user_id)
+            for problem in problem_list:
+                if problem not in mark_problem:
+                    mark_problem[problem] = 1
+                    solve_count += 1
+
+        if skill_value is None:
+            skill_value = generate_skill_value_for_user(team_id)
+        skill_obj = Skill()
+        skill_title = skill_obj.get_skill_title(skill_value)
+        skill_data = {
+            'skill_value': int(skill_value),
+            'solve_count': int(solve_count),
+            'skill_title': skill_title,
+        }
+        logger.info('Team final stat to update: ' + json.dumps(skill_data))
+        update_team_details(team_id, skill_data)
+    except Exception as e:
+        raise e
+
+
+def generate_sync_data_for_problem(user_id, user_skill_level, problem):
+    try:
+        dependent_categories = find_problem_dependency_list(problem['id'])
+        problem_score_generator = ProblemScoreGenerator()
+        problem_type = problem.get('problem_type', None)
+        if problem_type == 'classical':
+            dependent_category_id_list = []
+            for category in dependent_categories:
+                category_id = category['category_id']
+                dependent_category_id_list.append(category_id)
+            dependent_dependent_category_list = find_category_dependency_list_for_multiple_categories(dependent_category_id_list)
+            category_level_list = []
+            for category_id in dependent_dependent_category_list:
+                category_details = get_user_category_data(user_id, category_id)
+                category_level = 0
+                if category_details:
+                    category_level = category_details.get('skill_level', 0)
+                category_level_list.append(category_level)
+            relevant_score = problem_score_generator.generate_score(int(float(problem['problem_difficulty'])),
+                                                                    category_level_list, user_skill_level)
+        else:
+            category_level_list = []
+            for category in dependent_categories:
+                category_id = category['category_id']
+                category_details = get_user_category_data(user_id, category_id)
+                category_level = 0
+                if category_details:
+                    category_level = category_details.get('skill_level', 0)
+                category_level_list.append(category_level)
+            relevant_score = problem_score_generator.generate_score(int(float(problem['problem_difficulty'])),
+                                                                    category_level_list, user_skill_level)
+        data = {
+            'problem_id': problem['id'],
+            'relevant_score': relevant_score['score'],
+            'user_id': user_id,
+            'status': 'UNSOLVED'
+        }
+        return data
+    except Exception as e:
+        raise e
+
+
+def sync_problem_score_for_team(team_id, user_skill_level):
+    try:
+        team_details = get_team_details(team_id)
+        marked_list = {}
+        for member in team_details['member_list']:
+            user_details = get_user_details_by_handle_name(member['user_handle'])
+            if user_details is None:
+                continue
+            user_id = user_details['id']
+            problem_list = available_problems_for_user(user_id)
+            for problem in problem_list:
+                problem_id = problem['id']
+                if problem_id in marked_list:
+                    continue
+                marked_list[problem_id] = 1
+                data = generate_sync_data_for_problem(team_id, user_skill_level, problem)
+                add_user_problem_status(team_id, problem['id'], data)
+    except Exception as e:
+        raise e
+
+
+def team_training_model_sync(team_id):
+    logger.info(f'team_training_model_sync service called for team: {team_id}')
+    logger.info('sync sync_category_score_for_team')
+    sync_category_score_for_team(team_id)
+    logger.info('sync sync_root_category_score_for_team')
+    skill_value = sync_root_category_score_for_team(team_id)
+    logger.info('sync sync_overall_stat_for_team')
+    sync_overall_stat_for_team(team_id, skill_value)
+    skill = Skill()
+    user_skill_level = skill.get_skill_level_from_skill(skill_value)
+    logger.info('sync get_skill_level_from_skill done')
+    sync_problem_score_for_team(team_id, user_skill_level)
+    logger.info('sync sync_problem_score_for_team done')
+
+    team_details = get_team_details(team_id)
+    logger.info(f' end team_details{team_details}')
+    member_list = team_details.get('member_list', [])
+    for member in member_list:
+        member_details = get_user_details_by_handle_name(member['user_handle'])
+        logger.info(f' member_details {member_details}')
+        notification_data = {
+            'user_id': member_details['id'],
+            'sender_id': 'System',
+            'notification_type': 'System Notification',
+            'redirect_url': '',
+            'notification_text': 'Training model for your team ' + team_details['team_name'] + ' has been synced by',
+            'status': 'UNREAD',
+        }
+        logger.info(f' add_notification {notification_data}')
+        add_notification(notification_data)
+    logger.info(f'team_training_model_sync service completed')
+
+
+
+
+
+
+
+######################### CORE SERVICES #########################
+
+
+
 def user_problem_sync(user_id):
     logger.info(f'user_problem_sync called for user_id: {user_id}')
     print(f'user_problem_sync called for user_id: {user_id}')
     user_problem_data_sync(user_id)
     remove_pending_job(user_id)
+    logger.info(f'user_problem_sync completed for user_id: {user_id}')
+    print(f'user_problem_sync completed for user_id: {user_id}')
 
 
-def team_training_model_sync(team_id):
-    global rs
-    auth_header = get_header()
-    logger.debug('team_training_model_sync called for: ' + str(team_id))
-    url = team_training_model_sync_api + team_id
-    response = rs.put(url=url, json={}, headers=auth_header).json()
-    logger.debug('response: ' + str(response))
+def team_problem_sync(team_id):
+    logger.info(f'team_problem_sync called for team_id: {team_id}')
+    print(f'team_problem_sync called for team_id: {team_id}')
+    team_training_model_sync(team_id)
+    remove_pending_job(team_id)
+    logger.info(f'team_problem_sync completed for team_id: {team_id}')
+    print(f'team_problem_sync completed for team_id: {team_id}')
 
 
 def search_job():
@@ -1085,14 +1594,16 @@ def db_job():
             break
         for cur_job in pending_job_list:
             logger.debug('PROCESS JOB: ' + json.dumps(cur_job))
+            print('PROCESS JOB: ' + json.dumps(cur_job))
             update_job(cur_job['id'], 'PROCESSING')
             if cur_job['job_type'] == 'USER_SYNC':
                 user_problem_sync(cur_job['job_ref_id'])
             else:
-                team_training_model_sync(cur_job['job_ref_id'])
+                team_problem_sync(cur_job['job_ref_id'])
 
             update_job(cur_job['id'], 'COMPLETED')
             logger.debug('COMPLETED JOB: ' + json.dumps(cur_job))
+            print('COMPLETED JOB: ' + json.dumps(cur_job))
 
 
 cron_job = BackgroundScheduler(daemon=True)
