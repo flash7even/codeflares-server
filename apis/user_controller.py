@@ -693,11 +693,15 @@ class SearchUser(Resource):
 @api.route('/sync/<string:user_id>')
 class Sync(Resource):
 
+    @access_required(access="ALL")
     @api.doc('Sync user by id')
     def put(self, user_id):
         app.logger.info('Sync user API called, id: ' + str(user_id))
         try:
-            response = add_pending_job(user_id, 'USER_SYNC')
+            logged_in_user = get_jwt_identity().get('id')
+            logged_in_user_details = get_user_details(logged_in_user)
+            logged_in_user_role = logged_in_user_details.get('user_role', None)
+            response = add_pending_job(user_id, logged_in_user_role, 'USER_SYNC')
             return response, 200
         except Exception as e:
             return {'message': str(e)}, 500

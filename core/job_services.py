@@ -104,11 +104,11 @@ def search_jobs(param, page, size):
         raise e
 
 
-def add_pending_job(job_ref_id, job_type):
+def add_pending_job(job_ref_id, logged_in_user_role, job_type):
     try:
         app.logger.info('Create job method called')
 
-        if add_new_job(job_ref_id) is False:
+        if add_new_job(job_ref_id, logged_in_user_role) is False:
             return {'message': 'failed'}
 
         rs = requests.session()
