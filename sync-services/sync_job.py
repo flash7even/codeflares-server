@@ -1057,7 +1057,11 @@ def search_job():
     logger.debug('search_job called')
     # print('job_search_url: ', job_search_url)
     # print('auth_header: ', auth_header)
-    response = rs.post(url=job_search_url, json={'status': 'PENDING'}, headers=auth_header).json()
+    search_param = {
+        'status': 'PENDING',
+        'sort_order': 'asc',
+    }
+    response = rs.post(url=job_search_url, json=search_param, headers=auth_header).json()
     logger.debug('response: ' + str(response))
     # print(response)
     return response['job_list']
@@ -1079,16 +1083,16 @@ def db_job():
         pending_job_list = search_job()
         if len(pending_job_list) == 0:
             break
-        cur_job = pending_job_list[0]
-        logger.debug('PROCESS JOB: ' + json.dumps(cur_job))
-        update_job(cur_job['id'], 'PROCESSING')
-        if cur_job['job_type'] == 'USER_SYNC':
-            user_problem_sync(cur_job['job_ref_id'])
-        else:
-            team_training_model_sync(cur_job['job_ref_id'])
+        for cur_job in pending_job_list:
+            logger.debug('PROCESS JOB: ' + json.dumps(cur_job))
+            update_job(cur_job['id'], 'PROCESSING')
+            if cur_job['job_type'] == 'USER_SYNC':
+                user_problem_sync(cur_job['job_ref_id'])
+            else:
+                team_training_model_sync(cur_job['job_ref_id'])
 
-        update_job(cur_job['id'], 'COMPLETED')
-        logger.debug('COMPLETED JOB: ' + json.dumps(cur_job))
+            update_job(cur_job['id'], 'COMPLETED')
+            logger.debug('COMPLETED JOB: ' + json.dumps(cur_job))
 
 
 cron_job = BackgroundScheduler(daemon=True)

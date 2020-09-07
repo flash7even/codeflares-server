@@ -101,7 +101,8 @@ class SearchJob(Resource):
         try:
             app.logger.info('UserJob search api called')
             param = request.get_json()
-            job_list = search_jobs(param['status'], 1)
+            print('param; ', param)
+            job_list = search_jobs(param)
             return {
                 'job_list': job_list
             }

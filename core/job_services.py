@@ -9,30 +9,84 @@ from core.redis_services import add_new_job
 _http_headers = {'Content-Type': 'application/json'}
 
 _es_index_jobs = 'cfs_sync_jobs'
-
+_es_index_team = 'cfs_teams'
+_es_index_user = 'cfs_users'
 _es_type = '_doc'
 _es_size = 100
 
 PENDING = 'PENDING'
 PROCESSING = 'PROCESSING'
 COMPLETED = 'COMPLETED'
+USER_SYNC = 'USER_SYNC'
+TEAM_SYNC = 'TEAM_SYNC'
 
 
-def search_jobs(job_status, size):
+def get_user_details(user_id):
+    try:
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_user, _es_type, user_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        print('response: ', response)
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                return data
+        raise Exception('User not found')
+    except Exception as e:
+        raise e
+
+
+def get_team_details(team_id):
+    try:
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_team, _es_type, team_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                data['id'] = response['_id']
+                return data
+            raise Exception('Team not found')
+        app.logger.error('Elasticsearch down, response: ' + str(response))
+        raise Exception('Internal server error')
+
+    except Exception as e:
+        raise e
+
+
+def search_jobs(param):
     try:
         app.logger.info('search_jobs called')
         rs = requests.session()
-        must = [{'term': {'status': job_status}}]
-        query_json = {'query': {'bool': {'must': must}}}
+        fields = ['job_ref_id', 'job_type', 'status']
+        must = []
+        for f in param:
+            if f in fields:
+                must.append({'term': {f: param[f]}})
+
+        query_json = {'query': {'match_all': {}}}
+        if len(must) > 0:
+            query_json = {'query': {'bool': {'must': must}}}
+
         query_json['sort'] = [{'created_at': {'order': 'asc'}}]
-        query_json['size'] = size
+        if 'sort_order' in param:
+            query_json['sort'] = [{'created_at': {'order': param['sort_order']}}]
+
+        query_json['size'] = _es_size
+        print('query_json: ', query_json)
         search_url = 'http://{}/{}/{}/_search'.format(app.config['ES_HOST'], _es_index_jobs, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        print('response: ', response)
         if 'hits' in response:
             item_list = []
             for hit in response['hits']['hits']:
                 data = hit['_source']
                 data['id'] = hit['_id']
+                if data['job_type'] == USER_SYNC:
+                    data['ref_details'] = get_user_details(data['job_ref_id'])
+                if data['job_type'] == TEAM_SYNC:
+                    data['ref_details'] = get_team_details(data['job_ref_id'])
                 item_list.append(data)
             return item_list
         app.logger.error('Elasticsearch down, response: ' + str(response))
