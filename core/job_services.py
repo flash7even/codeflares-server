@@ -13,7 +13,7 @@ _es_index_jobs = 'cfs_sync_jobs'
 _es_index_team = 'cfs_teams'
 _es_index_user = 'cfs_users'
 _es_type = '_doc'
-_es_size = 100
+_es_size = 50
 
 PENDING = 'PENDING'
 PROCESSING = 'PROCESSING'

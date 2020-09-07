@@ -18,7 +18,7 @@ _http_headers = {'Content-Type': 'application/json'}
 
 _es_user_user_job = 'cfs_jobs'
 _es_type = '_doc'
-_es_size = 500
+_es_size = 50
 
 
 @api.errorhandler(NoAuthorizationError)
