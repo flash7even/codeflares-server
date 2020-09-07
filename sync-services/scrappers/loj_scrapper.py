@@ -119,19 +119,23 @@ class LightOJScrapper:
             solved_problems = {}
 
             for link in problem_list_table.findAll('a'):
-                problem_href = str(link['href'])
-                mlist = problem_href.split('=')
-                problem = mlist[len(mlist) - 1]
-                if problem is not None:
-                    problem_data = {
-                        'problem_id': problem,
-                        'submission_list': [
-                            {
-                                'submission_link': f'http://lightoj.com/volume_submissions.php'
-                            }
-                        ]
-                    }
-                    solved_problems[problem] = problem_data
+                try:
+                    problem_href = str(link['href'])
+                    mlist = problem_href.split('=')
+                    problem = mlist[len(mlist) - 1]
+                    if problem is not None:
+                        problem_data = {
+                            'problem_id': problem,
+                            'submission_list': [
+                                {
+                                    'submission_link': f'http://lightoj.com/volume_submissions.php'
+                                }
+                            ]
+                        }
+                        solved_problems[problem] = problem_data
+                except:
+                    print(f'Exception occurred for user: {username}, submission: {link}')
+                    continue
 
             # print(f'solved problem list: {json.dumps(solved_problems)}')
             driver.quit()

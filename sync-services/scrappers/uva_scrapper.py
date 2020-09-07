@@ -71,21 +71,25 @@ class UvaScrapper:
 
             all_submissions = profile_data['subs']
             for sub in all_submissions:
-                problem_id = problem_map[sub[1]]
-                verdict = sub[2]
-                submission_time = sub[4]
-                if verdict == 90:
-                    if problem_id not in solved_problems:
-                        problem_data = {
-                            'problem_id': problem_id,
-                            'submission_list': [
-                                {
-                                    'submission_link': f'https://uhunt.onlinejudge.org/id/{userid}',
-                                    'submission_time': submission_time
-                                }
-                            ]
-                        }
-                        solved_problems[problem_id] = problem_data
+                try:
+                    problem_id = problem_map[sub[1]]
+                    verdict = sub[2]
+                    submission_time = sub[4]
+                    if verdict == 90:
+                        if problem_id not in solved_problems:
+                            problem_data = {
+                                'problem_id': problem_id,
+                                'submission_list': [
+                                    {
+                                        'submission_link': f'https://uhunt.onlinejudge.org/id/{userid}',
+                                        'submission_time': submission_time
+                                    }
+                                ]
+                            }
+                            solved_problems[problem_id] = problem_data
+                except:
+                    print(f'Exception occurred for user: {username}, submission: {sub}')
+                    continue
 
             return {
                 'platform': 'uva',

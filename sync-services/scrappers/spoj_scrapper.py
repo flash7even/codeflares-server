@@ -49,17 +49,21 @@ class SpojScrapper:
             contentTable = soup.find('table', {"class": "table-condensed"})
 
             for link in contentTable.findAll('a'):
-                problem_name = link.string
-                if problem_name is not None:
-                    problem_data = {
-                        'problem_id': problem_name,
-                        'submission_list': [
-                            {
-                                'submission_link': f'https://www.spoj.com/status/{problem_name},{username}/'
-                            }
-                        ]
-                    }
-                    solved_problems[problem_name] = problem_data
+                try:
+                    problem_name = link.string
+                    if problem_name is not None:
+                        problem_data = {
+                            'problem_id': problem_name,
+                            'submission_list': [
+                                {
+                                    'submission_link': f'https://www.spoj.com/status/{problem_name},{username}/'
+                                }
+                            ]
+                        }
+                        solved_problems[problem_name] = problem_data
+                except:
+                    print(f'Exception occurred for user: {username}, submission: {link}')
+                    continue
 
             return {
                 'platform': 'spoj',

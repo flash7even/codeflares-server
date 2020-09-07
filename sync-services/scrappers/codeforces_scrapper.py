@@ -21,10 +21,13 @@ class CodeforcesScrapper:
             solved_problems = []
 
             for submission in submission_list:
-                if submission['verdict'] == 'OK' and submission['testset'] == 'TESTS':
-                    problem = str(submission['problem']['contestId']) + '/' + str(submission['problem']['index'])
-                    if problem not in solved_problems:
-                        solved_problems.append(problem)
+                try:
+                    if submission['verdict'] == 'OK' and submission['testset'] == 'TESTS':
+                        problem = str(submission['problem']['contestId']) + '/' + str(submission['problem']['index'])
+                        if problem not in solved_problems:
+                            solved_problems.append(problem)
+                except:
+                    print(f'Exception occurred for user: {username}, submission: {submission}')
 
             return {
                 'platform': 'codeforces',
@@ -49,23 +52,27 @@ class CodeforcesScrapper:
             solved_problems = {}
 
             for submission in submission_list:
-                if 'verdict' not in submission or 'testset' not in submission:
-                    continue
-                if submission['verdict'] == 'OK' and submission['testset'] == 'TESTS':
-                    problem = str(submission['problem']['contestId']) + '/' + str(submission['problem']['index'])
-                    if problem not in solved_problems:
-                        problem_data = {
-                            'problem_id': problem,
-                            'submission_list': []
-                        }
-                        solved_problems[problem] = problem_data
+                try:
+                    if 'verdict' not in submission or 'testset' not in submission:
+                        continue
+                    if submission['verdict'] == 'OK' and submission['testset'] == 'TESTS':
+                        problem = str(submission['problem']['contestId']) + '/' + str(submission['problem']['index'])
+                        if problem not in solved_problems:
+                            problem_data = {
+                                'problem_id': problem,
+                                'submission_list': []
+                            }
+                            solved_problems[problem] = problem_data
 
-                    sublink = {
-                        'submission_time': int(submission['creationTimeSeconds']),
-                        'submission_link': f'https://codeforces.com/contest/{submission["contestId"]}/submission/{submission["id"]}',
-                        'submission_id': submission["id"]
-                    }
-                    solved_problems[problem]['submission_list'].append(sublink)
+                        sublink = {
+                            'submission_time': int(submission['creationTimeSeconds']),
+                            'submission_link': f'https://codeforces.com/contest/{submission["contestId"]}/submission/{submission["id"]}',
+                            'submission_id': submission["id"]
+                        }
+                        solved_problems[problem]['submission_list'].append(sublink)
+                except:
+                    print(f'Exception occurred for user: {username}, submission: {submission}')
+                    continue
             return {
                 'platform': 'codeforces',
                 'user_name': username,
@@ -92,17 +99,21 @@ class CodeforcesScrapper:
             submission_stat = []
 
             for submission in submission_list:
-                if submission['verdict'] == 'OK' and submission['testset'] == 'TESTS':
-                    problem = str(submission['problem']['contestId']) + '/' + str(submission['problem']['index'])
-                    if problem not in solved_problems:
-                        solved_problems.append(problem)
-                        submission_data = {
-                            'problem_id': problem,
-                            'submission_link': f'https://codeforces.com/contest/{submission["contestId"]}/submission/{submission["id"]}',
-                            'verdict': 'accepted',
-                            'submission_date': submission['creationTimeSeconds'],
-                        }
-                        submission_stat.append(submission_data)
+                try:
+                    if submission['verdict'] == 'OK' and submission['testset'] == 'TESTS':
+                        problem = str(submission['problem']['contestId']) + '/' + str(submission['problem']['index'])
+                        if problem not in solved_problems:
+                            solved_problems.append(problem)
+                            submission_data = {
+                                'problem_id': problem,
+                                'submission_link': f'https://codeforces.com/contest/{submission["contestId"]}/submission/{submission["id"]}',
+                                'verdict': 'accepted',
+                                'submission_date': submission['creationTimeSeconds'],
+                            }
+                            submission_stat.append(submission_data)
+                except:
+                    print(f'Exception occurred for user: {username}, submission: {submission}')
+                    continue
             return {
                 'platform': 'codeforces',
                 'user_name': username,
