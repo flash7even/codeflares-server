@@ -5,6 +5,7 @@ import time
 import json
 import unittest
 import requests
+import math
 from datetime import timedelta
 from logging.handlers import TimedRotatingFileHandler
 
@@ -742,7 +743,8 @@ def update_problem_score(user_id, user_skill_level, updated_categories):
 
 
 def apply_solved_problem_for_user(user_id, problem_id, problem_details, submission_list, updated_categories, root_category_solve_count):
-    # logger.info(f'apply_solved_problem_for_user for user_id: {user_id}, problem_id: {problem_id}')
+    logger.info(f'apply_solved_problem_for_user for user_id: {user_id}, problem_id: {problem_id}')
+    # print(f'apply_solved_problem_for_user for user_id: {user_id}, problem_id: {problem_id}')
     # logger.info('current updated_categories: ' + json.dumps(updated_categories))
     try:
         skill_info = Skill()
@@ -765,6 +767,7 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
 
         # Update dependent category skill
         problem_difficulty = problem_details['problem_difficulty']
+        problem_difficulty = float(problem_difficulty)
         # logger.info(f'problem_difficulty: {problem_difficulty}')
         dep_cat_list = problem_details.get('categories', [])
         cat_skill_model = CategorySkillGenerator()
@@ -804,8 +807,11 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
                     key = 'scd_' + str(d)
                     uc_edge[key] = 0
 
-            # logger.info(f'current uc_edge: {uc_edge}')
+            # logger.info(f'current problem_difficulty: {problem_difficulty}')
+            # print(f'current problem_difficulty: {problem_difficulty}')
             dif_key = 'scd_' + str(int(problem_difficulty))
+            # logger.info(f'dif_key: {dif_key}')
+            # print(f'dif_key: {dif_key}')
             uc_edge[dif_key] += 1
             problem_factor = category_details.get('factor', 1)
             added_skill = cat_skill_model.get_score_for_latest_solved_problem(problem_difficulty, uc_edge[dif_key], problem_factor)
@@ -1030,6 +1036,8 @@ def user_problem_data_sync(user_id):
 
 
 def user_problem_sync(user_id):
+    logger.info(f'user_problem_sync called for user_id: {user_id}')
+    print(f'user_problem_sync called for user_id: {user_id}')
     user_problem_data_sync(user_id)
     remove_pending_job(user_id)
 
@@ -1084,14 +1092,14 @@ def db_job():
 
 
 cron_job = BackgroundScheduler(daemon=True)
-cron_job.add_job(db_job, 'interval', seconds=6000)
+cron_job.add_job(db_job, 'interval', seconds=120)
 cron_job.start()
 
 
 if __name__ == '__main__':
     logger.info('Sync Job Script successfully started running')
-    # print('Sync Job Script successfully started running')
-    # print('Run initial job')
+    print('Sync Job Script successfully started running')
+    print('Run initial job')
     db_job()
     while(1):
         pass

@@ -20,8 +20,8 @@ class CategorySkillGenerator:
             self.group_bound = group_bound
 
     def get_score_for_latest_solved_problem(self, difficulty, solve_count_order, problem_factor):
-        difficulty = int(difficulty)
         app.logger.info(f'get_score_for_latest_solved_problem called, difficulty: {difficulty}, solve_count_order: {solve_count_order}')
+        difficulty = int(difficulty)
 
         limit = self.group_bound[difficulty]
         group_len = self.group_table[difficulty]
