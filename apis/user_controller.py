@@ -707,6 +707,35 @@ class Sync(Resource):
             return {'message': str(e)}, 500
 
 
+@api.route('/sync-administration/<string:sync_type>/<string:user_id>')
+class SyncAdministration(Resource):
+
+    @access_required(access="admin")
+    @api.doc('Sync-administration user by id')
+    def put(self, sync_type, user_id):
+        app.logger.info('Sync-administration user API called, user_id: ' + str(user_id))
+        try:
+            logged_in_user = get_jwt_identity().get('id')
+            logged_in_user_details = get_user_details(logged_in_user)
+            logged_in_user_role = logged_in_user_details.get('user_role', None)
+            response = None
+
+            if user_id == 'all':
+                if sync_type == 'sync-restore':
+                    response = add_pending_job(logged_in_user, logged_in_user_role, 'RESTORE_ALL_USERS')
+                elif sync_type == 'sync':
+                    response = add_pending_job(logged_in_user, logged_in_user_role, 'SYNC_ALL_USERS')
+            else:
+                if sync_type == 'sync-restore':
+                    response = add_pending_job(user_id, logged_in_user_role, 'USER_SYNC_RESTORE')
+                elif sync_type == 'sync':
+                    response = add_pending_job(user_id, logged_in_user_role, 'USER_SYNC')
+
+            return response, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
 @api.route('/sync/problem-data/<string:user_id>')
 class SyncProblemData(Resource):
 

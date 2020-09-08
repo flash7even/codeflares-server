@@ -21,6 +21,10 @@ COMPLETED = 'COMPLETED'
 USER_SYNC = 'USER_SYNC'
 TEAM_SYNC = 'TEAM_SYNC'
 
+user_sync_ref_types = ['USER_SYNC', 'USER_SYNC_RESTORE', 'SYNC_ALL_USERS', 'RESTORE_ALL_USERS', 'SYNC_ALL_TEAMS',
+                       'RESTORE_ALL_TEAMS']
+team_sync_ref_types = ['TEAM_SYNC', 'TEAM_SYNC_RESTORE']
+
 
 def get_user_details(user_id):
     try:
@@ -88,9 +92,9 @@ def search_jobs(param, page, size):
             for hit in response['hits']['hits']:
                 data = hit['_source']
                 data['id'] = hit['_id']
-                if data['job_type'] == USER_SYNC:
+                if data['job_type'] in user_sync_ref_types:
                     data['ref_details'] = get_user_details(data['job_ref_id'])
-                if data['job_type'] == TEAM_SYNC:
+                if data['job_type'] in team_sync_ref_types:
                     data['ref_details'] = get_team_details(data['job_ref_id'])
                 if 'created_at' in data:
                     data['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data['created_at']))

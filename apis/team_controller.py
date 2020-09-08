@@ -338,6 +338,35 @@ class Sync(Resource):
             return {'message': str(e)}, 500
 
 
+@api.route('/sync-administration/<string:sync_type>/<string:team_id>')
+class SyncAdministration(Resource):
+
+    @access_required(access="admin")
+    @api.doc('Sync-administration user by id')
+    def put(self, sync_type, team_id):
+        app.logger.info('Sync-administration user API called, team_id: ' + str(team_id))
+        try:
+            logged_in_user = get_jwt_identity().get('id')
+            logged_in_user_details = get_user_details(logged_in_user)
+            logged_in_user_role = logged_in_user_details.get('user_role', None)
+            response = None
+
+            if team_id == 'all':
+                if sync_type == 'sync-restore':
+                    response = add_pending_job(logged_in_user, logged_in_user_role, 'RESTORE_ALL_TEAMS')
+                elif sync_type == 'sync':
+                    response = add_pending_job(logged_in_user, logged_in_user_role, 'SYNC_ALL_TEAMS')
+            else:
+                if sync_type == 'sync-restore':
+                    response = add_pending_job(team_id, logged_in_user_role, 'TEAM_SYNC_RESTORE')
+                elif sync_type == 'sync':
+                    response = add_pending_job(team_id, logged_in_user_role, 'TEAM_SYNC')
+
+            return response, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
 @api.route('/sync/training-model/<string:team_id>')
 class SyncTrainingModel(Resource):
 
