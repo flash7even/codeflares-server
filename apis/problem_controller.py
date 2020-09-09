@@ -13,7 +13,8 @@ from commons.jwt_helpers import access_required
 api = Namespace('problem', description='Namespace for problem service')
 
 from core.problem_services import search_problems, search_problems_by_category, get_problem_details, search_problems_by_category_dt_search
-from core.problem_services import create_problem_id, get_problem_submission_history, get_user_problem_submission_history
+from core.problem_services import create_problem_id, get_problem_submission_history, get_user_problem_submission_history, \
+    merge_problem_data, get_problem_details_es_fields
 from core.category_services import get_category_id_from_name, get_category_details
 
 _http_headers = {'Content-Type': 'application/json'}
@@ -197,6 +198,55 @@ class CreateProblem(Resource):
             existing_problem = get_problem_details(problem_id)
             if existing_problem is not None:
                 return {'message': 'problem already exists with same problem id'}, 409
+
+            post_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
+            response = rs.post(url=post_url, json=data, headers=_http_headers).json()
+            app.logger.info('Problem Created Successfully')
+
+            if 'result' in response:
+                app.logger.info('Create problem api completed')
+                return response['_id'], 201
+            app.logger.error('Elasticsearch down, response: ' + str(response))
+            return response, 500
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+@api.route('/merge-data')
+class CreateProblem(Resource):
+
+    @access_required(access="admin")
+    @api.doc('merge problem data')
+    def post(self):
+        try:
+            app.logger.info('Merge problem data api called')
+            rs = requests.session()
+            data = request.get_json()
+            categories = []
+            if 'category_dependency_list' in data:
+                category_dependency_list = data['category_dependency_list']
+                data.pop('category_dependency_list', None)
+                for cat in category_dependency_list:
+                    category_id = cat.get('category_id', None)
+                    if category_id is None:
+                        category_id = get_category_id_from_name(cat['category_name'])
+                    category_details = get_category_details(category_id)
+                    edge = {
+                        'category_id': category_id,
+                        'dependency_factor': cat['factor'],
+                        'category_root': category_details['category_root'],
+                        'category_name': category_details['category_name'],
+                    }
+                    categories.append(edge)
+
+            data['categories'] = categories
+            data['updated_at'] = int(time.time())
+
+            problem_id = create_problem_id(data['oj_name'] + '-' + data['problem_id'])
+
+            existing_problem = get_problem_details_es_fields(problem_id)
+            if existing_problem is not None:
+                data = merge_problem_data(existing_problem, data)
 
             post_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
             response = rs.post(url=post_url, json=data, headers=_http_headers).json()

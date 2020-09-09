@@ -36,6 +36,41 @@ def create_problem_id(problem_name):
     return problem_id
 
 
+def merge_problem_data(existing_data, new_data):
+    final_categories = []
+    final_categorie_map = {}
+
+    categories_1 = existing_data['categories']
+    categories_2 = new_data['categories']
+
+    for f in new_data:
+        if f == 'categories':
+            continue
+        if f == 'problem_difficulty':
+            problem_difficulty = (float(existing_data['problem_difficulty']) + float(new_data['problem_difficulty']))/2
+            existing_data[f] = problem_difficulty
+        else:
+            existing_data[f] = new_data[f]
+
+    for cat in categories_1:
+        category_id = cat['category_id']
+        final_categorie_map[category_id] = cat
+
+    for cat in categories_2:
+        category_id = cat['category_id']
+        if category_id in final_categorie_map:
+            dependency_factor = (float(cat['dependency_factor']) + float(final_categorie_map[category_id]['dependency_factor']))/2
+            final_categorie_map[category_id]['dependency_factor'] = dependency_factor
+        else:
+            final_categorie_map[category_id] = cat
+
+    for category_id in final_categorie_map:
+        final_categories.append(final_categorie_map[category_id])
+
+    existing_data['categories'] = final_categories
+    return existing_data
+
+
 def get_solved_count_for_problem(problem_id):
     try:
         rs = requests.session()
@@ -50,6 +85,20 @@ def get_solved_count_for_problem(problem_id):
         if 'hits' in response:
             return response['hits']['total']['value']
         return 0
+    except Exception as e:
+        raise e
+
+
+def get_problem_details_es_fields(problem_id):
+    try:
+        rs = requests.session()
+        search_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index_problem, _es_type, problem_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                return data
+        return None
     except Exception as e:
         raise e
 
