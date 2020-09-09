@@ -193,6 +193,11 @@ class CreateProblem(Resource):
             data['updated_at'] = int(time.time())
 
             problem_id = create_problem_id(data['oj_name'] + '-' + data['problem_id'])
+
+            existing_problem = get_problem_details(problem_id)
+            if existing_problem is not None:
+                return {'message': 'problem already exists with same problem id'}, 409
+
             post_url = 'http://{}/{}/{}/{}'.format(app.config['ES_HOST'], _es_index, _es_type, problem_id)
             response = rs.post(url=post_url, json=data, headers=_http_headers).json()
             app.logger.info('Problem Created Successfully')
