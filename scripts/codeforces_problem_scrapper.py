@@ -14,7 +14,7 @@ SERVER_HOST = 'http://localhost:5056/api'
 
 access_token = None
 login_api = f'{SERVER_HOST}/auth/login'
-add_problem_url = f'{SERVER_HOST}/problem/'
+add_problem_url = f'{SERVER_HOST}/problem/merge-data'
 
 
 tag_map = {
@@ -25,21 +25,20 @@ tag_map = {
    "greedy":"basic_greedy_knowledge",
    "math":"basic_math",
    "brute force":"ad_hoc",
-   "number theory":"factorization",
+   "number theory":"non_classical_nt",
+    "data structures": "non_classical_ds",
    "constructive algorithms":"constructive_algorithm",
    "dfs and similar":"dfs",
-   "graphs":"basic_graph_knowledge",
+   "graphs":"non_classical_graph",
    "shortest paths":"dijkstra",
-   "data structures":"segment_tree",
    "fft":"fft",
    "interactive":"interactive",
    "implementation":"implementation",
    "flows":"max_flow",
    "graph matchings":"maximum_bipartite_matching",
    "binary search":"binary_search",
-   "games":"nim",
-   "trees":"tree_dp",
-   "*special":"ad_hoc",
+   "games":"non_classic_games",
+   "trees":"dfs",
    "combinatorics":"basic_permutation_combination",
    "2-sat":"two_sat",
    "matrices":"implementation",
@@ -47,7 +46,7 @@ tag_map = {
    "dsu":"union_find",
    "bitmasks":"bit_mask",
    "string suffix structures":"suffix_array",
-   "divide and conquer":"non_classical_dp",
+   "divide and conquer":"divide_and_conquer",
    "ternary search":"ternary_search",
    "hashing":"hashing",
    "probabilities":"basic_probability",
@@ -57,10 +56,11 @@ tag_map = {
    "schedules":"interval_scheduling"
 }
 
-rating_list = [0, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000]
+rating_list = [0, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5500]
 problem_count = 0
 problem_count_without_rating = 0
 error_count = 0
+no_category_count = 0
 
 
 def get_access_token():
@@ -209,6 +209,7 @@ class CodeforcesScrapper:
             global problem_count
             global problem_count_without_rating
             global error_count
+            global no_category_count
 
             for problem in problem_list:
                 tag_list = problem['tags']
@@ -226,7 +227,7 @@ class CodeforcesScrapper:
                     "source_link": f'https://codeforces.com/contest/{problem["contestId"]}/problem/{problem["index"]}',
                     "category_dependency_list": [],
                     "oj_name": "codeforces",
-                    "active_status": "pending"
+                    "active_status": "approved"
                 }
 
                 for tag in tag_list:
@@ -240,11 +241,17 @@ class CodeforcesScrapper:
                 if len(problem_data['category_dependency_list']) > 1:
                     problem_data['problem_significance'] = 2
 
+                if len(problem_data['category_dependency_list']) == 0:
+                    no_category_count += 1
+                    continue
+
                 add_problem(problem_data)
 
                 if problem_count % 50 == 0:
-                    print(f'problem_count: {problem_count}, problem_count_without_rating: {problem_count_without_rating}, error_count: {error_count}')
+                    print(f'problem_count: {problem_count}, problem_count_without_rating: {problem_count_without_rating}, error_count: {error_count}, no_category_count: {no_category_count}')
 
+            print(
+                f'FINAL STAT: problem_count: {problem_count}, problem_count_without_rating: {problem_count_without_rating}, error_count: {error_count}, no_category_count: {no_category_count}')
             return {
                 'problem_count': problem_count,
                 'problem_count_without_rating': problem_count_without_rating,
