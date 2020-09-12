@@ -4,10 +4,10 @@ class Skill:
 
     max_skill = 1000000
 
-    skill_levels = [0, 8, 20, 35, 70, 120, 200, 320, 470, 670, 920, max_skill]
+    skill_levels = [0, 500, 1000, 1300, 1600, 1900, 2200, 2500, 2750, 3000, 3500, max_skill]
     weekly_min_score = [1, 3, 5.82, 9.01, 16.01, 24.37, 33.87, 44.39, 55.83, 68.14, 81.24, 100]
-    score_table = [0, 1, 2.82, 5.19, 8, 11.18, 14.69, 18.52, 22.62, 27, 31.62]
-    color_codes = ['#868686', '#258326', '#2ca39b', '#392fc5', '#920192', '#e9840a', '#c26f0a', '#ff1414', '#ce0f0f', '#8b0000']
+    score_table = [0, 5, 15, 25, 40, 55, 75, 95, 125, 155, 200]
+    color_codes = ['#868686', '#258326', '#2ca39b', '#392fc5', '#920192', '#e9840a', '#c26f0a', '#ff1414', '#ce0f0f', '#8b0000', '#400E04']
 
     skill_title = [
         'Level 00',
@@ -20,7 +20,7 @@ class Skill:
         'Level 07',
         'Level 08',
         'Level 09',
-        'Level 10'
+        'Level 10',
     ]
 
     score_per_level_dx = [
@@ -46,9 +46,8 @@ class Skill:
             return self.score_per_level_dx[depth]
         return [0, 1]
 
-
     def get_skill_title(self, skill):
-        idx = 10
+        idx = 9
         while idx >= 0:
             if skill > self.skill_levels[idx]:
                 return self.skill_title[idx+1]
@@ -94,7 +93,7 @@ class Skill:
     def get_color_from_skill_title(self, skill_title):
         if skill_title not in self.skill_title:
             return self.color_codes[0]
-        for i in range(0, 10):
+        for i in range(0, 11):
             if self.skill_title[i] == skill_title:
                 return self.color_codes[i]
         return self.color_codes[0]
