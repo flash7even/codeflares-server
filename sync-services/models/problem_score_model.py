@@ -10,7 +10,7 @@ eps = 0.0000001
 class ProblemScoreGenerator:
 
     def calculate(self, problem_diff, category_level):
-        print(f'Inside calculate, problem_diff: {problem_diff}, category_level: {category_level}')
+        # print(f'Inside calculate, problem_diff: {problem_diff}, category_level: {category_level}')
         up = category_level + 1
         down = category_level - 0.5
         level_dx = []
@@ -36,7 +36,7 @@ class ProblemScoreGenerator:
                 level_idx = idx
                 break
 
-        print(f'processed: problem_diff: {problem_diff}, level_idx: {level_idx}, level_dx: {level_dx}')
+        # print(f'processed: problem_diff: {problem_diff}, level_idx: {level_idx}, level_dx: {level_dx}')
         skill = Skill()
         score_range = skill.get_problem_relevent_score_from_level(level_idx)
         score_dif = score_range[1] - score_range[0]
