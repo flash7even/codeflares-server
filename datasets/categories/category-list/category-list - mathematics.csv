@@ -1,8 +1,8 @@
 category_root,category_name,short_name,category_difficulty,category_importance,factor,score_percentage
 mathematics,basic_math,,3,9,1,35
 mathematics,advanced_math,,9.5,4,3,10
-mathematics,bit_manipulation,,3.5,7.5,1.1,15
+mathematics,bit_manipulation,,3.5,7.5,1.1,10
 mathematics,math_calculation,,4,4,1,5
 mathematics,matrix_exponentiation,,6,7,2,20
-miscellaneous,fft,,9,6,3,15
+miscellaneous,fft,,9,6,3,20
 sum,,,,,,100
