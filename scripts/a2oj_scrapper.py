@@ -35,7 +35,6 @@ access_token = None
 login_api = f'{SERVER_HOST}/auth/login'
 add_problem_url = f'{SERVER_HOST}/problem/merge-data'
 
-cell_missing_algorithms = ["130", "59", "80", "126"]
 
 algorithm_map = {
     "56": {
@@ -204,7 +203,7 @@ algorithm_map = {
         "max_difficulty": 7
     },
     "150": {
-        "algorithm_list": ["lowest_common_ancestor"],
+        "algorithm_list": ["lowest_common_ancestor", "sparse_table"],
         "min_difficulty": 3.5,
         "max_difficulty": 8
     },
@@ -224,7 +223,7 @@ algorithm_map = {
         "max_difficulty": 10
     },
     "208": {
-        "algorithm_list": ["lowest_common_ancestor"],
+        "algorithm_list": ["lowest_common_ancestor", "sparse_table"],
         "min_difficulty": 3.5,
         "max_difficulty": 8
     },
@@ -313,7 +312,128 @@ algorithm_map = {
         "min_difficulty": 5,
         "max_difficulty": 9
     },
+    "21": {
+        "algorithm_list": ["basic_vector_geometry"],
+        "min_difficulty": 2,
+        "max_difficulty": 8
+    },
+    "87": {
+        "algorithm_list": ["basic_stl"],
+        "min_difficulty": 0.5,
+        "max_difficulty": 7
+    },
+    "32": {
+        "algorithm_list": ["matrix_exponentiation"],
+        "min_difficulty": 4.5,
+        "max_difficulty": 10
+    },
+    "91": {
+        "algorithm_list": ["non_classic_games"],
+        "min_difficulty": 2,
+        "max_difficulty": 8
+    },
+    "62": {
+        "algorithm_list": ["ad_hoc"],
+        "min_difficulty": 0.5,
+        "max_difficulty": 5
+    },
+    "99": {
+        "algorithm_list": ["divide_and_conquer"],
+        "min_difficulty": 3.5,
+        "max_difficulty": 8
+    },
+    "743": {
+        "algorithm_list": ["interactive"],
+        "min_difficulty": 3.5,
+        "max_difficulty": 8
+    },
+    "227": {
+        "algorithm_list": ["suffix_array"],
+        "min_difficulty": 7,
+        "max_difficulty": 10
+    },
+    "166": {
+        "algorithm_list": ["basic_stl"],
+        "min_difficulty": 3.5,
+        "max_difficulty": 8
+    },
+    "48": {
+        "algorithm_list": ["non_classic_games"],
+        "min_difficulty": 2,
+        "max_difficulty": 6
+    },
+    "671": {
+        "algorithm_list": ["randomized_algorithm"],
+        "min_difficulty": 1.5,
+        "max_difficulty": 7
+    },
+    "308": {
+        "algorithm_list": ["segment_tree"],
+        "min_difficulty": 4.5,
+        "max_difficulty": 8
+    },
+    "348": {
+        "algorithm_list": ["matrix_exponentiation"],
+        "min_difficulty": 2,
+        "max_difficulty": 6
+    },
+    "37": {
+        "algorithm_list": ["sparse_table"],
+        "min_difficulty": 4.5,
+        "max_difficulty": 8
+    },
+    "315": {
+        "algorithm_list": ["digit_dp"],
+        "min_difficulty": 4,
+        "max_difficulty": 8
+    },
+    "13": {
+        "algorithm_list": ["bfs", "dfs", "dijkstra"],
+        "min_difficulty": 3.5,
+        "max_difficulty": 10
+    },
+    "33": {
+        "algorithm_list": ["non_classical_dp"],
+        "min_difficulty": 3.5,
+        "max_difficulty": 10
+    },
+    "101": {
+        "algorithm_list": ["non_classical_graph"],
+        "min_difficulty": 3,
+        "max_difficulty": 10
+    },
+    "41": {
+        "algorithm_list": ["non_classical_nt"],
+        "min_difficulty": 1.5,
+        "max_difficulty": 9
+    },
+    "88": {
+        "algorithm_list": ["non_classical_ds"],
+        "min_difficulty": 4,
+        "max_difficulty": 10
+    },
+    "89": {
+        "algorithm_list": ["tree_dp", "dfs", "basic_tree_knowledge", "non_classical_dp"],
+        "min_difficulty": 3.5,
+        "max_difficulty": 10
+    },
+    "17": {
+        "algorithm_list": ["non_classical_graph", "minimum_spanning_tree", "strongly_connected_component"],
+        "min_difficulty": 4,
+        "max_difficulty": 7.5
+    },
+    "134": {
+        "algorithm_list": ["ad_hoc"],
+        "min_difficulty": 0.2,
+        "max_difficulty": 1
+    },
+    "24": {
+        "algorithm_list": ["euler_circuit"],
+        "min_difficulty": 3.5,
+        "max_difficulty": 7
+    },
 }
+
 
 success = 0
 error = 0
@@ -433,6 +553,29 @@ def get_problem_id(source_link, oj_name):
 
 class A2ojScrapper:
 
+    def test_upload(self, algorithm_id, algorithm_list, min_diff, max_diff):
+        logger.info(f'upload_problem_history called, algorithm_list: {algorithm_list}, min_diff: {min_diff}')
+        rs = requests.session()
+        url = f'https://a2oj.com/category?ID={algorithm_id}'
+        submission_page = rs.get(url=url, headers=_http_headers)
+        soup = BeautifulSoup(submission_page.text, 'html.parser')
+        soup.prettify()
+
+        header_map = {}
+
+        table = soup.find("table",{"class":"tablesorter"})
+        for row in table.find_all("tr")[0:]:
+            cells = row.find_all("th")
+            idx = 0
+            for cell in cells:
+                cell = str(cell)
+                cell = cell[4:-5]
+                header_map[cell] = idx
+                idx += 1
+            print(header_map)
+            break
+
+
     def upload_problem_history(self, algorithm_id, algorithm_list, min_diff, max_diff):
         logger.info(f'upload_problem_history called, algorithm_list: {algorithm_list}, min_diff: {min_diff}')
         rs = requests.session()
@@ -442,20 +585,33 @@ class A2ojScrapper:
         soup.prettify()
 
         problem_list = []
+        header_map = {}
         table = soup.find("table",{"class":"tablesorter"})
+
+        for row in table.find_all("tr")[0:]:
+            cells = row.find_all("th")
+            idx = 0
+            for cell in cells:
+                cell = str(cell)
+                cell = cell[4:-5]
+                header_map[cell] = idx
+                idx += 1
+            break
+
+        logger.info(f'HEADER_MAP: {header_map}')
 
         for row in table.find_all("tr")[1:]:  # skipping header row
             cells = row.find_all("td")
             try:
-                problem_name = cells[1].text
-                source_link = cells[1].find('a').get('href')
+                problem_name_idx = header_map["Problem Name"]
+                oj_name_idx = header_map["Online Judge"]
+                problem_difficulty_idx = header_map["Difficulty Level"]
 
-                if algorithm_id in cell_missing_algorithms:
-                    oj_name = cells[3].text
-                    problem_difficulty = cells[5].text
-                else:
-                    oj_name = cells[2].text
-                    problem_difficulty = cells[4].text
+                problem_name = cells[problem_name_idx].text
+                source_link = cells[problem_name_idx].find('a').get('href')
+                oj_name = cells[oj_name_idx].text
+                problem_difficulty = cells[problem_difficulty_idx].text
+                logger.info(f'TABLE_PROBLEM_STAT: problem_name: {problem_name}, source_link: {source_link}, oj_name: {oj_name}, problem_difficulty: {problem_difficulty}')
 
                 if oj_name not in oj_map:
                     continue
@@ -530,7 +686,6 @@ class A2ojScrapper:
             problem_id = problem_id.strip()
             problem_name = problem_name.strip()
             print("problem_id:", problem_id, " problem_name: ", problem_name)
-
 
 
 if __name__ == '__main__':
