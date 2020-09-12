@@ -41,6 +41,12 @@ class Skill:
         [0, 2],
     ]
 
+    def get_problem_relevent_score_from_level(self, depth):
+        if depth < len(self.score_per_level_dx):
+            return self.score_per_level_dx[depth]
+        return [0, 1]
+
+
     def get_skill_title(self, skill):
         idx = 10
         while idx >= 0:

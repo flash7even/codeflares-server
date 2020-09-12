@@ -489,6 +489,7 @@ def find_dependent_category_list(category_id_2):
 
 
 def add_user_category_data(user_id, category_id, data):
+    print(f'add_user_category_data: user_id: {user_id}, category_id: {category_id}, data: {data}')
     try:
         global rs
         data['user_id'] = user_id
@@ -500,6 +501,7 @@ def add_user_category_data(user_id, category_id, data):
             data['updated_at'] = int(time.time())
             url = 'http://{}/{}/{}'.format(config.ES_HOST, _es_index_user_category, _es_type)
             response = rs.post(url=url, json=data, headers=_http_headers).json()
+            print(f'edge is none es response: {response}', response)
             if 'result' in response:
                 return response['_id']
             raise Exception('Internal server error')
@@ -513,6 +515,7 @@ def add_user_category_data(user_id, category_id, data):
         edge['updated_at'] = int(time.time())
         url = 'http://{}/{}/{}/{}'.format(config.ES_HOST, _es_index_user_category, _es_type, edge_id)
         response = rs.put(url=url, json=edge, headers=_http_headers).json()
+        print(f'es response: {response}', response)
 
         if 'result' in response:
             return response['result']
@@ -945,6 +948,7 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
 
         problem_difficulty = problem_details['problem_difficulty']
         problem_difficulty = float(problem_difficulty)
+        problem_difficulty = int(math.ceil(problem_difficulty))
         dep_cat_list = problem_details.get('categories', [])
         cat_skill_model = CategorySkillGenerator()
         marked_roots = {}
@@ -983,7 +987,7 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
                     key = 'scd_' + str(d)
                     uc_edge[key] = 0
 
-            dif_key = 'scd_' + str(int(problem_difficulty))
+            dif_key = 'scd_' + str(problem_difficulty)
             uc_edge[dif_key] += 1
             problem_factor = category_details.get('factor', 1)
             added_skill = cat_skill_model.get_score_for_latest_solved_problem(problem_difficulty, uc_edge[dif_key], problem_factor)

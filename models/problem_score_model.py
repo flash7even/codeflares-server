@@ -35,7 +35,7 @@ class ProblemScoreGenerator:
                 level_idx = idx
                 break
 
-        score_range = Skill.score_per_level_dx[level_idx]
+        score_range = Skill.get_problem_relevent_score_from_level(level_idx)
         score_dif = score_range[1] - score_range[0]
         level_range_val = level_dx[level_idx][1] - level_dx[level_idx][0]
         if problem_diff > category_level:

@@ -1,5 +1,6 @@
 import argparse
 import json
+import math
 
 from .skillset import Skill
 
@@ -20,7 +21,8 @@ class CategorySkillGenerator:
 
     def get_score_for_latest_solved_problem(self, difficulty, solve_count_order, problem_factor):
         print(f'get_score_for_latest_solved_problem called, difficulty: {difficulty}, solve_count_order: {solve_count_order}')
-        difficulty = int(difficulty)
+        difficulty = int(math.ceil(difficulty))
+        print(f'considered difficulty: {difficulty}')
 
         limit = self.group_bound[difficulty]
         group_len = self.group_table[difficulty]
