@@ -74,6 +74,7 @@ _es_type = '_doc'
 _es_size = 10000
 
 _es_max_solved_problem = 10000
+_bucket_size = 100
 
 SOLVED = 'SOLVED'
 UNSOLVED = 'UNSOLVED'
@@ -82,6 +83,13 @@ FLAGGED = 'FLAGGED'
 approved = 'approved'
 READ = 'READ'
 UNREAD = 'UNREAD'
+
+uva = UvaScrapper()
+codeforces = CodeforcesScrapper()
+spoj = SpojScrapper()
+codechef = CodechefScrapper()
+lightoj = LightOJScrapper()
+skill_info = Skill()
 
 
 ######################### REDIS SERVICES STARTS #########################
@@ -203,6 +211,8 @@ def add_notification(data):
 ######################### USER SERVICES #########################
 
 
+
+
 def search_user_ids(param, from_val, size_val):
     try:
         global rs
@@ -223,12 +233,10 @@ def search_user_ids(param, from_val, size_val):
             query_json = {'query': {'bool': {'must': must}}}
 
         query_json['_source'] = False
-
         query_json['from'] = from_val
         query_json['size'] = size_val
         search_url = 'http://{}/{}/{}/_search'.format(config.ES_HOST, _es_index_user, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        # print(response)
 
         if 'hits' in response:
             data = []
@@ -237,7 +245,6 @@ def search_user_ids(param, from_val, size_val):
             return data
         logger.error('Elasticsearch down, response : ' + str(response))
         raise Exception('Internal server error')
-
     except Exception as e:
         raise e
 
@@ -292,7 +299,6 @@ def get_solved_problem_count_for_user(user_id):
 
 
 def generate_skill_value_for_user(user_id):
-    # logger.info('generate_skill_value_for_user: ' + str(user_id))
     try:
         global rs
         must = [
@@ -301,25 +307,18 @@ def generate_skill_value_for_user(user_id):
         ]
         query_json = {'query': {'bool': {'must': must}}}
         query_json['size'] = _es_size
-
-        # logger.info('generate_skill_value_for_user query_json: ' + json.dumps(query_json))
         search_url = 'http://{}/{}/{}/_search'.format(config.ES_HOST, _es_index_user_category, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        # logger.info('generate_skill_value_for_user response: ' + str(response))
-
         if 'hits' not in response:
             raise Exception('Internal server error')
-
         skill_value = 0
         if 'hits' in response:
             for hit in response['hits']['hits']:
                 data = hit['_source']
-                skill_value += data['skill_value_by_percentage']
-
-        # logger.info('skill_value found: ' + str(skill_value))
+                skill_value += float(data['skill_value_by_percentage'])
         return skill_value
     except Exception as e:
-        raise Exception('Internal server error')
+        raise e
 
 
 def sync_overall_stat_for_user(user_id, skill_value = None):
@@ -341,28 +340,23 @@ def sync_overall_stat_for_user(user_id, skill_value = None):
 
 def update_user_details(user_id, user_data):
     try:
-        ignore_fields = ['username', 'password']
         global rs
-
+        ignore_fields = ['username', 'password']
         search_url = 'http://{}/{}/{}/{}'.format(config.ES_HOST, _es_index_user, _es_type, user_id)
         response = rs.get(url=search_url, headers=_http_headers).json()
-
         if 'found' in response:
             if response['found']:
                 user = response['_source']
                 for key in user_data:
                     if key not in ignore_fields:
                         user[key] = user_data[key]
-
                 response = rs.put(url=search_url, json=user, headers=_http_headers).json()
                 if 'result' in response:
                     return response['result']
-            return 'not found'
         logger.error('Elasticsearch down')
         return response
-
     except Exception as e:
-        return {'message': str(e)}
+        raise e
 
 
 
@@ -370,6 +364,7 @@ def update_user_details(user_id, user_data):
 
 
 ######################### CATEGORY SERVICES #########################
+
 
 
 
@@ -383,6 +378,46 @@ def find_category_dependency_list_for_multiple_categories(category_list):
                 if category_id not in dependent_categories:
                     dependent_categories.append(category_id)
         return dependent_categories
+    except Exception as e:
+        raise e
+
+
+def get_user_category_data(user_id, category_id):
+    try:
+        global rs
+        must = [
+            {'term': {'user_id': user_id}},
+            {'term': {'category_id': category_id}}
+        ]
+        query_json = {'query': {'bool': {'must': must}}}
+        query_json['size'] = 1
+        search_url = 'http://{}/{}/{}/_search'.format(config.ES_HOST, _es_index_user_category, _es_type)
+        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
+        if 'hits' in response:
+            if response['hits']['total']['value'] > 1:
+                logger.error(f'Abnormal user category edges: {response}')
+                raise Exception('Abnormal user category edges')
+            for hit in response['hits']['hits']:
+                edge = hit['_source']
+                edge['id'] = hit['_id']
+                return edge
+        return None
+    except Exception as e:
+        raise e
+
+
+def get_category_details(cat_id):
+    try:
+        global rs
+        search_url = 'http://{}/{}/{}/{}'.format(config.ES_HOST, _es_index_category, _es_type, cat_id)
+        response = rs.get(url=search_url, headers=_http_headers).json()
+        if 'found' in response:
+            if response['found']:
+                data = response['_source']
+                data['category_id'] = response['_id']
+                data['problem_count'] = 0
+                return data
+        return None
     except Exception as e:
         raise e
 
@@ -409,55 +444,6 @@ def find_category_dependency_list(category_id_1):
             return item_list
         logger.error('Elasticsearch down, response: ' + str(response))
         return item_list
-    except Exception as e:
-        raise e
-
-
-def get_user_category_data(user_id, category_id):
-    try:
-        global rs
-        must = [
-            {'term': {'user_id': user_id}},
-            {'term': {'category_id': category_id}}
-        ]
-        query_json = {'query': {'bool': {'must': must}}}
-        query_json['size'] = 1
-        search_url = 'http://{}/{}/{}/_search'.format(config.ES_HOST, _es_index_user_category, _es_type)
-        response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        if 'hits' in response:
-            for hit in response['hits']['hits']:
-                edge = hit['_source']
-                edge['id'] = hit['_id']
-                return edge
-        return None
-    except Exception as e:
-        raise e
-
-
-def get_category_details(cat_id, user_id = None):
-    # logger.info(f'get_category_details function called for cat_id: {cat_id}, user_id: {user_id}')
-    try:
-        global rs
-        search_url = 'http://{}/{}/{}/{}'.format(config.ES_HOST, _es_index_category, _es_type, cat_id)
-        response = rs.get(url=search_url, headers=_http_headers).json()
-        if 'found' in response:
-            if response['found']:
-                data = response['_source']
-                data['category_id'] = response['_id']
-                data['problem_count'] = 0
-                if user_id:
-                    cat_info = get_user_category_data(user_id, data['category_id'])
-                    if cat_info:
-                        skill_value = float(cat_info.get('skill_value', 0))
-                        data['skill_value'] = "{:.2f}".format(skill_value)
-                        skill = Skill()
-                        data['skill_title'] = skill.get_skill_title(skill_value)
-                    else:
-                        data['skill_value'] = 0
-                        data['skill_title'] = "NA"
-                # logger.info('get_category_details completed')
-                return data
-        return None
     except Exception as e:
         raise e
 
@@ -489,7 +475,6 @@ def find_dependent_category_list(category_id_2):
 
 
 def add_user_category_data(user_id, category_id, data):
-    # print(f'add_user_category_data: user_id: {user_id}, category_id: {category_id}, data: {data}')
     try:
         global rs
         data['user_id'] = user_id
@@ -501,27 +486,21 @@ def add_user_category_data(user_id, category_id, data):
             data['updated_at'] = int(time.time())
             url = 'http://{}/{}/{}'.format(config.ES_HOST, _es_index_user_category, _es_type)
             response = rs.post(url=url, json=data, headers=_http_headers).json()
-            # print(f'edge is none es response: {response}', response)
             if 'result' in response:
                 return response['_id']
             raise Exception('Internal server error')
 
         edge_id = edge['id']
         edge.pop('id', None)
-
         for f in data:
             edge[f] = data[f]
 
         edge['updated_at'] = int(time.time())
         url = 'http://{}/{}/{}/{}'.format(config.ES_HOST, _es_index_user_category, _es_type, edge_id)
         response = rs.put(url=url, json=edge, headers=_http_headers).json()
-        # print(f'es response: {response}', response)
-
         if 'result' in response:
             return response['result']
-
         raise Exception('Internal server error')
-
     except Exception as e:
         raise e
 
@@ -534,10 +513,8 @@ def clean_user_category_history(user_id):
             {'term': {'user_id': user_id}}
         ]
         query_json = {'query': {'bool': {'must': must}}}
-        # logger.info(f'query_json: {json.dumps(query_json)}')
         search_url = 'http://{}/{}/_delete_by_query'.format(config.ES_HOST, _es_index_user_category)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        # logger.info(f'response: {response}')
         if 'deleted' not in response:
             logger.error('ES Down')
             raise Exception(str(response))
@@ -545,28 +522,11 @@ def clean_user_category_history(user_id):
         raise e
 
 
-def search_categories(param, from_value, size_value, heavy = False):
+def search_categories(param, from_value, size_value):
     try:
-        query_json = {'query': {'match_all': {}}}
         global rs
-
         must = []
         keyword_fields = ['category_title', 'category_root']
-        user_id = param.get('user_id', None)
-        # print('search_categories: body: ', param)
-        param.pop('user_id', None)
-
-        minimum_difficulty = 0
-        maximum_difficulty = 100
-
-        if 'minimum_difficulty' in param and param['minimum_difficulty']:
-            minimum_difficulty = int(param['minimum_difficulty'])
-
-        if 'maximum_difficulty' in param and param['maximum_difficulty']:
-            maximum_difficulty = int(param['maximum_difficulty'])
-
-        param.pop('minimum_difficulty', None)
-        param.pop('maximum_difficulty', None)
 
         for f in param:
             if f in keyword_fields:
@@ -576,8 +536,7 @@ def search_categories(param, from_value, size_value, heavy = False):
                 if param[f]:
                     must.append({'match': {f: param[f]}})
 
-        must.append({"range": {"category_difficulty": {"gte": minimum_difficulty, "lte": maximum_difficulty}}})
-
+        query_json = {'query': {'match_all': {}}}
         if len(must) > 0:
             query_json = {'query': {'bool': {'must': must}}}
 
@@ -589,10 +548,8 @@ def search_categories(param, from_value, size_value, heavy = False):
 
         query_json['from'] = from_value
         query_json['size'] = size_value
-        # print('query_json: ', json.dumps(query_json))
         search_url = 'http://{}/{}/{}/_search'.format(config.ES_HOST, _es_index_category, _es_type)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        # # print('response: ', response)
         item_list = []
         if 'hits' in response:
             for hit in response['hits']['hits']:
@@ -600,10 +557,6 @@ def search_categories(param, from_value, size_value, heavy = False):
                 category['category_id'] = hit['_id']
                 category['problem_count'] = 0
                 category['solve_count'] = 0
-                if user_id:
-                    cat_info = get_user_category_data(user_id, category['category_id'])
-                    if cat_info is not None:
-                        category['solve_count'] = cat_info.get('solve_count', 0)
                 item_list.append(category)
             return item_list
         logger.error('Elasticsearch down, response: ' + str(response))
@@ -627,14 +580,11 @@ def update_root_category_skill_for_user(user_id, root_category_list, root_catego
             response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
             if 'aggregations' in response:
                 skill_value = response['aggregations']['skill_value_by_percentage']['value']
-                category_id = cat['category_id']
-                category_name = cat['category_name']
-                new_solve_count = root_category_solve_count.get(category_name, 0)
-                uc_edge = get_user_category_data(user_id, category_id)
-                # logger.info(f'uc_edge from es: {uc_edge}')
+                new_solve_count = root_category_solve_count.get(cat['category_name'], 0)
+                uc_edge = get_user_category_data(user_id, cat['category_id'])
                 if uc_edge is None:
                     uc_edge = {
-                        "category_id": category_id,
+                        "category_id": cat['category_id'],
                         "category_root": 'root',
                         "user_id": user_id,
                         "skill_value": 0,
@@ -645,15 +595,12 @@ def update_root_category_skill_for_user(user_id, root_category_list, root_catego
                     }
                 uc_edge['skill_value'] = skill_value
                 uc_edge['solve_count'] = int(uc_edge.get('solve_count', 0)) + new_solve_count
-                skill_info = Skill()
                 uc_edge['skill_title'] = skill_info.get_skill_title(uc_edge['skill_value'])
                 uc_edge['skill_level'] = skill_info.get_skill_level_from_skill(uc_edge['skill_value'])
-                score_percentage = float(cat['score_percentage'])
-                uc_edge['skill_value_by_percentage'] = uc_edge['skill_value'] * score_percentage / 100
+                uc_edge['skill_value_by_percentage'] = uc_edge['skill_value'] * float(cat['score_percentage']) / 100.0
                 user_skill_sum += uc_edge['skill_value_by_percentage']
-                # logger.info(f'add uc_edge: {uc_edge}')
                 uc_edge.pop('id', None)
-                add_user_category_data(user_id, category_id, uc_edge)
+                add_user_category_data(user_id, cat['category_id'], uc_edge)
         return user_skill_sum
     except Exception as e:
         raise Exception('Internal server error')
@@ -705,7 +652,7 @@ def find_problem_dependency_list(problem_id):
         raise e
 
 
-def generate_query_params(param):
+def generate_query_params_for_problem_index(param):
     try:
         must = []
         nested_must = []
@@ -741,7 +688,7 @@ def generate_query_params(param):
 def search_problems(param, from_value, size_value):
     try:
         global rs
-        query_json = generate_query_params(param)
+        query_json = generate_query_params_for_problem_index(param)
         query_json['from'] = from_value
         query_json['size'] = size_value
         search_url = 'http://{}/{}/{}/_search'.format(config.ES_HOST, _es_index_problem, _es_type)
@@ -758,16 +705,15 @@ def search_problems(param, from_value, size_value):
         raise e
 
 
-def search_problems_filtered_by_categories(categories):
-    # logger.info('search_problems_filtered_by_categories called')
+def search_problems_filtered_by_categories_for_users(uc_edge_list):
     try:
         global rs
         should = []
-        for category_id in categories:
-            uc_edge = categories[category_id]
+        for category_id in uc_edge_list:
+            uc_edge = uc_edge_list[category_id]
             dif_level = float(uc_edge['skill_level'])
-            level_min = max(0.0, dif_level-1.5)
-            level_max = min(10.0, dif_level+1.5)
+            level_min = max(0.0, dif_level-2)
+            level_max = min(10.0, dif_level+2)
             must = [
                 {'nested': {'path': 'categories', 'query': {'bool': {'must': [{'term': {'categories.category_id': category_id}}]}}}},
                 {"range": {"problem_difficulty": {"gte": level_min, "lte": level_max}}}
@@ -820,7 +766,6 @@ def add_user_problem_status(user_id, problem_id, data):
     try:
         global rs
         edge = get_user_problem_status(user_id, problem_id)
-
         if edge is None:
             data['created_at'] = int(time.time())
             data['updated_at'] = int(time.time())
@@ -832,14 +777,12 @@ def add_user_problem_status(user_id, problem_id, data):
 
         edge_id = edge['id']
         edge.pop('id', None)
-
         for f in data:
             edge[f] = data[f]
 
         edge['updated_at'] = int(time.time())
         url = 'http://{}/{}/{}/{}'.format(config.ES_HOST, _es_index_problem_user, _es_type, edge_id)
         response = rs.put(url=url, json=edge, headers=_http_headers).json()
-
         if 'result' in response:
             return response['result']
         raise Exception('Internal server error')
@@ -855,10 +798,8 @@ def clean_user_problem_history(user_id):
             {'term': {'user_id': user_id}}
         ]
         query_json = {'query': {'bool': {'must': must}}}
-        # logger.info(f'query_json: {json.dumps(query_json)}')
         search_url = 'http://{}/{}/_delete_by_query'.format(config.ES_HOST, _es_index_problem_user)
         response = rs.post(url=search_url, json=query_json, headers=_http_headers).json()
-        # logger.info(f'response: {response}')
         if 'deleted' not in response:
             logger.error('ES Down')
             raise Exception(str(response))
@@ -870,7 +811,7 @@ def update_user_problem_score(user_id, user_skill_level, updated_categories):
     # logger.info(f'update_user_problem_score called for: {user_id}, with skill: {user_skill_level}')
     try:
         problem_score_generator = ProblemScoreGenerator()
-        problem_list = search_problems_filtered_by_categories(updated_categories)
+        problem_list = search_problems_filtered_by_categories_for_users(updated_categories)
 
         for problem in problem_list:
             problem_id = problem['id']
@@ -925,10 +866,7 @@ def update_user_problem_score(user_id, user_skill_level, updated_categories):
 
 def apply_solved_problem_for_user(user_id, problem_id, problem_details, submission_list, updated_categories, root_category_solve_count):
     # logger.info(f'apply_solved_problem_for_user for user_id: {user_id}, problem_id: {problem_id}')
-    # print(f'apply_solved_problem_for_user for user_id: {user_id}, problem_id: {problem_id}')
-    # logger.info('current updated_categories: ' + json.dumps(updated_categories))
     try:
-        skill_info = Skill()
         up_edge = get_user_problem_status(user_id, problem_id)
         if up_edge is not None and up_edge['status'] == SOLVED:
             return
@@ -946,9 +884,7 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
         if 'result' not in response:
             raise Exception('Internal server error')
 
-        problem_difficulty = problem_details['problem_difficulty']
-        problem_difficulty = float(problem_difficulty)
-        problem_difficulty = int(math.ceil(problem_difficulty))
+        problem_difficulty = int(math.ceil(float(problem_details['problem_difficulty'])))
         dep_cat_list = problem_details.get('categories', [])
         cat_skill_model = CategorySkillGenerator()
         marked_roots = {}
@@ -1012,29 +948,23 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
 
 
 
-def sync_problems(user_id, oj_problem_set):
-    # logger.info(f'sync_problems called for {user_id}')
+def sync_problem_bucket(user_id, problem_list, oj_name = None):
+    # logger.info(f'sync_problem_bucket called for {user_id}')
     try:
         category_score_generator = CategoryScoreGenerator()
         updated_categories = {}
         root_category_solve_count = {}
 
-        for problem_set in oj_problem_set:
-            for problem in problem_set['problem_list']:
-                problem_stat = problem_set['problem_list'][problem]
-                submission_list = problem_stat['submission_list']
-                problem_db = search_problems({'problem_id': problem, 'oj_name': problem_set['oj_name'], 'active_status': approved}, 0, 1)
-                if len(problem_db) == 0:
-                    continue
-                problem_id = problem_db[0]['id']
-                if len(problem_db) > 1:
-                    logger.error('Multiple problem with same id found')
-                apply_solved_problem_for_user(user_id, problem_id, problem_db[0], submission_list, updated_categories, root_category_solve_count)
+        for problem_id in problem_list:
+            submission_list = problem_list[problem_id]['submission_list']
+            problem_db = search_problems({'problem_id': problem_id, 'oj_name': oj_name, 'active_status': approved}, 0, 1)
+            if len(problem_db) != 1:
+                logger.error(f'Abnormal data for problem: {problem_id}, len: {len(problem_list)}')
+                continue
+            es_problem_id = problem_db[0]['id']
+            apply_solved_problem_for_user(user_id, es_problem_id, problem_db[0], submission_list, updated_categories, root_category_solve_count)
 
-        # logger.info('apply_solved_problem_for_user completed for all problems')
         marked_categories = dict(updated_categories)
-        # logger.info(f'marked_categories: {marked_categories}')
-
         for category_id in marked_categories:
             uc_edge = marked_categories[category_id]
             # UPDATE OWN CONTRIBUTION
@@ -1047,7 +977,6 @@ def sync_problems(user_id, oj_problem_set):
             dependent_cat_list = find_dependent_category_list(category_id)
             for dcat in dependent_cat_list:
                 dcat_id = dcat['category_id']
-                # print(f'category_id: {category_id}, dcat_id: {dcat_id}, dcat: {dcat}')
                 dcat_category_root = dcat['category_info']['category_root']
                 if dcat_id in updated_categories:
                     dcat_uc_edge = updated_categories[dcat_id]
@@ -1075,11 +1004,7 @@ def sync_problems(user_id, oj_problem_set):
                 new_cont = category_score_generator.get_dependent_score(uc_edge['skill_level'], dependency_percentage)
                 cont_dx = new_cont - old_cont
                 dcat_uc_edge['relevant_score'] += cont_dx
-
-                # logger.info(f'dcat_uc_edge: {dcat_uc_edge}')
                 updated_categories[dcat_id] = dcat_uc_edge
-
-        # logger.info('process of mark categories completed')
 
         for category_id in updated_categories:
             uc_edge = updated_categories[category_id]
@@ -1087,111 +1012,65 @@ def sync_problems(user_id, oj_problem_set):
             uc_edge.pop('id', None)
             add_user_category_data(user_id, category_id, uc_edge)
 
-        # logger.info('updated root categories')
         root_category_list = search_categories({"category_root": "root"}, 0, _es_size)
-        # logger.info(f'root_category_list: {root_category_list}')
         skill = Skill()
         user_skill = update_root_category_skill_for_user(user_id, root_category_list, root_category_solve_count)
         user_skill_level = skill.get_skill_level_from_skill(user_skill)
-        # logger.info(f'Final user_skill: {user_skill}, user_skill_level: {user_skill_level}')
         sync_overall_stat_for_user(user_id, user_skill)
-        # logger.info('sync_overall_stat_for_user completed')
         if len(updated_categories) > 0:
             update_user_problem_score(user_id, user_skill_level, updated_categories)
-        # logger.info(f'sync_problems completed for {user_id}')
+        # logger.info(f'sync_problem_bucket completed for {user_id}')
     except Exception as e:
         raise e
 
 
-def synch_user_problem(user_id):
-    logger.info(f'synch_user_problem for user_id: {user_id}')
+def synch_user_problem_data_from_ojs(user_id):
+    logger.info(f'synch_user_problem_data_from_ojs for user_id: {user_id}')
     try:
-        uva = UvaScrapper()
-        codeforces = CodeforcesScrapper()
-        spoj = SpojScrapper()
-        codechef = CodechefScrapper()
-        lightoj = LightOJScrapper()
-
         user_info = get_user_details(user_id)
-        # print('user_info: ', user_info)
         allowed_judges = ['codeforces', 'uva', 'codechef', 'spoj', 'lightoj']
-
-        oj_problem_set = []
 
         if 'codeforces' in allowed_judges:
             handle = user_info.get('codeforces_handle', None)
-            # print('Codeforces: ', handle)
             if handle:
-                problem_stat = codeforces.get_user_info_heavy(handle)
-                oj_problem_set.append({
-                    'problem_list': problem_stat['solved_problems'],
-                    'oj_name': 'codeforces'
-                })
-                # logger.info(f'codeforces problem_stat: {problem_stat}')
-                # print('problem_stat: ',problem_stat)
-
-        # print('codeforces scrapping completed')
+                for problem_list in codeforces.get_user_info_heavy(handle, _bucket_size):
+                    sync_problem_bucket(user_id, problem_list, 'codeforces')
 
         if 'codechef' in allowed_judges:
             handle = user_info.get('codechef_handle', None)
-            # print('codechef: ', handle)
             if handle:
-                problem_stat = codechef.get_user_info_heavy(handle)
-                oj_problem_set.append({
-                    'problem_list': problem_stat['solved_problems'],
-                    'oj_name': 'codechef'
-                })
-
-        # print('codechef scrapping completed')
+                for problem_list in codechef.get_user_info_heavy(handle, _bucket_size):
+                    sync_problem_bucket(user_id, problem_list, 'codechef')
 
         if 'uva' in allowed_judges:
             handle = user_info.get('uva_handle', None)
-            # print('uva: ', handle)
             if handle:
-                problem_stat = uva.get_user_info_heavy(handle)
-                oj_problem_set.append({
-                    'problem_list': problem_stat['solved_problems'],
-                    'oj_name': 'uva'
-                })
-
-        # print('uva scrapping completed')
+                for problem_list in uva.get_user_info_heavy(handle, _bucket_size):
+                    sync_problem_bucket(user_id, problem_list, 'uva')
 
         if 'spoj' in allowed_judges:
             handle = user_info.get('spoj_handle', None)
-            # print('spoj: ', handle)
             if handle:
-                problem_stat = spoj.get_user_info_heavy(handle)
-                oj_problem_set.append({
-                    'problem_list': problem_stat['solved_problems'],
-                    'oj_name': 'spoj'
-                })
-
-        # print('spoj scrapping completed')
+                for problem_list in spoj.get_user_info_heavy(handle, _bucket_size):
+                    sync_problem_bucket(user_id, problem_list, 'spoj')
 
         if 'lightoj' in allowed_judges:
             handle = user_info.get('lightoj_handle', None)
-            # logger.info(f'lightoj handle: {handle}')
-            # print(f'lightoj handle: {handle}')
             if handle:
                 credentials = {
                     'username': os.getenv('LIGHTOJ_USERNAME'),
                     'password': os.getenv('LIGHTOJ_PASSWORD')
                 }
-                problem_stat = lightoj.get_user_info_heavy(handle, credentials)
-                # print('problem_stat: ', problem_stat)
-                oj_problem_set.append({
-                    'problem_list': problem_stat['solved_problems'],
-                    'oj_name': 'lightoj'
-                })
+                for problem_list in lightoj.get_user_info_heavy(handle, credentials, _bucket_size):
+                    sync_problem_bucket(user_id, problem_list, 'lightoj')
 
-        sync_problems(user_id, oj_problem_set)
     except Exception as e:
         raise e
 
 
-def user_problem_data_sync(user_id):
+def user_problem_data_sync_process(user_id):
     try:
-        synch_user_problem(user_id)
+        synch_user_problem_data_from_ojs(user_id)
 
         notification_data = {
             'user_id': user_id,
@@ -1743,7 +1622,7 @@ def user_problem_sync(user_id):
     try:
         logger.info(f'user_problem_sync called for user_id: {user_id}')
         print(f'user_problem_sync called for user_id: {user_id}')
-        user_problem_data_sync(user_id)
+        user_problem_data_sync_process(user_id)
         remove_pending_job(user_id)
         logger.info(f'user_problem_sync completed for user_id: {user_id}')
         print(f'user_problem_sync completed for user_id: {user_id}')
