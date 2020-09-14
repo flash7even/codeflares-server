@@ -90,6 +90,8 @@ spoj = SpojScrapper()
 codechef = CodechefScrapper()
 lightoj = LightOJScrapper()
 skill_info = Skill()
+category_score_generator = CategoryScoreGenerator()
+cat_skill_model = CategorySkillGenerator()
 
 
 ######################### REDIS SERVICES STARTS #########################
@@ -880,37 +882,31 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
         # Insert User Problem Solved Status Here
         post_url = 'http://{}/{}/{}'.format(config.ES_HOST, _es_index_problem_user, _es_type)
         response = rs.post(url=post_url, json=data, headers=_http_headers).json()
-
         if 'result' not in response:
             raise Exception('Internal server error')
 
         problem_difficulty = int(math.ceil(float(problem_details['problem_difficulty'])))
         dep_cat_list = problem_details.get('categories', [])
-        cat_skill_model = CategorySkillGenerator()
-        marked_roots = {}
 
-        for cat in dep_cat_list:
-            category_id = cat['category_id']
-            category_details = get_category_details(category_id)
-            # print(f'problem_id: {problem_id}, category_id: {category_id}, category_details: {category_details}')
+        # Update skill values for problem dependent categories
+        for dcat in dep_cat_list:
+            dcat_id = dcat['category_id']
+            category_details = get_category_details(dcat_id)
             category_root = category_details['category_root']
-
-            if category_root not in marked_roots:
-                if category_root not in root_category_solve_count:
-                    root_category_solve_count[category_root] = 0
-                root_category_solve_count[category_root] += 1
-                marked_roots[category_root] = 1
-            if category_id in updated_categories:
-                uc_edge = updated_categories[category_id]
+            if category_root not in root_category_solve_count:
+                root_category_solve_count[category_root] = 0
+            root_category_solve_count[category_root] += 1
+            if dcat_id in updated_categories:
+                uc_edge = updated_categories[dcat_id]
             else:
-                uc_edge = get_user_category_data(user_id, category_id)
+                uc_edge = get_user_category_data(user_id, dcat_id)
                 if uc_edge:
                     uc_edge['old_skill_level'] = uc_edge['skill_level']
                     uc_edge.pop('id', None)
 
             if uc_edge is None:
                 uc_edge = {
-                    "category_id": category_id,
+                    "category_id": dcat_id,
                     "category_root": category_root,
                     "user_id": user_id,
                     "skill_value": 0,
@@ -934,8 +930,8 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
             uc_edge['skill_level'] = skill_info.get_skill_level_from_skill(uc_edge['skill_value'])
             score_percentage = float(category_details['score_percentage'])
             uc_edge['skill_value_by_percentage'] = uc_edge['skill_value']*score_percentage/100
-            updated_categories[category_id] = uc_edge
-            # logger.info('apply_solved_problem_for_user completed')
+            updated_categories[dcat_id] = uc_edge
+        # logger.info('apply_solved_problem_for_user completed')
     except Exception as e:
         logger.error(f'Exception occurred: {e}')
         raise Exception('Internal server error')
@@ -948,29 +944,31 @@ def apply_solved_problem_for_user(user_id, problem_id, problem_details, submissi
 
 
 
-def sync_problem_bucket(user_id, problem_list, oj_name = None):
+def sync_problem_bucket(user_id, oj_problem_set):
     # logger.info(f'sync_problem_bucket called for {user_id}')
     try:
-        category_score_generator = CategoryScoreGenerator()
         updated_categories = {}
         root_category_solve_count = {}
 
-        for problem_id in problem_list:
-            submission_list = problem_list[problem_id]['submission_list']
-            problem_db = search_problems({'problem_id': problem_id, 'oj_name': oj_name, 'active_status': approved}, 0, 1)
-            if len(problem_db) != 1:
-                logger.error(f'Abnormal data for problem: {problem_id}, len: {len(problem_list)}')
-                continue
-            es_problem_id = problem_db[0]['id']
-            apply_solved_problem_for_user(user_id, es_problem_id, problem_db[0], submission_list, updated_categories, root_category_solve_count)
+        # First process all the new solved problems:
+        for problem_set in oj_problem_set:
+            for problem_id in problem_set['problem_list']:
+                submission_list = problem_set['problem_list'][problem_id]['submission_list']
+                problem_db = search_problems({'problem_id': problem_id, 'oj_name': problem_set['oj_name'], 'active_status': approved}, 0, 1)
+                if len(problem_db) != 1:
+                    logger.error(f'Abnormal data for problem: {problem_id}, len: {len(problem_set["problem_list"])}')
+                    continue
+                es_problem_id = problem_db[0]['id']
+                # Apply after effects for new solved problem
+                apply_solved_problem_for_user(user_id, es_problem_id, problem_db[0], submission_list, updated_categories, root_category_solve_count)
 
         marked_categories = dict(updated_categories)
         for category_id in marked_categories:
             uc_edge = marked_categories[category_id]
             # UPDATE OWN CONTRIBUTION
-            old_cont = category_score_generator.get_own_difficulty_based_score(uc_edge['old_skill_level'])
-            new_cont = category_score_generator.get_own_difficulty_based_score(uc_edge['skill_level'])
-            cont_dx = new_cont - old_cont
+            old_contribution = category_score_generator.get_own_difficulty_based_score(uc_edge['old_skill_level'])
+            new_contribution = category_score_generator.get_own_difficulty_based_score(uc_edge['skill_level'])
+            cont_dx = new_contribution - old_contribution
             uc_edge['relevant_score'] += cont_dx
             updated_categories[category_id] = uc_edge
             # UPDATE DEPENDENT CATEGORY CONTRIBUTION
@@ -1000,9 +998,9 @@ def sync_problem_bucket(user_id, problem_list, oj_name = None):
                         dcat_uc_edge[key] = 0
 
                 dependency_percentage = float(dcat['dependency_percentage'])
-                old_cont = category_score_generator.get_dependent_score(uc_edge['old_skill_level'], dependency_percentage)
-                new_cont = category_score_generator.get_dependent_score(uc_edge['skill_level'], dependency_percentage)
-                cont_dx = new_cont - old_cont
+                old_contribution = category_score_generator.get_dependent_score(uc_edge['old_skill_level'], dependency_percentage)
+                new_contribution = category_score_generator.get_dependent_score(uc_edge['skill_level'], dependency_percentage)
+                cont_dx = new_contribution - old_contribution
                 dcat_uc_edge['relevant_score'] += cont_dx
                 updated_categories[dcat_id] = dcat_uc_edge
 
@@ -1013,9 +1011,8 @@ def sync_problem_bucket(user_id, problem_list, oj_name = None):
             add_user_category_data(user_id, category_id, uc_edge)
 
         root_category_list = search_categories({"category_root": "root"}, 0, _es_size)
-        skill = Skill()
         user_skill = update_root_category_skill_for_user(user_id, root_category_list, root_category_solve_count)
-        user_skill_level = skill.get_skill_level_from_skill(user_skill)
+        user_skill_level = skill_info.get_skill_level_from_skill(user_skill)
         sync_overall_stat_for_user(user_id, user_skill)
         if len(updated_categories) > 0:
             update_user_problem_score(user_id, user_skill_level, updated_categories)
@@ -1030,30 +1027,53 @@ def synch_user_problem_data_from_ojs(user_id):
         user_info = get_user_details(user_id)
         allowed_judges = ['codeforces', 'uva', 'codechef', 'spoj', 'lightoj']
 
+        oj_problem_set = []
+
+        logger.info('Scrap codeforces Problems')
         if 'codeforces' in allowed_judges:
             handle = user_info.get('codeforces_handle', None)
             if handle:
-                for problem_list in codeforces.get_user_info_heavy(handle, _bucket_size):
-                    sync_problem_bucket(user_id, problem_list, 'codeforces')
+                solved_problems = codeforces.get_user_info_heavy(handle)
+                oj_problem_set.append({
+                    'problem_list': solved_problems,
+                    'oj_name': 'codeforces'
+                })
+        logger.info('Scrap codeforces Completed')
 
+        logger.info('Scrap codechef Problems')
         if 'codechef' in allowed_judges:
             handle = user_info.get('codechef_handle', None)
             if handle:
-                for problem_list in codechef.get_user_info_heavy(handle, _bucket_size):
-                    sync_problem_bucket(user_id, problem_list, 'codechef')
+                solved_problems = codechef.get_user_info_heavy(handle)
+                oj_problem_set.append({
+                    'problem_list': solved_problems,
+                    'oj_name': 'codechef'
+                })
+        logger.info('Scrap codechef Completed')
 
+        logger.info('Scrap uva Problems')
         if 'uva' in allowed_judges:
             handle = user_info.get('uva_handle', None)
             if handle:
-                for problem_list in uva.get_user_info_heavy(handle, _bucket_size):
-                    sync_problem_bucket(user_id, problem_list, 'uva')
+                solved_problems = uva.get_user_info_heavy(handle)
+                oj_problem_set.append({
+                    'problem_list': solved_problems,
+                    'oj_name': 'uva'
+                })
+        logger.info('Scrap uva Completed')
 
+        logger.info('Scrap spoj Problems')
         if 'spoj' in allowed_judges:
             handle = user_info.get('spoj_handle', None)
             if handle:
-                for problem_list in spoj.get_user_info_heavy(handle, _bucket_size):
-                    sync_problem_bucket(user_id, problem_list, 'spoj')
+                solved_problems = spoj.get_user_info_heavy(handle)
+                oj_problem_set.append({
+                    'problem_list': solved_problems,
+                    'oj_name': 'spoj'
+                })
+        logger.info('Scrap spoj Completed')
 
+        logger.info('Scrap lightoj Problems')
         if 'lightoj' in allowed_judges:
             handle = user_info.get('lightoj_handle', None)
             if handle:
@@ -1061,8 +1081,15 @@ def synch_user_problem_data_from_ojs(user_id):
                     'username': os.getenv('LIGHTOJ_USERNAME'),
                     'password': os.getenv('LIGHTOJ_PASSWORD')
                 }
-                for problem_list in lightoj.get_user_info_heavy(handle, credentials, _bucket_size):
-                    sync_problem_bucket(user_id, problem_list, 'lightoj')
+                solved_problems = lightoj.get_user_info_heavy(handle, credentials)
+                # print('problem_stat: ', problem_stat)
+                oj_problem_set.append({
+                    'problem_list': solved_problems,
+                    'oj_name': 'lightoj'
+                })
+        logger.info('Scrap lightoj Completed')
+
+        sync_problem_bucket(user_id, oj_problem_set)
 
     except Exception as e:
         raise e
@@ -1570,7 +1597,7 @@ def clean_team_sync_history(team_id):
         raise Exception('Internal server error')
 
 
-def sync_all_users(restore_sync = False):
+def sync_all_users(restore_sync=False):
     try:
         logger.info(f'sync_all_users called')
         print(f'sync_all_users called')
@@ -1580,13 +1607,15 @@ def sync_all_users(restore_sync = False):
             user_list = search_user_ids({}, page*user_size, user_size)
             if len(user_list) == 0:
                 break
-
             for user_id in user_list:
                 print('restore: ', user_id)
+                job_data = {
+                    'job_ref_id': user_id,
+                    'job_type': 'USER_SYNC'
+                }
                 if restore_sync:
-                    clean_user_sync_history(user_id)
-                user_problem_sync(user_id)
-
+                    job_data['job_type'] = 'USER_SYNC_RESTORE'
+                create_job(job_data)
             page += 1
         logger.info(f'sync_all_users completed')
     except Exception as e:
@@ -1647,15 +1676,12 @@ def search_job():
         global rs
         auth_header = get_header()
         logger.debug('search_job called')
-        # print('job_search_url: ', job_search_url)
-        # print('auth_header: ', auth_header)
         search_param = {
             'status': 'PENDING',
             'sort_order': 'asc',
         }
         response = rs.post(url=job_search_url, json=search_param, headers=auth_header).json()
         logger.debug('response: ' + str(response))
-        # print(response)
         return response['job_list']
     except Exception as e:
         raise Exception('Internal server error')
@@ -1668,6 +1694,17 @@ def update_job(job_id, status):
         logger.debug('update_job called')
         url = job_url + job_id
         response = rs.put(url=url, json={'status': status}, headers=auth_header).json()
+        logger.debug('response: ' + str(response))
+    except Exception as e:
+        raise Exception('Internal server error')
+
+
+def create_job(job_data):
+    try:
+        global rs
+        auth_header = get_header()
+        logger.debug('create_job called')
+        response = rs.post(url=job_url, json=job_data, headers=auth_header).json()
         logger.debug('response: ' + str(response))
     except Exception as e:
         raise Exception('Internal server error')

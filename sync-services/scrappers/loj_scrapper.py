@@ -10,7 +10,7 @@ user_details_url = 'http://www.lightoj.com/volume_userstat.php?user_id='
 
 class LightOJScrapper:
 
-    def get_user_info_heavy(self, username, credentials, bucket_size):
+    def get_user_info_heavy(self, username, credentials):
         # print(f'get_user_info called for: {username}')
         try:
             options = Options()
@@ -54,16 +54,10 @@ class LightOJScrapper:
                             ]
                         }
                         solved_problems[problem] = problem_data
-                        if len(solved_problems) % bucket_size == 0:
-                            yield solved_problems
-                            solved_problems = {}
-
-                except:
-                    print(f'Exception occurred for user: {username}, submission: {link}')
+                except Exception as e:
+                    print(f'Exception occurred while parsing uva data for user: {username}, submission: {link}, exception: {e}')
                     continue
-
-            if len(solved_problems) > 0:
-                yield solved_problems
-
+            return solved_problems
         except Exception as e:
             print(f'Error occurred: {e}')
+            return {}

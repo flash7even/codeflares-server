@@ -21,19 +21,15 @@ class UvaScrapper:
         except Exception as e:
             raise e
 
-    def get_user_info_heavy(self, username, bucket_size):
+    def get_user_info_heavy(self, username):
         try:
             rs = requests.session()
             url = f'https://uhunt.onlinejudge.org/api/uname2uid/{username}'
             userid = rs.get(url=url, headers=_http_headers).json()
-
             profile_url = f'https://uhunt.onlinejudge.org/api/subs-user/{userid}'
             problem_map = self.problem_id_name_map()
-
             profile_data = rs.get(url=profile_url, headers=_http_headers).json()
-
             solved_problems = {}
-
             all_submissions = profile_data['subs']
             for sub in all_submissions:
                 try:
@@ -51,16 +47,10 @@ class UvaScrapper:
                             ]
                         }
                         solved_problems[problem_id] = problem_data
-                        if len(solved_problems) % bucket_size == 0:
-                            yield solved_problems
-                            solved_problems = {}
-
-                except:
-                    print(f'Exception occurred for user: {username}, submission: {sub}')
+                except Exception as e:
+                    print(f'Exception occurred while parsing uva data for user: {username}, submission: {sub}, exception: {e}')
                     continue
-
-            if len(solved_problems) > 0:
-                yield solved_problems
-
+            return solved_problems
         except Exception as e:
             print(f'Error occurred: {e}')
+            return {}

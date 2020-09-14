@@ -8,7 +8,7 @@ _http_headers = {'Content-Type': 'application/json'}
 
 class CodechefScrapper:
 
-    def get_user_info_heavy(slef, username, bucket_size):
+    def get_user_info_heavy(slef, username):
         try:
             rs = requests.session()
             url = f'https://www.codechef.com/users/{username}'
@@ -31,16 +31,10 @@ class CodechefScrapper:
                             ]
                         }
                         solved_problems[problem_name] = problem_data
-                        if len(solved_problems) % bucket_size == 0:
-                            yield solved_problems
-                            solved_problems = {}
-
-                except:
-                    print(f'Exception occurred for user: {username}, submission: {link}')
+                except Exception as e:
+                    print(f'Exception occurred while parsing uva data for user: {username}, submission: {link}, exception: {e}')
                     continue
-
-            if len(solved_problems) > 0:
-                yield solved_problems
-
+            return solved_problems
         except Exception as e:
             print(f'Error occurred: {e}')
+            return {}

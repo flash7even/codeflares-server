@@ -48,7 +48,7 @@ class Skill:
     def get_skill_title(self, skill):
         idx = 9
         while idx >= 0:
-            if skill > self.skill_levels[idx]:
+            if skill >= self.skill_levels[idx]:
                 return self.skill_title[idx+1]
             idx -= 1
         return self.skill_title[0]
@@ -58,13 +58,10 @@ class Skill:
         for level in range(0, 10):
             if skill >= self.skill_levels[level]:
                 max_level = level
-
         range_st = self.skill_levels[max_level]
         range_ed = self.max_skill
-
         if max_level < 10:
             range_ed = self.skill_levels[max_level+1]
-
         dx = range_ed - range_st
         skill_ext = skill - range_st
         level = max_level + skill_ext/dx

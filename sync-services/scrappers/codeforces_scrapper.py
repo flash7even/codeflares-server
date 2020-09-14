@@ -11,7 +11,7 @@ class CodeforcesScrapper:
 
     rating_history_url = 'https://codeforces.com/api/user.rating?handle='
 
-    def get_user_info_heavy(self, username, bucket_size):
+    def get_user_info_heavy(self, username):
         try:
             rs = requests.session()
             url = f'http://codeforces.com/api/user.status?handle={username}&from=1&count=1000000'
@@ -38,19 +38,10 @@ class CodeforcesScrapper:
                             'submission_id': submission["id"]
                         }
                         cf_solved_problems[problem]['submission_list'].append(sublink)
-                except:
-                    print(f'Exception occurred for user: {username}, submission: {submission}')
+                except Exception as e:
+                    print(f'Exception occurred while parsing uva data for user: {username}, submission: {submission}, exception: {e}')
                     continue
-
-            solved_problems = {}
-            for problem in cf_solved_problems:
-                solved_problems[problem] = cf_solved_problems[problem]
-                if len(solved_problems) % bucket_size == 0:
-                    yield solved_problems
-                    solved_problems = {}
-
-            if len(solved_problems) > 0:
-                yield solved_problems
-
+            return cf_solved_problems
         except Exception as e:
             print(f'Error occurred: {e}')
+            return {}
