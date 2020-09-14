@@ -12,7 +12,8 @@ from commons.jwt_helpers import access_required
 
 api = Namespace('user_job', description='Namespace for user_job service')
 
-from core.job_services import search_jobs, update_pending_job
+from core.job_services import search_jobs, update_pending_job, add_pending_job
+from core.user_services import get_user_details
 
 _http_headers = {'Content-Type': 'application/json'}
 
@@ -75,6 +76,27 @@ def handler_user_load_error(e):
 @api.errorhandler(UserClaimsVerificationError)
 def handle_failed_user_claims_verification(e):
     return {'message': 'User claims verification failed'}, 400
+
+
+@api.route('/')
+class CreateJob(Resource):
+
+    @access_required(access="ALL")
+    @api.doc('create job')
+    def post(self):
+        try:
+            app.logger.info('Create job method called')
+            logged_in_user = get_jwt_identity().get('id')
+            logged_in_user_details = get_user_details(logged_in_user)
+            logged_in_user_role = logged_in_user_details.get('user_role', None)
+            data = request.get_json()
+            job_ref_id = data['job_ref_id']
+            job_type = data['job_type']
+            response = add_pending_job(job_ref_id, logged_in_user_role, job_type)
+            return response, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
+
 
 
 @api.route('/<string:job_id>')
