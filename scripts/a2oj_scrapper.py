@@ -557,7 +557,7 @@ class A2ojScrapper:
         logger.info(f'upload_problem_history called, algorithm_list: {algorithm_list}, min_diff: {min_diff}')
         rs = requests.session()
         url = f'https://a2oj.com/category?ID={algorithm_id}'
-        submission_page = rs.get(url=url, headers=_http_headers)
+        submission_page = rs.get(url=url, headers=_http_headers, verify=False)
         soup = BeautifulSoup(submission_page.text, 'html.parser')
         soup.prettify()
 
@@ -580,7 +580,7 @@ class A2ojScrapper:
         logger.info(f'upload_problem_history called, algorithm_list: {algorithm_list}, min_diff: {min_diff}')
         rs = requests.session()
         url = f'https://a2oj.com/category?ID={algorithm_id}'
-        submission_page = rs.get(url=url, headers=_http_headers)
+        submission_page = rs.get(url=url, headers=_http_headers, verify=False)
         soup = BeautifulSoup(submission_page.text, 'html.parser')
         soup.prettify()
 
