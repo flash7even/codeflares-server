@@ -12,7 +12,7 @@ chardet==3.0.4
 Click==7.0
 cluster==1.4.1.post2
 config==0.4.2
-cryptography==2.9.2
+cryptography==3.2
 Django==2.2.1
 fernet==1.0.1
 Flask==1.0.2
