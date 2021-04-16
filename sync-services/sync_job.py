@@ -1711,10 +1711,10 @@ def create_job(job_data):
 
 
 def db_job():
-    try:
-        curtime = int(time.time())
-        logger.info('RUN CRON JOB FOR SYNCING DATA AT: ' + str(curtime))
-        while(1):
+    curtime = int(time.time())
+    logger.info('RUN CRON JOB FOR SYNCING DATA AT: ' + str(curtime))
+    while(1):
+        try:
             pending_job_list = search_job()
             if len(pending_job_list) == 0:
                 break
@@ -1746,8 +1746,8 @@ def db_job():
                 update_job(cur_job['id'], 'COMPLETED')
                 logger.debug('COMPLETED JOB: ' + json.dumps(cur_job))
                 print('COMPLETED JOB: ' + json.dumps(cur_job))
-    except Exception as e:
-        raise Exception('Internal server error')
+        except Exception as e:
+            logger.info(f'Exception occurred while running cron job: {e}')
 
 
 cron_job = BackgroundScheduler(daemon=True)
