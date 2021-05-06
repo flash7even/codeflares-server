@@ -16,7 +16,7 @@ cryptography==2.9.2
 Django==2.2.1
 fernet==1.0.1
 Flask==1.0.2
-Flask-Cors==3.0.7
+Flask-Cors==3.0.9
 Flask-JWT-Extended==3.20.0
 Flask-Mail==0.9.1
 flask-restplus==0.12.1
