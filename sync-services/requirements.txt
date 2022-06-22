@@ -33,7 +33,7 @@ MarkupSafe==1.1.1
 mccabe==0.6.1
 minio==4.0.16
 mock==4.0.2
-numpy==1.16.4
+numpy==1.22.0
 opencv-python==4.1.0.25
 paho-mqtt==1.4.0
 pandas==1.0.3
